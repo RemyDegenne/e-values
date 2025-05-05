@@ -18,16 +18,17 @@ The main difference is that they are allowed to be randomized, i.e., they can re
 This generalization is mainly useful thanks to the compositional properties it provides, as we will see in Lemma~\ref{lem:randEVar_comp}.
 
 \begin{definition}\label{def:randEVar}
-A randomized E-variable for a set of distributions $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ is a Markov kernel $\eta : \mathcal{X} \rightsquigarrow \mathbb{R}_{+,\infty}$ such that for all $Q \in \mathcal{Q}$, $(\eta \circ Q)[\mathrm{id}] \le 1$.
+A randomized E-variable for a set of distributions $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ is a Markov kernel $\eta : \mathcal{X} \rightsquigarrow \mathbb{R}_{+,\infty}$ such that for all $Q \in \mathcal{Q}$, $(\eta \circ Q)[\id] \le 1$.
 \end{definition}
 
 We denote by $\mathcal{E}^R_{\mathcal{Q}}$ the set of randomized E-variables for a set of probability measures $\mathcal{Q}$.
 Since measurable functions can be seen as deterministic Markov kernels, we have $\mathcal{E}_{\mathcal{Q}} \subseteq \mathcal{E}^R_{\mathcal{Q}}$.
-Indeed, $Q[f] = (\delta_f \circ Q)[\mathrm{id}]$, in which $\delta_f : \mathcal{X} \rightsquigarrow \mathbb{R}_{+,\infty}$ is such that $\delta_f(x)$ is the dirac distribution at $f(x)$.
+Indeed, $Q[f] = (\delta_f \circ Q)[\id]$, in which $\delta_f : \mathcal{X} \rightsquigarrow \mathbb{R}_{+,\infty}$ is such that $\delta_f(x)$ is the dirac distribution at $f(x)$.
 
 
 \begin{lemma}\label{lem:randEVar_iff_eVar}
-A Markov kernel $\eta : \mathcal{X} \rightsquigarrow \mathbb{R}_{+,\infty}$ is a randomized E-variable for a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ if and only if the measurable function $f : \mathcal{X} \to \mathbb{R}_{+,\infty}$ defined by $f(x) = \eta(x)[\mathrm{id}]$ is an E-variable for $\mathcal{Q}$.
+  \uses{def:eVar, def:randEVar}
+A Markov kernel $\eta : \mathcal{X} \rightsquigarrow \mathbb{R}_{+,\infty}$ is a randomized E-variable for a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ if and only if the measurable function $f : \mathcal{X} \to \mathbb{R}_{+,\infty}$ defined by $f(x) = \eta(x)[\id]$ is an E-variable for $\mathcal{Q}$.
 \end{lemma}
 
 \begin{proof}
@@ -35,8 +36,100 @@ A Markov kernel $\eta : \mathcal{X} \rightsquigarrow \mathbb{R}_{+,\infty}$ is a
 \end{proof}
 
 
+The next lemma shows that the larger set of randomized E-variables does not allow to achieve a larger expected utility than the set of E-variables.
+
+\begin{lemma}\label{lem:sup_randEVar}
+  \uses{def:eVar, def:randEVar}
+Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ be a concave function and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ a set of probability measures.
+Let $P \in \mathcal{P}(\mathcal{X})$. Then
+\begin{align*}
+  \sup_{\eta \in \mathcal{E}^R_{\mathcal{Q}}} (\eta \circ P)[U]
+  &= \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U \circ f]
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+Since $\mathcal{E}_{\mathcal{Q}} \subseteq \mathcal{E}^R_{\mathcal{Q}}$, the left hand side is greater than or equal to the right hand side.
+
+For the other direction, let $\eta \in \mathcal{E}^R_{\mathcal{Q}}$ be a randomized E-variable.
+By concavity of $U$,
+\begin{align*}
+  (\eta \circ P)[U]
+  &= P[x \mapsto \eta(x)[U]]
+  \le P[x \mapsto U(\eta(x)[\id])]
+\end{align*}
+The function $x \mapsto \eta(x)[\id]$ is a measurable function and belongs to $\mathcal{E}_{\mathcal{Q}}$.
+\end{proof}
+
+\section{Numeraire and duality}
+
+This section gathers results from \cite{larsson2024numeraire}.
+
+
+\begin{definition}\label{def:numeraire}
+  \uses{def:eVar}
+Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
+A numeraire for $(P, \mathcal{Q})$ is a $P$-almost surely positive e-variable $f^* \in \mathcal{E}_{\mathcal{Q}}$ such that $P[f / f^*] \le 1$ for all $f \in \mathcal{E}_{\mathcal{Q}}$~.
+\end{definition}
+
+
+\begin{lemma}\label{lem:numeraire_iff_logOptimal}
+  \uses{def:numeraire}
+Let $f$ be a $P$-almost surely positive E-variable for a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
+Then $f$ is a numeraire for $(P, \mathcal{Q})$ if and only if $P[\log \frac{g}{f}] \le 0$ for all $g \in \mathcal{E}_{\mathcal{Q}}$.
+\end{lemma}
+
+\begin{proof}
+
+\end{proof}
+
+
+\begin{theorem}\label{thm:exists_numeraire}
+  \uses{def:numeraire}
+Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
+A numeraire for $(P, \mathcal{Q})$ exists and is $P$-a.e. unique.
+\end{theorem}
+
+\begin{proof}
+
+\end{proof}
+
+We will write $E^*_{P, \mathcal{Q}}$ for the numeraire for $(P, \mathcal{Q})$.
+
+
+\begin{definition}\label{def:ripr}
+  \uses{def:numeraire, thm:exists_numeraire}
+Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
+The reverse information projection (RIPr) of $P$ onto $\mathcal{Q}$ is the measure $P^*_{\mathcal{Q}}$ absolutely continuous with respect to $P$ such that
+\begin{align*}
+  \frac{dP^*_{\mathcal{Q}}}{dP} = \frac{1}{E^*_{P, \mathcal{Q}}} \: .
+\end{align*}
+\end{definition}
+
+
 \begin{definition}\label{def:effectiveSet}
-For a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$, the effective set of measures $\mathcal{Q}_{\mathrm{eff}}$ is the set $\{\mu \in \mathcal{M}_+(\mathcal{X}) \mid \forall f \in \mathcal{E}_{\mathcal{Q}}, \: \mu[f] \le 1\}$.
+  \uses{def:eVar}
+For a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$, the effective set of measures $\mathcal{Q}_{\eff}$ is the set $\{\mu \in \mathcal{M}_+(\mathcal{X}) \mid \forall f \in \mathcal{E}_{\mathcal{Q}}, \: \mu[f] \le 1\}$.
 \end{definition}
 
 We could also define the effective set of measures for randomized E-variables, but it actually gives the same set.
+
+
+\begin{theorem}\label{thm:eVar_KL_duality}
+  \uses{def:numeraire, def:effectiveSet, def:ripr}
+Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
+If $P \ll \mathcal{Q}$ then
+\begin{align*}
+  P[\log E^*_{P, \mathcal{Q}}]
+  = \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[\log f]
+  = \inf_{\mu \in \mathcal{Q}_{\eff}} \KL^{todo}(P, \mu)
+  = \KL^{todo}(P, P^*_{\mathcal{Q}})
+\end{align*}
+\end{theorem}
+
+TODO: check the precise definition of $\KL^{todo}$ on finite measures.
+
+\begin{proof}
+
+\end{proof}
