@@ -1,0 +1,42 @@
+\chapter{E-variables}
+
+
+\paragraph{Notation}
+Let $\mathcal{X}, \mathcal{Y}$ be measurable spaces.
+We denote by $\mathcal{P}(\mathcal{X})$ the set of probability measures on $\mathcal{X}$ and write $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ to mean that $\kappa$ is a Markov kernel from $\mathcal{X}$ to $\mathcal{Y}$.
+$\mathbb{R}_{+,\infty}$ is the set of non-negative reals extended with $+\infty$ and $\overline{\mathbb{R}}$ is the set of reals extended with $-\infty$ and $+\infty$.
+
+The central object of this study are E-variables, which are measurable functions that are bounded in expectation by $1$ for all probability measures in a set $\mathcal{Q}$.
+
+\begin{definition}\label{def:eVar}
+An E-variable for a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ is a measurable function $f : \mathcal{X} \to \mathbb{R}_{+,\infty}$ such that for all $Q \in \mathcal{Q}$, $Q[f] \le 1$.
+\end{definition}
+
+We denote by $\mathcal{E}_{\mathcal{Q}}$ the set of E-variables for a set of probability measures $\mathcal{Q}$.
+We introduce randomized E-variables, which are Markov kernels that can be seen as randomized versions of E-variables.
+The main difference is that they are allowed to be randomized, i.e., they can return a distribution over $\mathbb{R}_{+,\infty}$ instead of a single value.
+This generalization is mainly useful thanks to the compositional properties it provides, as we will see in Lemma~\ref{lem:randEVar_comp}.
+
+\begin{definition}\label{def:randEVar}
+A randomized E-variable for a set of distributions $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ is a Markov kernel $\eta : \mathcal{X} \rightsquigarrow \mathbb{R}_{+,\infty}$ such that for all $Q \in \mathcal{Q}$, $(\eta \circ Q)[\mathrm{id}] \le 1$.
+\end{definition}
+
+We denote by $\mathcal{E}^R_{\mathcal{Q}}$ the set of randomized E-variables for a set of probability measures $\mathcal{Q}$.
+Since measurable functions can be seen as deterministic Markov kernels, we have $\mathcal{E}_{\mathcal{Q}} \subseteq \mathcal{E}^R_{\mathcal{Q}}$.
+Indeed, $Q[f] = (\delta_f \circ Q)[\mathrm{id}]$, in which $\delta_f : \mathcal{X} \rightsquigarrow \mathbb{R}_{+,\infty}$ is such that $\delta_f(x)$ is the dirac distribution at $f(x)$.
+
+
+\begin{lemma}\label{lem:randEVar_iff_eVar}
+A Markov kernel $\eta : \mathcal{X} \rightsquigarrow \mathbb{R}_{+,\infty}$ is a randomized E-variable for a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ if and only if the measurable function $f : \mathcal{X} \to \mathbb{R}_{+,\infty}$ defined by $f(x) = \eta(x)[\mathrm{id}]$ is an E-variable for $\mathcal{Q}$.
+\end{lemma}
+
+\begin{proof}
+
+\end{proof}
+
+
+\begin{definition}\label{def:effectiveSet}
+For a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$, the effective set of measures $\mathcal{Q}_{\mathrm{eff}}$ is the set $\{\mu \in \mathcal{M}_+(\mathcal{X}) \mid \forall f \in \mathcal{E}_{\mathcal{Q}}, \: \mu[f] \le 1\}$.
+\end{definition}
+
+We could also define the effective set of measures for randomized E-variables, but it actually gives the same set.

@@ -1,0 +1,67 @@
+\chapter{Data processing inequality with E-variables}
+
+The next lemma shows that the larger set of randomized E-variables does not allow to achieve a larger expected utility than the set of E-variables.
+
+\begin{lemma}\label{lem:sup_randEVar}
+Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ be a concave function and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ a set of probability measures.
+Let $P \in \mathcal{P}(\mathcal{X})$. Then
+\begin{align*}
+  \sup_{\eta \in \mathcal{E}^R_{\mathcal{Q}}} (\eta \circ P)[U]
+  &= \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U \circ f]
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+Since $\mathcal{E}_{\mathcal{Q}} \subseteq \mathcal{E}^R_{\mathcal{Q}}$, the left hand side is greater than or equal to the right hand side.
+
+For the other direction, let $\eta \in \mathcal{E}^R_{\mathcal{Q}}$ be a randomized E-variable.
+By concavity of $U$,
+\begin{align*}
+  (\eta \circ P)[U]
+  &= P[x \mapsto \eta(x)[U]]
+  \le P[x \mapsto U(\eta(x)[\mathrm{id}])]
+\end{align*}
+The function $x \mapsto \eta(x)[\mathrm{id}]$ is a measurable function and belongs to $\mathcal{E}_{\mathcal{Q}}$.
+\end{proof}
+
+
+\begin{lemma}\label{lem:randEVar_comp}
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$.
+Then for all $\xi \in \mathcal{E}_{\kappa \circ \mathcal{Q}}^R$, $\xi \circ \kappa \in \mathcal{E}^R_{\mathcal{Q}}$.
+\end{lemma}
+
+\begin{proof}
+For $Q \in \mathcal{Q}$,
+$((\xi \circ \kappa) \circ Q)[\mathrm{id}]
+  = (\xi \circ (\kappa \circ Q))[\mathrm{id}]
+  \le 1$~.
+\end{proof}
+
+
+\begin{theorem}[Data processing inequality with E-variables]\label{thm:dataprocessing}
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and $P \in \mathcal{P}(\mathcal{X})$.
+Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ be a concave function.
+Then for all Markov kernels $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$,
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U \circ f]
+  &\ge \sup_{g \in \mathcal{E}_{\kappa \circ \mathcal{Q}}} (\kappa \circ P)[U \circ g]
+  \: .
+\end{align*}
+\end{theorem}
+
+\begin{proof}
+By Lemma~\ref{lem:sup_randEVar}, we can equivalently prove
+\begin{align*}
+  \sup_{\eta \in \mathcal{E}^R_{\mathcal{Q}}} (\eta \circ P)[U]
+  &\ge \sup_{\xi \in \mathcal{E}^R_{\kappa \circ \mathcal{Q}}} (\xi \circ \kappa \circ P)[U]
+  \: .
+\end{align*}
+By Lemma~\ref{lem:randEVar_comp}, $\{\xi \circ \kappa \mid \xi \in \mathcal{E}^R_{\kappa \circ \mathcal{Q}}\} \subseteq \mathcal{E}^R_{\mathcal{Q}}$, hence
+\begin{align*}
+  \sup_{\eta \in \mathcal{E}^R_{\mathcal{Q}}} (\eta \circ P)[U]
+  &\ge \sup_{\eta \in \{\xi \circ \kappa \mid \xi \in \mathcal{E}^R_{\kappa \circ \mathcal{Q}}\}} (\eta \circ P)[U]
+  = \sup_{\xi \in \mathcal{E}^R_{\kappa \circ \mathcal{Q}}} (\xi \circ \kappa \circ P)[U]
+  \: .
+\end{align*}
+\end{proof}
