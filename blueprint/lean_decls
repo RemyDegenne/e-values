@@ -1,2 +1,5 @@
 ProbabilityTheory.IsEVar
 ProbabilityTheory.IsRandEVar
+ProbabilityTheory.isRandEVar_iff_isEVar
+MeasureTheory.aeSet
+MeasureTheory.mem_aeSet_iff

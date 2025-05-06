@@ -6,6 +6,8 @@ Let $\mathcal{X}, \mathcal{Y}$ be measurable spaces.
 We denote by $\mathcal{P}(\mathcal{X})$ the set of probability measures on $\mathcal{X}$ and write $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ to mean that $\kappa$ is a Markov kernel from $\mathcal{X}$ to $\mathcal{Y}$.
 $\mathbb{R}_{+,\infty}$ is the set of non-negative reals extended with $+\infty$ and $\overline{\mathbb{R}}$ is the set of reals extended with $-\infty$ and $+\infty$.
 
+A measure will always denote a non-negative measure. We will specify when we mean a signed measure.
+
 The central object of this study are E-variables, which are measurable functions that are bounded in expectation by $1$ for all probability measures in a set $\mathcal{Q}$.
 
 \begin{definition}\label{def:eVar}
@@ -42,10 +44,12 @@ Indeed, $Q[f] = (\delta_f \circ Q)[\id]$, in which $\delta_f : \mathcal{X} \righ
 
 \begin{lemma}\label{lem:randEVar_iff_eVar}
   \uses{def:eVar, def:randEVar}
+  \leanok
+  \lean{ProbabilityTheory.isRandEVar_iff_isEVar}
 A Markov kernel $\eta : \mathcal{X} \rightsquigarrow \mathbb{R}_{+,\infty}$ is a randomized E-variable for a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ if and only if the measurable function $f : \mathcal{X} \to \mathbb{R}_{+,\infty}$ defined by $f(x) = \eta(x)[\id]$ is an E-variable for $\mathcal{Q}$.
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\leanok
 
 \end{proof}
 
@@ -77,11 +81,50 @@ The function $x \mapsto \eta(x)[\id]$ is a measurable function and belongs to $\
 \end{proof}
 
 
+\section{Almost everywhere with respect to a set of measures}
+
+\begin{definition}\label{def:aeSet}
+  \leanok
+  \lean{MeasureTheory.aeSet}
+Let $\mathcal{Q} \subseteq \mathcal{M}(\mathcal{X})$ be a set of measures.
+A set $S \subseteq \mathcal{X}$ is said to be $\mathcal{Q}$-null if $Q[S] = 0$ for all $Q \in \mathcal{Q}$.
+A property $p : \mathcal{X} \to \mathrm{Bool}$ is said to hold $\mathcal{Q}$-almost everywhere (denoted by $\mathcal{Q}$-a.e.) if the set $\{x \mid \neg p(x)\}$ is $\mathcal{Q}$-null.
+\end{definition}
+
+For a measure $P \in \mathcal{M}(\mathcal{X})$, we can define the almost everywhere filter $\aef_P$ of sets with $P$-null complement.
+
+\begin{lemma}\label{lem:aeSet_filter}
+  \uses{def:aeSet}
+  \leanok
+  \lean{MeasureTheory.mem_aeSet_iff}
+A set $S \subseteq \mathcal{X}$ has a $\mathcal{Q}$-null complement iff $S \in \bigsqcup_{Q \in \mathcal{Q}} \aef_Q$.
+\end{lemma}
+
+\begin{proof}\leanok
+By definition of the $\aef$ filter and of a supremum of filters.
+\end{proof}
+
+
+\begin{definition}\label{def:acSet}
+  \uses{def:aeSet}
+  Let $P \in \mathcal{M}(\mathcal{X})$ and let $\mathcal{Q} \subseteq \mathcal{M}(\mathcal{X})$ be a set of measures.
+  We say that $P$ is absolutely continuous with respect to $\mathcal{Q}$ (denoted by $P \ll \mathcal{Q}$) if all $\mathcal{Q}$-null sets are $P$-null sets.
+\end{definition}
+
+
+\begin{lemma}\label{lem:acSet_iff}
+  \uses{def:aeSet, def:acSet}
+Let $P \in \mathcal{M}(\mathcal{X})$ and let $\mathcal{Q} \subseteq \mathcal{M}(\mathcal{X})$.
+Then $P \ll \mathcal{Q}$ iff $\aef_P \le \bigsqcup_{Q \in \mathcal{Q}} \aef_Q$.
+\end{lemma}
+
+\begin{proof}
+
+\end{proof}
 
 \section{Numeraire and duality}
 
 This section gathers results from \cite{larsson2024numeraire}.
-
 
 \begin{definition}\label{def:numeraire}
   \uses{def:eVar}
@@ -159,7 +202,7 @@ TODO: define the polar sets.
 
 $\mathcal{F}_+^\circ = \{P \in \mathcal{M}_+(\mathcal{X}) \mid \forall f \in \mathcal{F}, \: P[f] \le 1\}$.
 
-$\mathcal{F}_1^\circ = \{P \in \mathcal{P}(\mathcal{X}) \mid \forall f \in \mathcal{F}, \: P[f] \le 1\}$.
+$\mathcal{F}_1^\circ = \{P \in \mathcal{P}(\mathcal{X}) \mid \forall f \in \mathcal{F}, \: P[f] \le 1\} = \mathcal{F}_+^\circ \cap \mathcal{P}(\mathcal{X})$.
 
 
 \begin{lemma}\label{lem:eVarSet_polar_singleton}
@@ -168,7 +211,7 @@ Let $f_0 : \mathcal{X} \to \mathbb{R}_{+,\infty}$ be a measurable function.
 Then
 \begin{align*}
   \mathcal{E}_{\{f_0\}_+^\circ}
-  &= \{f : \mathcal{X} \to \mathbb{R}_{+,\infty} \mid f \le f_0\} \: .
+  &= \{f : \mathcal{X} \to \mathbb{R}_{+,\infty} \mid \forall x, f(x) \le f_0(x)\} \: .
 \end{align*}
 \end{lemma}
 
