@@ -10,7 +10,7 @@ The central object of this study are E-variables, which are measurable functions
 
 \begin{definition}\label{def:eVar}
   \leanok
-  \lean{MeasureTheory.IsEVar}
+  \lean{ProbabilityTheory.IsEVar}
 An E-variable for a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ is a measurable function $f : \mathcal{X} \to \mathbb{R}_{+,\infty}$ such that for all $Q \in \mathcal{Q}$, $Q[f] \le 1$.
 \end{definition}
 
@@ -30,6 +30,8 @@ The main difference is that they are allowed to be randomized, i.e., they can re
 This generalization is mainly useful thanks to the compositional properties it provides, as we will see in Lemma~\ref{lem:randEVar_comp}.
 
 \begin{definition}\label{def:randEVar}
+  \leanok
+  \lean{ProbabilityTheory.IsRandEVar}
 A randomized E-variable for a set of distributions $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ is a Markov kernel $\eta : \mathcal{X} \rightsquigarrow \mathbb{R}_{+,\infty}$ such that for all $Q \in \mathcal{Q}$, $(\eta \circ Q)[\id] \le 1$.
 \end{definition}
 
