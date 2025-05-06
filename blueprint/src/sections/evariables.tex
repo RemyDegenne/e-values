@@ -9,12 +9,15 @@ $\mathbb{R}_{+,\infty}$ is the set of non-negative reals extended with $+\infty$
 The central object of this study are E-variables, which are measurable functions that are bounded in expectation by $1$ for all probability measures in a set $\mathcal{Q}$.
 
 \begin{definition}\label{def:eVar}
+  \leanok
+  \lean{MeasureTheory.IsEVar}
 An E-variable for a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ is a measurable function $f : \mathcal{X} \to \mathbb{R}_{+,\infty}$ such that for all $Q \in \mathcal{Q}$, $Q[f] \le 1$.
 \end{definition}
 
 We denote by $\mathcal{E}_{\mathcal{Q}}$ the set of E-variables for a set of probability measures $\mathcal{Q}$.
 
 \begin{lemma}\label{lem:eVarSet_anti}
+  \uses{def:eVar}
 If $\mathcal{P} \subseteq \mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ then $\mathcal{E}_{\mathcal{Q}} \subseteq \mathcal{E}_{\mathcal{P}}$.
 \end{lemma}
 
@@ -70,6 +73,8 @@ By concavity of $U$,
 \end{align*}
 The function $x \mapsto \eta(x)[\id]$ is a measurable function and belongs to $\mathcal{E}_{\mathcal{Q}}$.
 \end{proof}
+
+
 
 \section{Numeraire and duality}
 
@@ -138,6 +143,65 @@ If $P \ll \mathcal{Q}$ then
 \end{theorem}
 
 TODO: check the precise definition of $\KL^{todo}$ on finite measures.
+
+\begin{proof}
+
+\end{proof}
+
+
+
+\section{Examples}
+\label{sec:examples}
+
+TODO: define the polar sets.
+
+$\mathcal{F}_+^\circ = \{P \in \mathcal{M}_+(\mathcal{X}) \mid \forall f \in \mathcal{F}, \: P[f] \le 1\}$.
+
+$\mathcal{F}_1^\circ = \{P \in \mathcal{P}(\mathcal{X}) \mid \forall f \in \mathcal{F}, \: P[f] \le 1\}$.
+
+
+\begin{lemma}\label{lem:eVarSet_polar_singleton}
+  \uses{def:eVar}
+Let $f_0 : \mathcal{X} \to \mathbb{R}_{+,\infty}$ be a measurable function.
+Then
+\begin{align*}
+  \mathcal{E}_{\{f_0\}_+^\circ}
+  &= \{f : \mathcal{X} \to \mathbb{R}_{+,\infty} \mid f \le f_0\} \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+\begin{align*}
+  \{f_0\}_+^\circ
+  &= \{P \in \mathcal{M}_+(\mathcal{X}) \mid P[f_0] \le 1\}
+  \: , \\
+  \mathcal{E}_{\{f_0\}_+^\circ}
+  &= \{f : \mathcal{X} \to \mathbb{R}_{+,\infty} \mid \forall P \in \{f_0\}_+^\circ, \: P[f] \le 1\}
+  \\
+  &= \{f : \mathcal{X} \to \mathbb{R}_{+,\infty} \mid \forall P\in \mathcal{M}_+(\mathcal{X}), \: P[f_0] \le 1 \implies P[f] \le 1\}
+  \\
+  &= \{f : \mathcal{X} \to \mathbb{R}_{+,\infty} \mid \forall x, f(x) \le f_0(x)\}
+  \: .
+\end{align*}
+The last line needs an explanation. Taking $P = (f_0(x))^{-1} \cdot \delta_x$ gives $P[f_0] = 1$ and $P[f] = f(x)/f_0(x)$, and $P[f] \le 1$ gives $f(x) \le f_0(x)$.
+Conversely, if $f \le f_0$ then for all $P \in \mathcal{M}_+(\mathcal{X})$, $P[f] \le P[f_0]$.
+\end{proof}
+
+
+\begin{lemma}[Numeraire for Bernoulli with mean constraint]\label{lem:utility_numeraire_bernoulli}
+  \uses{def:numeraire}
+\begin{align*}
+  \mathcal{E}_{\{\Ber(p) \mid p \le \delta\}}
+  &= \{f : \{0,1\} \to \mathbb{R}_{+,\infty} \mid f(0) \le 1 \ \wedge \ (1 - \delta)f(0) + \delta f(1) \le 1 \}
+  \: .
+\end{align*}
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\{\Ber(p) \mid p \le \delta\}}} \Ber(q)[\log f]
+  &= \inf_{p \le \delta} \kl(q, p)
+  \ge q \log \frac{1}{\delta} - \log 2
+  \: .
+\end{align*}
+\end{lemma}
 
 \begin{proof}
 
