@@ -5,23 +5,43 @@
 
 \begin{lemma}\label{lem:randEVar_comp}
   \uses{def:randEVar}
-Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$.
-Then for all $\xi \in \mathcal{E}_{\kappa \circ \mathcal{Q}}^R$, $\xi \circ \kappa \in \mathcal{E}^R_{\mathcal{Q}}$.
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and let $\phi : \mathcal{X} \to \mathcal{Y}$ be a measurable function and $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be a Markov kernel.
+Then
+\begin{enumerate}
+  \item for all $g \in \mathcal{E}_{\phi \circ \mathcal{Q}}$, $g \circ \phi \in \mathcal{E}_{\mathcal{Q}}$,
+  \item for all $\xi \in \mathcal{E}_{\kappa \circ \mathcal{Q}}^R$, $\xi \circ \kappa \in \mathcal{E}^R_{\mathcal{Q}}$.
+\end{enumerate}
 \end{lemma}
 
 \begin{proof}
 For $Q \in \mathcal{Q}$,
-$((\xi \circ \kappa) \circ Q)[\id]
-  = (\xi \circ (\kappa \circ Q))[\id]
-  \le 1$~.
+\begin{align*}
+  Q[g \circ \phi]
+  &= (\phi \circ Q)[g]
+  \le 1
+  \: , \\
+  ((\xi \circ \kappa) \circ Q)[\id]
+  &= (\xi \circ (\kappa \circ Q))[\id]
+  \le 1
+  \: .
+\end{align*}
 \end{proof}
 
 
 \begin{theorem}[Data processing inequality with E-variables]\label{thm:dataprocessing}
   \uses{def:eVar}
 Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and $P \in \mathcal{P}(\mathcal{X})$.
-Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ be a concave function.
-Then for all Markov kernels $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$,
+Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$.
+Then for all measurable functions $\phi : \mathcal{X} \to \mathcal{Y}$ and all Markov kernels $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$,
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U \circ f]
+  &\ge \sup_{g \in \mathcal{E}_{\phi \circ \mathcal{Q}}} (\phi \circ P)[U \circ g]
+  \: , \\
+  \sup_{\eta \in \mathcal{E}^R_{\mathcal{Q}}} (\eta \circ P)[U]
+  &\ge \sup_{\xi \in \mathcal{E}^R_{\kappa \circ \mathcal{Q}}} (\xi \circ \kappa \circ P)[U]
+  \: .
+\end{align*}
+Furthermore, if $U$ is concave, then for all Markov kernels $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$,
 \begin{align*}
   \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U \circ f]
   &\ge \sup_{g \in \mathcal{E}_{\kappa \circ \mathcal{Q}}} (\kappa \circ P)[U \circ g]
@@ -31,17 +51,88 @@ Then for all Markov kernels $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$,
 
 \begin{proof}
   \uses{lem:randEVar_comp, lem:sup_randEVar}
-By Lemma~\ref{lem:sup_randEVar}, we can equivalently prove
-\begin{align*}
-  \sup_{\eta \in \mathcal{E}^R_{\mathcal{Q}}} (\eta \circ P)[U]
-  &\ge \sup_{\xi \in \mathcal{E}^R_{\kappa \circ \mathcal{Q}}} (\xi \circ \kappa \circ P)[U]
-  \: .
-\end{align*}
 By Lemma~\ref{lem:randEVar_comp}, $\{\xi \circ \kappa \mid \xi \in \mathcal{E}^R_{\kappa \circ \mathcal{Q}}\} \subseteq \mathcal{E}^R_{\mathcal{Q}}$, hence
 \begin{align*}
   \sup_{\eta \in \mathcal{E}^R_{\mathcal{Q}}} (\eta \circ P)[U]
   &\ge \sup_{\eta \in \{\xi \circ \kappa \mid \xi \in \mathcal{E}^R_{\kappa \circ \mathcal{Q}}\}} (\eta \circ P)[U]
   = \sup_{\xi \in \mathcal{E}^R_{\kappa \circ \mathcal{Q}}} (\xi \circ \kappa \circ P)[U]
+  \: .
+\end{align*}
+The argument for the first inequality is similar.
+
+If $U$ is concave, we can use Lemma~\ref{lem:sup_randEVar} to obtain the data-processing with a Markov kernel for e-variables from the result for randomized e-variables.
+\end{proof}
+
+
+\begin{lemma}\label{lem:separation_lower_bound}
+  \uses{def:eVar}
+Let $\mathcal{P},\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be two sets of probability measures.
+Suppose that there exists a measurable function $f_0 : \mathcal{X} \to [0, 1]$ and $\delta \in (0,1/2)$ such that
+\begin{align*}
+  \forall P \in \mathcal{P}, \: P[f_0] &\le \delta
+  \: , \\
+  \forall Q \in \mathcal{Q}, \: Q[f_0] &\ge 1 - \delta
+  \: .
+\end{align*}
+Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ be a concave function.
+Then
+\begin{align*}
+  \inf_{R \in \mathcal{P}(\mathcal{X})}\left\{\sup_{f \in \mathcal{E}_{\mathcal{P}}} R[U \circ f]
+    + \sup_{g \in \mathcal{E}_{\mathcal{Q}}} R[U \circ g] \right\}
+  &\ge \log \frac{1}{4\delta}
+  \: .
+\end{align*}
+\end{lemma}
+
+This is analogous to a lower bound on the Rényi divergence with parameter $\alpha = 1/2$.
+
+\begin{proof}
+  \uses{thm:dataprocessing, thm:eVar_KL_duality}
+The assumption on $f_0$ implies that $f_0/\delta \in \mathcal{E}_{\mathcal{P}}$ and $(1 - f_0)/\delta \in \mathcal{E}_{\mathcal{Q}}$.
+
+Let $\kappa : \mathcal{X} \rightsquigarrow \{0,1\}$ be the Markov kernel defined by $\kappa_0(x) = \Ber(f_0(x))$. Then $\delta^{-1} \cdot \kappa_0 \in \mathcal{E}^R_{\mathcal{P}}$ since its mean function $\delta^{-1} \cdot f_0$ is in $\mathcal{E}_{\mathcal{P}}$.
+For any $P \in \mathcal{P}(\mathcal{X})$, we have $\kappa_0 \circ P = \Ber(P[f_0])$.
+
+\begin{align*}
+  \kappa_0 \circ \mathcal{P}
+  &= \{\Ber(p) \mid \exists P \in \mathcal{P}, \: p = P[f_0]\}
+  \subseteq \{\Ber(p) \mid p \le \delta\}
+  \: .
+\end{align*}
+Hence $\mathcal{E}_{\{\Ber(p) \mid p \le \delta\}} \subseteq \mathcal{E}_{\kappa_0 \circ \mathcal{P}}$.
+
+Let $R \in \mathcal{P}(\mathcal{X})$ be a probability measure.
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\mathcal{P}}} R[U \circ f]
+  &\ge \sup_{f \in \mathcal{E}_{\kappa_0 \circ \mathcal{P}}} (\kappa_0 \circ R)[U \circ f]
+  \\
+  &\ge \sup_{f \in \mathcal{E}_{\{\Ber(p) \mid p \le \delta\}}} \Ber(R[f_0])[U \circ f]
+  \\
+  &= \inf_{p \le \delta} \kl(R[f_0], p)
+  \\
+  &\ge R[f_0]\log\frac{1}{\delta} - \log 2
+  \: .
+\end{align*}
+TODO: that last line needs to be justified (talk about the effective set). Also it supposes $U = \log$.
+
+Similarly with $1 - f_0$ instead of $f_0$ and $\mathcal{Q}$ instead of $\mathcal{P}$,
+\begin{align*}
+  \sup_{g \in \mathcal{E}_{\mathcal{Q}}} R[U \circ g]
+  &\ge \sup_{g \in \mathcal{E}_{\{\Ber(p) \mid p \le \delta\}}} \Ber(1 - R[f_0])[U \circ f]
+  \\
+  &= \inf_{p \le \delta} \kl(1 - R[f_0], p)
+  \\
+  &\ge (1 - R[f_0])\log\frac{1}{\delta} - \log 2
+  \: .
+\end{align*}
+We can combine the two inequalities:
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\mathcal{P}}} R[U \circ f]
+    + \sup_{g \in \mathcal{E}_{\mathcal{Q}}} R[U \circ g]
+  &\ge R[f_0]\log\frac{1}{\delta} - \log 2
+    + (1 - R[f_0])\log\frac{1}{\delta} - \log 2
+  \\
+  &= \log\frac{1}{4\delta}
   \: .
 \end{align*}
 \end{proof}
