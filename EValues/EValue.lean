@@ -8,6 +8,7 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.MeasureTheory.VectorMeasure.Decomposition.Jordan
 import Mathlib.Order.CompletePartialOrder
 import Mathlib.Probability.Kernel.Composition.MeasureComp
+import Mathlib.Probability.Kernel.Composition.IntegralCompProd
 
 /-!
 # E-variables
@@ -62,20 +63,35 @@ structure IsEVar (X : 𝓧 → ℝ≥0∞) (S : Set (Measure 𝓧)) : Prop where
 structure IsRandEVar (κ : Kernel 𝓧 ℝ≥0∞) (S : Set (Measure 𝓧)) : Prop where
   lintegral_le_one : ∀ μ ∈ S, ∫⁻ ω, ω ∂(κ ∘ₘ μ) ≤ 1
 
+structure IsRVar (X : 𝓧 → ℝ) (S : Set (Measure 𝓧)) : Prop where
+  measurable : Measurable X
+  integrable : ∀ μ ∈ S, Integrable X μ
+  integral_nonpos : ∀ μ ∈ S, ∫ ω, X ω ∂μ ≤ 0
+
+structure IsRandRVar (κ : Kernel 𝓧 ℝ) (S : Set (Measure 𝓧)) : Prop where
+  integrable : ∀ μ ∈ S, Integrable (fun ω ↦ ω) (κ ∘ₘ μ)
+  integral_nonpos : ∀ μ ∈ S, ∫ ω, ω ∂(κ ∘ₘ μ) ≤ 0
+
 lemma isRandEVar_iff_isEVar (κ : Kernel 𝓧 ℝ≥0∞) (S : Set (Measure 𝓧)) :
     IsRandEVar κ S ↔ IsEVar (fun x ↦ ∫⁻ y, y ∂κ x) S := by
-  refine ⟨fun h ↦ ⟨by fun_prop, ?_⟩, fun h ↦ ⟨?_⟩⟩
-  · intro μ hμ
-    have h' := h.lintegral_le_one μ hμ
-    -- todo: lemma missing: Measure.lintegral_comp
-    rw [Measure.comp_eq_comp_const_apply, Kernel.lintegral_comp] at h'
-    · simpa using h'
-    · fun_prop
-  · intro μ hμ
-    have h' := h.lintegral_le_one μ hμ
-    -- todo: lemma missing: Measure.lintegral_comp
-    rw [Measure.comp_eq_comp_const_apply, Kernel.lintegral_comp]
-    · simpa using h'
-    · fun_prop
+  refine ⟨fun h ↦ ⟨by fun_prop, fun μ hμ ↦ ?_⟩, fun h ↦ ⟨fun μ hμ ↦ ?_⟩⟩
+  · have h' := h.lintegral_le_one μ hμ
+    rwa [Measure.lintegral_bind (by fun_prop) (by fun_prop)] at h'
+  · rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
+    exact h.lintegral_le_one μ hμ
+
+-- lemma isRandRVar_iff_isRVar (κ : Kernel 𝓧 ℝ) (S : Set (Measure 𝓧)) :
+--     IsRandRVar κ S ↔ IsRVar (fun x ↦ ∫ y, y ∂κ x) S := by
+--   refine ⟨fun h ↦ ⟨?_, fun μ hμ ↦ ?_, fun μ hμ ↦ ?_⟩, fun h ↦ ⟨fun μ hμ ↦ ?_, fun μ hμ ↦ ?_⟩⟩
+--   · sorry
+--   · sorry
+--   · have h' := h.integral_nonpos μ hμ
+--     sorry
+--     --rwa [Measure.integral_bind (by fun_prop) (by fun_prop)] at h'
+--   · rw [Measure.ae_integrable_of_integrable_comp]
+--     sorry
+--   · have h' := h.integral_nonpos μ hμ
+--     sorry
+--     --rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
 
 end ProbabilityTheory
