@@ -76,9 +76,11 @@ lemma isRandEVar_iff_isEVar (κ : Kernel 𝓧 ℝ≥0∞) (S : Set (Measure 𝓧
     IsRandEVar κ S ↔ IsEVar (fun x ↦ ∫⁻ y, y ∂κ x) S := by
   refine ⟨fun h ↦ ⟨by fun_prop, fun μ hμ ↦ ?_⟩, fun h ↦ ⟨fun μ hμ ↦ ?_⟩⟩
   · have h' := h.lintegral_le_one μ hμ
-    rwa [Measure.lintegral_bind (by fun_prop) (by fun_prop)] at h'
-  · rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
-    exact h.lintegral_le_one μ hμ
+    rwa [Measure.lintegral_bind (by fun_prop)] at h'
+    exact measurable_id.aemeasurable
+  · rw [Measure.lintegral_bind (by fun_prop)]
+    · exact h.lintegral_le_one μ hμ
+    · exact measurable_id.aemeasurable
 
 -- lemma isRandRVar_iff_isRVar (κ : Kernel 𝓧 ℝ) (S : Set (Measure 𝓧)) :
 --     IsRandRVar κ S ↔ IsRVar (fun x ↦ ∫ y, y ∂κ x) S := by
