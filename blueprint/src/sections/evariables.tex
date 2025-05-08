@@ -320,6 +320,26 @@ The bipolar set of $S$ is the set of $E$ defined as
 \end{definition}
 
 
+\begin{lemma}\label{lem:polarSet_union}
+  \uses{def:polarSet}
+$(S \cup T)^\circ = S^\circ \cap T^\circ$.
+\end{lemma}
+
+\begin{proof}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:polarSet_anti}
+  \uses{def:polarSet}
+If $S \subseteq T$ then $T^\circ \subseteq S^\circ$ and $S^{\circ\circ} \subseteq T^{\circ\circ}$.
+\end{lemma}
+
+\begin{proof}
+
+\end{proof}
+
+
 \begin{lemma}\label{lem:polarSet_convexCone}
   \uses{def:polarSet}
 If $S \subseteq E$ is a cone, then $S^\circ$ and $S^{\circ\circ}$ are also cones and can be described by
@@ -368,6 +388,7 @@ Then $S^{\circ\circ}$ is the $\sigma(E, F)$-closure of the convex hull of $S \cu
 
 \end{proof}
 
+Note: for two convex cones $C, K$, we have $C + K = \cc(C \cup K)$.
 
 Returning to \cite{larsson2025variables}, we can observe that from $\mathcal{F} \subseteq \mathcal{L}$ the authors build the set of probability measures $\mathcal{P}^{\mathcal{F}}_{\le} = \mathcal{F}^\circ \cap \mathcal{P}(\mathcal{X})$, in which the dual pair is $\langle \mathcal{L}^{\mathcal{M}_s^{\mathcal{F}}}, \mathcal{M}_s^{\mathcal{F}} \rangle$.
 Then they build $\mathcal{L}^{\mathcal{P}^{\mathcal{F}}_{\le}}$ and $\mathcal{M}_s^{\mathcal{L}^{\mathcal{P}^{\mathcal{F}}_{\le}}}$ and put them in duality.
@@ -393,6 +414,17 @@ Then we form $\mathcal{M}_s^{\mathcal{L}^{\mathcal{M}}}$, which satisfies $\math
 $\mathcal{L}_p^{\mathcal{M}}$ is the cone of $\mathcal{M}$-a.e. nonnegative functions of $\mathcal{L}^{\mathcal{M}}$.
 
 Claim: $(\cc(\mathcal{F}) - \mathcal{L}_p^{\mathcal{M}})^\circ = \mathcal{M}$ (in $\langle \mathcal{L}^{\mathcal{M}}, \mathcal{M}_s^{\mathcal{L}^{\mathcal{M}}}\rangle$).
+
+\begin{align*}
+  (\cc(\mathcal{F}) - \mathcal{L}_p^{\mathcal{M}})^\circ
+  &= (\cc(\mathcal{F}) \cup (-\mathcal{L}_p^{\mathcal{M}}))^\circ
+  \\
+  &= \cc(\mathcal{F})^\circ \cap (-\mathcal{L}_p^{\mathcal{M}})^\circ
+  \\
+  &= \mathcal{F}^\circ \cap (-\mathcal{L}_p^{\mathcal{M}})^\circ
+\end{align*}
+
+
 
 \section{Numeraire and duality}
 
