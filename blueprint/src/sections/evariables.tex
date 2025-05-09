@@ -177,7 +177,7 @@ $\mathcal{L}^{\mathcal{M}}$ is a real vector space.
 \begin{lemma}\label{lem:integrableMeasures_anti}
   \uses{def:integrableMeasures}
 Let $\mathcal{F} \subseteq \mathcal{G} \subseteq \mathcal{L}$.
-Then $\mathcal{M}^{\mathcal{G}} \subseteq \mathcal{M}^{\mathcal{F}}$ and $\mathcal{M}_s^{\mathcal{G}} \subseteq \mathcal{M}_s^{\mathcal{F}}$.
+Then $\mathcal{M}_s^{\mathcal{G}} \subseteq \mathcal{M}_s^{\mathcal{F}}$.
 \end{lemma}
 
 \begin{proof}
@@ -198,7 +198,7 @@ Then $\mathcal{L}^{\mathcal{M}_2} \subseteq \mathcal{L}^{\mathcal{M}_1}$.
 
 \begin{lemma}\label{lem:integrableMeasures_empty}
   \uses{def:integrableMeasures}
-$\mathcal{M}^{\emptyset} = \mathcal{M}(\mathcal{X})$ and $\mathcal{M}_s^{\emptyset} = \mathcal{M}_s(\mathcal{X})$.
+$\mathcal{M}_s^{\emptyset} = \mathcal{M}_s(\mathcal{X})$.
 \end{lemma}
 
 \begin{proof}
@@ -422,7 +422,13 @@ Claim: $(\cc(\mathcal{F}) - \mathcal{L}_p^{\mathcal{M}})^\circ = \mathcal{M}$ (i
   &= \cc(\mathcal{F})^\circ \cap (-\mathcal{L}_p^{\mathcal{M}})^\circ
   \\
   &= \mathcal{F}^\circ \cap (-\mathcal{L}_p^{\mathcal{M}})^\circ
+  \\
+  &\subseteq \mathcal{F}^\circ \cap \{- \mathbb{I}_A \mid A \text{ measurable set of } \mathcal{X}\}^\circ
+  \\
+  &= \mathcal{M}
 \end{align*}
+Let $\mu \in \mathcal{M}$ and $f - g \in \cc(\mathcal{F}) - \mathcal{L}_p^{\mathcal{M}}$.
+Then $\mu[f - g] \le \mu[f]$ since $g \in \mathcal{L}_p^{\mathcal{M}}$. And $\mu[f] \le 0$ since $\mathcal{M} \subseteq \mathcal{F}^\circ = \cc(\mathcal{F})^\circ$.
 
 
 

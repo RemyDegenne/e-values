@@ -137,13 +137,34 @@ We can combine the two inequalities:
 \end{proof}
 
 
-\section{Comparison with KL data processing inequality}
+\section{Data processing inequality through KL duality}
 
-
-Let $\mathcal{P}$ and $\mathcal{Q}$ be two sets of probability measures on $\mathcal{X}$ and let $E$ be an event of $\mathcal{X}$ such that
 \begin{align*}
-  \forall P \in \mathcal{P}, \: P(E^c) &\le \delta
-  \: , \\
-  \forall Q \in \mathcal{Q}, \: Q(E) &\le \delta
+  \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[\log f]
+  &= \inf_{Q \in \mathcal{Q}_{\eff}} \KL(P, Q)
+  \\
+  &\ge \inf_{Q \in \mathcal{Q}_{\eff}} \KL(\kappa \circ P, \kappa \circ Q)
+  \\
+  &= \inf_{Q' \in \kappa \circ \mathcal{Q}_{\eff}} \KL(\kappa \circ P, Q')
+  \\
+  &\ge \inf_{Q' \in (\kappa \circ \mathcal{Q})_{\eff}} \KL(\kappa \circ P, Q')
+  \\
+  &= \sup_{g \in \mathcal{E}_{\kappa \circ \mathcal{Q}}} (\kappa \circ P)[\log g]
   \: .
 \end{align*}
+
+The first inequality is the data processing inequality for KL divergence.
+The second inequality needs a justification.
+Do we have $\kappa \circ \mathcal{Q}_{\eff} \subseteq (\kappa \circ \mathcal{Q})_{\eff}$?
+
+\begin{align*}
+  \kappa \circ \mathcal{Q}_{\eff}
+  &= \{\kappa \circ Q \mid \forall f, (\forall Q' \in \mathcal{Q}, Q'[f] \le 1) \implies Q[f] \le 1\}
+  \\
+  (\kappa \circ \mathcal{Q})_{\eff}
+  &= \{R \mid \forall f, (\forall Q' \in \mathcal{Q}, (\kappa \circ Q')[f] \le 1) \implies R[f] \le 1\}
+\end{align*}
+
+Let $\kappa \circ Q \in \kappa \circ \mathcal{Q}_{\eff}$ and $f$ such that $\forall Q' \in \mathcal{Q}, (\kappa \circ Q')[f] \le 1$. That is, $\forall Q' \in \mathcal{Q}, Q'[x \mapsto \kappa(x)[f]] \le 1$.
+Then since $Q \in \mathcal{Q}_{\eff}$, we have $Q[x \mapsto \kappa(x)[f]] \le 1$.
+We have proved that $\kappa \circ Q \in (\kappa \circ \mathcal{Q})_{\eff}$.
