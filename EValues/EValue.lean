@@ -9,6 +9,7 @@ import Mathlib.MeasureTheory.VectorMeasure.Decomposition.Jordan
 import Mathlib.Order.CompletePartialOrder
 import Mathlib.Probability.Kernel.Composition.MeasureComp
 import Mathlib.Probability.Kernel.Composition.IntegralCompProd
+import Mathlib.Probability.Notation
 
 /-!
 # E-variables
@@ -25,11 +26,12 @@ import Mathlib.Probability.Kernel.Composition.IntegralCompProd
 
 -/
 
-open scoped ENNReal
+open scoped ENNReal NNReal ProbabilityTheory
 
 open MeasureTheory ProbabilityTheory
 
-variable {𝓧 : Type*} {m𝓧 : MeasurableSpace 𝓧} {μ : Measure 𝓧} {S : Set (Measure 𝓧)}
+variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableSpace 𝓨}
+  {μ : Measure 𝓧} {S : Set (Measure 𝓧)}
 
 namespace MeasureTheory
 
@@ -114,5 +116,45 @@ lemma isRandRVar_iff_isRVar (κ : Kernel 𝓧 ℝ) (S : Set (Measure 𝓧))
     rwa [Measure.comp_eq_comp_const_apply, Kernel.integral_comp]
     sorry
     --rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
+
+lemma isEVar_comp {Y : 𝓨 → ℝ≥0∞} {S : Set (Measure 𝓧)} {φ : 𝓧 → 𝓨}
+    (hφ : Measurable φ) (h : IsEVar Y {μ.map φ | μ ∈ S}) :
+    IsEVar (Y ∘ φ) S where
+  measurable := h.measurable.comp hφ
+  lintegral_le_one μ hμ := by
+    have h' := h.lintegral_le_one (μ.map φ) ?_
+    · rwa [lintegral_map h.measurable hφ] at h'
+    · exact ⟨μ, hμ, rfl⟩
+
+lemma isRandEVar_comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)} {κ : Kernel 𝓧 𝓨}
+    (h : IsRandEVar ξ {κ ∘ₘ μ | μ ∈ S}) :
+    IsRandEVar (ξ ∘ₖ κ) S where
+  lintegral_le_one μ hμ := by
+    have h' := h.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
+    rwa [Measure.comp_assoc] at h'
+
+lemma iSup_isRandEVar_eq_iSup_isEVar (P : Measure 𝓧) (S : Set (Measure 𝓧))
+    {U : ℝ≥0∞ → ℝ} (hU : Measurable U) (hU_ccv : ConcaveOn ℝ≥0 Set.univ U) :
+    ⨆ (η : Kernel 𝓧 ℝ≥0∞) (hX : IsRandEVar η S), (η ∘ₘ P)[U]
+      = ⨆ (X : 𝓧 → ℝ≥0∞) (hX : IsEVar X S), P[U ∘ X] := by
+  sorry
+
+lemma iSup_integral_isEVar_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : 𝓧 → 𝓨}
+    (hφ : Measurable φ) {U : ℝ≥0∞ → ℝ} (hU : Measurable U) :
+    ⨆ (Y : 𝓨 → ℝ≥0∞) (hY : IsEVar Y {μ.map φ | μ ∈ S}), (P.map φ)[U ∘ Y]
+      ≤ ⨆ (X : 𝓧 → ℝ≥0∞) (hX : IsEVar X S), P[U ∘ X] := by
+  sorry
+
+lemma iSup_integral_isRandEVar_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
+    {U : ℝ≥0∞ → ℝ} (hU : Measurable U) :
+    ⨆ (ξ : Kernel 𝓨 ℝ≥0∞) (hY : IsRandEVar ξ {κ ∘ₘ μ | μ ∈ S}), (ξ ∘ₘ κ ∘ₘ P)[U]
+      ≤ ⨆ (η : Kernel 𝓧 ℝ≥0∞) (hX : IsRandEVar η S), (η ∘ₘ P)[U] := by
+  sorry
+
+lemma iSup_integral_isEVar_le' (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
+    {U : ℝ≥0∞ → ℝ} (hU : Measurable U) (hU_ccv : ConcaveOn ℝ≥0 Set.univ U) :
+    ⨆ (Y : 𝓨 → ℝ≥0∞) (hY : IsEVar Y {κ ∘ₘ μ | μ ∈ S}), (κ ∘ₘ P)[U ∘ Y]
+      ≤ ⨆ (X : 𝓧 → ℝ≥0∞) (hX : IsEVar X S), P[U ∘ X] := by
+  sorry
 
 end ProbabilityTheory

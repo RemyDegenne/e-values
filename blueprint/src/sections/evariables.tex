@@ -58,6 +58,8 @@ The next lemma shows that the larger set of randomized E-variables does not allo
 
 \begin{lemma}\label{lem:sup_randEVar}
   \uses{def:eVar, def:randEVar}
+  \leanok
+  \lean{ProbabilityTheory.iSup_isRandEVar_eq_iSup_isEVar}
 Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ be a concave function and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ a set of probability measures.
 Let $P \in \mathcal{P}(\mathcal{X})$. Then
 \begin{align*}
@@ -485,8 +487,26 @@ For a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X}
 We could also define the effective set of measures for randomized E-variables, but it actually gives the same set.
 
 
+\begin{lemma}\label{lem:effectiveSet_singleton}
+  \uses{def:effectiveSet}
+Let $Q \in \mathcal{P}(\mathcal{X})$ be a probability measure. Then $\{Q\}_{\eff} = \{Q' \in \mathcal{M}(\mathcal{X}) \mid Q' \le Q\}$, in which $Q' \le Q$ means that $Q'(A) \le Q(A)$ for all measurable sets $A \subseteq \mathcal{X}$.
+\end{lemma}
+
+\begin{proof}
+\begin{align*}
+  \{Q\}_{\eff}
+  &= \{Q' \in \mathcal{M}(\mathcal{X}) \mid \forall f, \ (\forall Q'' \in \{Q\}, Q''[f] \le 1) \implies Q'[f] \le 1\}
+  \\
+  &= \{Q' \in \mathcal{M}(\mathcal{X}) \mid \forall f, \ Q[f] \le 1 \implies Q'[f] \le 1\}
+\end{align*}
+This is the set of finite measures $\{Q' \mid Q' \le Q\}$.
+Indeed, if $Q' \le Q$, then for all $f$ with $Q[f] \le 1$, $Q'[f] \le Q[f] \le 1$.
+Conversely, if $Q'$ is such that $(\forall f, \ Q[f] \le 1 \implies Q'[f] \le 1)$, then for any measurable set $A$, we can take the measurable function $f = Q(A)^{-1} \cdot \mathbb{I}_A$ (in which $0^{-1} = \infty$) to obtain $Q'(A) \le Q(A)$.
+\end{proof}
+
+
 \begin{theorem}\label{thm:eVar_KL_duality}
-  \uses{def:numeraire, def:effectiveSet, def:ripr}
+  \uses{def:numeraire, def:effectiveSet, def:ripr, def:acSet}
 Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
 If $P \ll \mathcal{Q}$ then
 \begin{align*}
@@ -494,15 +514,44 @@ If $P \ll \mathcal{Q}$ then
   = \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[\log f]
   = \inf_{\mu \in \mathcal{Q}_{\eff}} \KL^{todo}(P, \mu)
   = \KL^{todo}(P, P^*_{\mathcal{Q}})
+  \: .
 \end{align*}
 \end{theorem}
 
 TODO: check the precise definition of $\KL^{todo}$ on finite measures.
 
 \begin{proof}
+  \uses{thm:exists_numeraire}
 
 \end{proof}
 
+
+\begin{lemma}\label{lem:sup_eVar_singleton}
+  \uses{def:eVar}
+Let $P, Q \in \mathcal{P}(\mathcal{X})$ be two probability measures with $P \ll Q$.
+Then
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\{Q\}}} P[\log f]
+  = \KL(P, Q)
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{thm:eVar_KL_duality, lem:effectiveSet_singleton}
+Since $\KL$ is non-increasing in the second argument,
+\begin{align*}
+  \inf_{Q' \le Q} \KL(P, Q') = \KL(P, Q) \: .
+\end{align*}
+Since $\{Q\}_{\eff} = \{Q' \in \mathcal{M}(\mathcal{X}) \mid Q' \le Q\}$ (Lemma~\ref{lem:effectiveSet_singleton}), we obtained $\KL(P, Q) = \inf_{Q' \in \{Q\}_{\eff}} \KL(P, Q')$.
+By the duality of numeraire and $\KL$ divergence (Theorem~\ref{thm:eVar_KL_duality}), we have
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\{Q\}}} P[\log f]
+  = \inf_{Q' \in \{Q\}_{\eff}} \KL(P, Q')
+  = \KL(P, Q)
+  \: .
+\end{align*}
+\end{proof}
 
 
 \section{Examples}

@@ -5,6 +5,8 @@
 
 \begin{lemma}\label{lem:randEVar_comp}
   \uses{def:randEVar}
+  \leanok
+  \lean{ProbabilityTheory.isEVar_comp, ProbabilityTheory.isRandEVar_comp}
 Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and let $\phi : \mathcal{X} \to \mathcal{Y}$ be a measurable function and $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be a Markov kernel.
 Then
 \begin{enumerate}
@@ -13,7 +15,7 @@ Then
 \end{enumerate}
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\leanok
 For $Q \in \mathcal{Q}$,
 \begin{align*}
   Q[g \circ \phi]
@@ -30,6 +32,9 @@ For $Q \in \mathcal{Q}$,
 
 \begin{theorem}[Data processing inequality with E-variables]\label{thm:dataprocessing}
   \uses{def:eVar}
+  \leanok
+  \lean{ProbabilityTheory.iSup_integral_isEVar_le, ProbabilityTheory.iSup_integral_isRandEVar_le,
+    ProbabilityTheory.iSup_integral_isEVar_le'}
 Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and $P \in \mathcal{P}(\mathcal{X})$.
 Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$.
 Then for all measurable functions $\phi : \mathcal{X} \to \mathcal{Y}$ and all Markov kernels $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$,
@@ -63,6 +68,35 @@ The argument for the first inequality is similar.
 If $U$ is concave, we can use Lemma~\ref{lem:sup_randEVar} to obtain the data-processing with a Markov kernel for e-variables from the result for randomized e-variables.
 \end{proof}
 
+\paragraph{KL data processing from e-variables}
+
+The data processing inequality for the numeraire utility implies the data processing inequality for KL divergences.
+
+\begin{theorem}\label{thm:dataprocessing_kl}
+  \uses{def:eVar}
+  Let $P, Q \in \mathcal{P}(\mathcal{X})$.
+  Then for all Markov kernels $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$,
+  \begin{align*}
+    \KL(P, Q)
+    &\ge \KL(\kappa \circ P, \kappa \circ Q)
+    \: .
+  \end{align*}
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:sup_eVar_singleton, thm:dataprocessing}
+By Lemma~\ref{lem:sup_eVar_singleton}, $\KL(P, Q) = \sup_{f \in \mathcal{E}_{\{Q\}}} P[\log f]$.
+Then by Theorem~\ref{thm:dataprocessing}, we have
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\{Q\}}} P[\log f]
+  &\ge \sup_{g \in \mathcal{E}_{\{\kappa \circ Q\}}} (\kappa \circ P)[\log g]
+  \: .
+\end{align*}
+And that last term is $\KL(\kappa \circ P, \kappa \circ Q)$, again by Lemma~\ref{lem:sup_eVar_singleton}.
+\end{proof}
+
+
+\section{Separation lower bound}
 
 \begin{lemma}\label{lem:separation_lower_bound}
   \uses{def:eVar}
@@ -135,6 +169,7 @@ We can combine the two inequalities:
   \: .
 \end{align*}
 \end{proof}
+
 
 
 \section{Data processing inequality through KL duality}
