@@ -433,6 +433,17 @@ Let $\mu \in \mathcal{M}$ and $f - g \in \cc(\mathcal{F}) - \mathcal{L}_p^{\math
 Then $\mu[f - g] \le \mu[f]$ since $g \in \mathcal{L}_p^{\mathcal{M}}$. And $\mu[f] \le 0$ since $\mathcal{M} \subseteq \mathcal{F}^\circ = \cc(\mathcal{F})^\circ$.
 
 
+\begin{theorem}\label{thm:eVar_fin_generated}
+  \uses{def:eVar}
+Let $\Phi = \{\phi_1, \ldots, \phi_d\}$ be a set of measurable functions from $\mathcal{X}$ to $\mathbb{R}$.
+Let $\mathcal{P}^\Phi = \{P \in \mathcal{P}(\mathcal{X}) \mid \forall \phi \in \Phi, \ P[\vert \phi \vert] < \infty \text{ and } P[\phi] \le 0\}$.
+Then $\mathcal{E}_{\mathcal{P}^\Phi}$ is equal to the set of all measurable functions $f : \mathcal{X} \to \mathbb{R}_{+, \infty}$ such that $f$ is $\mathcal{P}^{\Phi}$-a.e. lower or equal to a function of the form $1 + \sum_{i=1}^d \lambda_i \phi_i$ for some $\lambda_i \ge 0$.
+\end{theorem}
+
+\begin{proof}
+See \cite[Theorem 3.1]{larsson2025variables}.
+\end{proof}
+
 
 \section{Numeraire and duality}
 
@@ -456,6 +467,73 @@ Then $f$ is a numeraire for $(P, \mathcal{Q})$ if and only if $P[\log \frac{g}{f
 \end{proof}
 
 
+\paragraph{Existence of a numeraire.}
+
+
+\begin{lemma}\label{lem:exists_mem_conv_tendsto}
+Let $(X_n)_{n \in \mathbb{N}}$ be a sequence of measurable functions from $\mathcal{X}$ to $\mathbb{R}_{+,\infty}$ and let $Q \in \mathcal{P}(\mathcal{X})$.
+There exists a sequence of measurable functions $\tilde{X}_n \in \mathrm{conv}(X_n, X_{n+1}, \ldots)$ and $X : \mathcal{X} \to \mathbb{R}_{+, \infty}$ such that $\tilde{X}_n \to X$ $Q$-almost surely.
+\end{lemma}
+
+\begin{proof}
+It suffices to find a sequence of measurable functions $\tilde{X}_n$ and an $X$ such that $\tilde{X}_n \to X$ in probability, since we can then obtain a.e. convergence for a sub-sequence (Mathlib's lemma \href{https://leanprover-community.github.io/mathlib4_docs/Mathlib/MeasureTheory/Function/ConvergenceInMeasure.html#MeasureTheory.TendstoInMeasure.exists_seq_tendsto_ae}{TendstoInMeasure.exists\_seq\_tendsto\_ae}).
+
+TODO
+\end{proof}
+
+
+\begin{lemma}\label{lem:exists_integral_utility_eq_sup}
+  \uses{def:eVar}
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ a concave function which is bounded from above.
+Then there exists $f^* \in \mathcal{E}_{\mathcal{Q}}$ such that
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U(f)]
+  &= P[U(f^*)]
+  \: .
+\end{align*}
+\end{lemma}
+
+The properties of $\mathcal{E}_{\mathcal{Q}}$ we use for the proof of this lemma are convexity and the fact that if $f_n \in \mathcal{E}_{\mathcal{Q}}$ then $\liminf_{n \to \infty} f_n \in \mathcal{E}_{\mathcal{Q}}$.
+
+\begin{proof}
+  \uses{lem:exists_mem_conv_tendsto}
+Let $(f_n)_{n \in \mathbb{N}}$ be a sequence of e-variables in $\mathcal{E}_{\mathcal{Q}}$ such that $n \mapsto P[U(f_n)]$ is non-decreasing and $P[U(f_n)] \to \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U(f)]$.
+Let $\tilde{f}_n$ be a sequence of measurable functions and let $\tilde{f} : \mathcal{X} \to \mathbb{R}_{+, \infty}$, with $\tilde{f}_n \in \mathrm{conv}(f_n, f_{n+1}, \ldots)$ such that $\tilde{f}_n \to \tilde{f}$ $P$-almost surely.
+That sequence exists by Lemma~\ref{lem:exists_mem_conv_tendsto}.
+By convexity of $\mathcal{E}_{\mathcal{Q}}$, $\tilde{f}_n \in \mathcal{E}_{\mathcal{Q}}$ for all $n$.
+
+Let $f^* = \liminf_{n \to \infty} \tilde{f}_n$. Note that $f^*$ is a measurable function such that $f^* = \tilde{f}$ $P$-almost surely.
+We have $f^* \in \mathcal{E}_{\mathcal{Q}}$ by an application of Fatou's lemma: for $Q \in \mathcal{Q}$,
+\begin{align*}
+  Q[f^*]
+  = Q[\liminf_{n \to \infty} \tilde{f}_n]
+  \le \liminf_{n \to \infty} Q[\tilde{f}_n]
+  \le 1
+  \: .
+\end{align*}
+
+By concavity of $U$ and the fact that $P[U(f_n)]$ is non-decreasing, we have
+\begin{align*}
+  P[U(\tilde{f}_n)]
+  &= P[U(\sum_{i=n}^{m_n} \lambda_{n,i} f_{i})]
+  \ge \sum_{i=n}^{m_n} \lambda_{n,i} P[U(f_{i})]
+  \ge P[U(f_n)]
+  \: .
+\end{align*}
+
+We also have $f^* = \limsup_{n \to \infty} \tilde{f}_n$ $P$-almost surely, hence by Fatou's lemma (using that $U$ is bounded from above),
+\begin{align*}
+  P[U(f^*)]
+  &= P[U(\limsup_{n \to \infty} \tilde{f}_n)]
+  \ge \limsup_{n \to \infty} P[U(\tilde{f}_n)]
+  \ge \limsup_{n \to \infty} P[U(f_n)]
+  = \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U(f)]
+  \: .
+\end{align*}
+Since $f^* \in \mathcal{E}_{\mathcal{Q}}$, we also have $P[U(f^*)] \le \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U(f)]$, which proves the equality.
+\end{proof}
+
+
 \begin{theorem}\label{thm:exists_numeraire}
   \uses{def:numeraire}
 Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
@@ -468,6 +546,8 @@ A numeraire for $(P, \mathcal{Q})$ exists and is $P$-a.e. unique.
 
 We will write $E^*_{P, \mathcal{Q}}$ for the numeraire for $(P, \mathcal{Q})$.
 
+
+\paragraph{Reverse information projection and duality.}
 
 \begin{definition}\label{def:ripr}
   \uses{def:numeraire, thm:exists_numeraire}
@@ -487,6 +567,17 @@ For a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X}
 We could also define the effective set of measures for randomized E-variables, but it actually gives the same set.
 
 
+\begin{lemma}\label{lem:convex_effectiveSet}
+  \uses{def:effectiveSet}
+  Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures.
+The effective set $\mathcal{Q}_{\eff}$ is convex and satisfies $0 \in \mathcal{Q}_{\eff}$ and $\mathcal{Q} \subseteq \mathcal{Q}_{\eff}$.
+\end{lemma}
+
+\begin{proof}
+
+\end{proof}
+
+
 \begin{lemma}\label{lem:effectiveSet_singleton}
   \uses{def:effectiveSet}
 Let $Q \in \mathcal{P}(\mathcal{X})$ be a probability measure. Then $\{Q\}_{\eff} = \{Q' \in \mathcal{M}(\mathcal{X}) \mid Q' \le Q\}$, in which $Q' \le Q$ means that $Q'(A) \le Q(A)$ for all measurable sets $A \subseteq \mathcal{X}$.
@@ -504,6 +595,48 @@ Indeed, if $Q' \le Q$, then for all $f$ with $Q[f] \le 1$, $Q'[f] \le Q[f] \le 1
 Conversely, if $Q'$ is such that $(\forall f, \ Q[f] \le 1 \implies Q'[f] \le 1)$, then for any measurable set $A$, we can take the measurable function $f = Q(A)^{-1} \cdot \mathbb{I}_A$ (in which $0^{-1} = \infty$) to obtain $Q'(A) \le Q(A)$.
 \end{proof}
 
+
+\begin{lemma}\label{lem:effectiveSet_comp_subset}
+  \uses{def:effectiveSet}
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ and let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be a Markov kernel.
+Then $\kappa \circ \mathcal{Q}_{\eff} \subseteq (\kappa \circ \mathcal{Q})_{\eff}$.
+\end{lemma}
+
+\begin{proof}
+  \begin{align*}
+    \kappa \circ \mathcal{Q}_{\eff}
+    &= \{\kappa \circ Q \mid \forall f, (\forall Q' \in \mathcal{Q}, Q'[f] \le 1) \implies Q[f] \le 1\}
+    \\
+    (\kappa \circ \mathcal{Q})_{\eff}
+    &= \{R \mid \forall f, (\forall Q' \in \mathcal{Q}, (\kappa \circ Q')[f] \le 1) \implies R[f] \le 1\}
+  \end{align*}
+
+  Let $\kappa \circ Q \in \kappa \circ \mathcal{Q}_{\eff}$ and $f$ such that $\forall Q' \in \mathcal{Q}, (\kappa \circ Q')[f] \le 1$. That is, $\forall Q' \in \mathcal{Q}, Q'[x \mapsto \kappa(x)[f]] \le 1$.
+  Then since $Q \in \mathcal{Q}_{\eff}$, we have $Q[x \mapsto \kappa(x)[f]] \le 1$.
+  We have proved that $\kappa \circ Q \in (\kappa \circ \mathcal{Q})_{\eff}$.
+\end{proof}
+
+
+\begin{lemma}\label{lem:effectiveSet_mono}
+  \uses{def:effectiveSet}
+Let $\mathcal{Q}_1 \subseteq \mathcal{Q}_2 \subseteq \mathcal{P}(\mathcal{X})$ be two sets of probability measures.
+Then $\mathcal{Q}_{1, \eff} \subseteq \mathcal{Q}_{2, \eff}$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:eVarSet_anti}
+Since $\mathcal{Q}_1 \subseteq \mathcal{Q}_2$ we have $\mathcal{E}_{\mathcal{Q}_2} \subseteq \mathcal{E}_{\mathcal{Q}_1}$ (Lemma~\ref{lem:eVarSet_anti}).
+Then
+\begin{align*}
+  \mathcal{Q}_{1, \eff}
+  &= \{\mu \in \mathcal{M}_+(\mathcal{X}) \mid \forall f \in \mathcal{E}_{\mathcal{Q}_1}, \: \mu[f] \le 1\}
+  \\
+  &\subseteq \{\mu \in \mathcal{M}_+(\mathcal{X}) \mid \forall f \in \mathcal{E}_{\mathcal{Q}_2}, \: \mu[f] \le 1\}
+  \\
+  &= \mathcal{Q}_{2, \eff}
+  \: .
+\end{align*}
+\end{proof}
 
 \begin{theorem}\label{thm:eVar_KL_duality}
   \uses{def:numeraire, def:effectiveSet, def:ripr, def:acSet}
