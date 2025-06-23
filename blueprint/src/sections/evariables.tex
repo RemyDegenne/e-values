@@ -59,7 +59,7 @@ The next lemma shows that the larger set of randomized E-variables does not allo
 \begin{lemma}\label{lem:sup_randEVar}
   \uses{def:eVar, def:randEVar}
   \leanok
-  \lean{ProbabilityTheory.iSup_isRandEVar_eq_iSup_isEVar}
+  \lean{ProbabilityTheory.maxRandUtility_eq_maxUtility}
 Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ be a concave function and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ a set of probability measures.
 Let $P \in \mathcal{P}(\mathcal{X})$. Then
 \begin{align*}
@@ -467,7 +467,7 @@ Then $f$ is a numeraire for $(P, \mathcal{Q})$ if and only if $P[\log \frac{g}{f
 \end{proof}
 
 
-\paragraph{Existence of a numeraire.}
+\subsection{Existence of a numeraire.}
 
 
 \begin{lemma}\label{lem:exists_mem_conv_tendsto}
@@ -534,7 +534,7 @@ Since $f^* \in \mathcal{E}_{\mathcal{Q}}$, we also have $P[U(f^*)] \le \sup_{f \
 \end{proof}
 
 
-\begin{theorem}\label{thm:exists_numeraire}
+\begin{theorem}[Existence of the numeraire]\label{thm:exists_numeraire}
   \uses{def:numeraire}
 Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
 A numeraire for $(P, \mathcal{Q})$ exists and is $P$-a.e. unique.
@@ -545,6 +545,24 @@ A numeraire for $(P, \mathcal{Q})$ exists and is $P$-a.e. unique.
 \end{proof}
 
 We will write $E^*_{P, \mathcal{Q}}$ for the numeraire for $(P, \mathcal{Q})$.
+
+
+\begin{lemma}\label{lem:numeraire_mono}
+  \uses{def:numeraire}
+Let $\mathcal{Q}_1 \subseteq \mathcal{Q}_2$. If $f^*$ is a numeraire for $(P, \mathcal{Q}_1)$ and $f^* \in \mathcal{E}_{\mathcal{Q}_2}$ then $f^*$ is also a numeraire for $(P, \mathcal{Q}_2)$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:eVarSet_anti}
+For $f \in \mathcal{E}_{\mathcal{Q}_2}$, we have $f \in \mathcal{E}_{\mathcal{Q}_1}$ since $\mathcal{Q}_1 \subseteq \mathcal{Q}_2$.
+Then $P\left[f/f^*\right] \le 1$ by the numeraire property for $(P, \mathcal{Q}_1)$.
+Thus $f^*$ is a numeraire for $(P, \mathcal{Q}_2)$.
+\end{proof}
+
+
+
+
+\subsection{Compositions and products}
 
 
 \begin{theorem}[Numeraire of a product]\label{thm:numeraire_prod}
@@ -565,6 +583,14 @@ Its logarithmic utility is given by
 \end{theorem}
 
 \begin{proof}\uses{thm:exists_numeraire}
+We first need to check that $E^*_{P_1, \mathcal{Q}_1} E^*_{P_2, \mathcal{Q}_2}$ is in $\mathcal{E}_{\mathcal{Q}_1 \times \mathcal{Q}_2}$. For $Q_1 \in \mathcal{Q}_1$ and $Q_2 \in \mathcal{Q}_2$, we have
+\begin{align*}
+  (Q_1 \times Q_2)\left[E^*_{P_1, \mathcal{Q}_1} E^*_{P_2, \mathcal{Q}_2}\right]
+  &= Q_1[E^*_{P_1, \mathcal{Q}_1}] Q_2[E^*_{P_2, \mathcal{Q}_2}]
+  \le 1
+  \: .
+\end{align*}
+Let's now check the numeraire property.
 Let $f \in \mathcal{E}_{\mathcal{Q}_1 \times \mathcal{Q}_2}$. Let $E^*_1 = E^*_{P_1, \mathcal{Q}_1}$ and $E^*_2 = E^*_{P_2, \mathcal{Q}_2}$.
 \begin{align*}
   (P_1 \times P_2)\left[\frac{f}{E^*_1 E^*_2} \right]
@@ -596,15 +622,202 @@ Let $Q_2 \in \mathcal{Q}_2$. Then
 The last inequality holds since $f \in \mathcal{E}_{\mathcal{Q}_1 \times \mathcal{Q}_2}$.
 \end{proof}
 
-\paragraph{Reverse information projection and duality.}
+
+\begin{lemma}\label{lem:eVar_integral_kernel}
+  \uses{def:eVar}
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ and $H \subseteq (\mathcal{X} \rightsquigarrow \mathcal{Y})$ be a set of Markov kernels.
+If $f \in \mathcal{E}_{\mathcal{Q}\otimes H}$ then for all $\eta \in H$, the function $x \mapsto \eta(x)[f(x, \cdot)]$ is in $\mathcal{E}_{\mathcal{Q}}$.
+\end{lemma}
+
+\begin{proof}
+For $Q \in \mathcal{Q}$ and $f \in \mathcal{E}_{\mathcal{Q}\otimes H}$, $Q[x \mapsto \eta(x)[f]] = (Q \otimes \eta)[f] \le 1$, hence $(x \mapsto \eta(x)[f(x, \cdot)]) \in \mathcal{E}_{\mathcal{Q}}$.
+\end{proof}
+
+
+\begin{lemma}\label{lem:numeraire_compProd_same_kernel}
+  \uses{def:numeraire}
+$E^*_{P \otimes \kappa, \mathcal{Q} \otimes \kappa} =_{(P\otimes \kappa) a.e.} (x, y) \mapsto E^*_{P, \mathcal{Q}}(x)$ for any Markov kernel $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:eVar_integral_kernel}
+First we need to show that $E^*_{P, \mathcal{Q}}$ is in $\mathcal{E}_{\mathcal{Q} \otimes \kappa}$.
+It is measurable and for $Q \in \mathcal{Q}$,
+\begin{align*}
+  (Q \otimes \kappa)\left[E^*_{P, \mathcal{Q}}\right]
+  = Q\left[E^*_{P, \mathcal{Q}}\right]
+  \le 1
+  \: .
+\end{align*}
+We then check the numeraire condition.
+By Lemma~\ref{lem:eVar_integral_kernel}, $(x \mapsto \kappa(x)[f]) \in \mathcal{E}_{\mathcal{Q}}$.
+By the definition of the numeraire, we then have
+\begin{align*}
+  P\left[\frac{\kappa(x)[f]}{E^*_{P, \mathcal{Q}}}\right]
+  \le 1
+  \: .
+\end{align*}
+That is, $(P \otimes \kappa)\left[\frac{f}{E^*_{P, \mathcal{Q}}}\right] \le 1$ for all $f \in \mathcal{E}_{\mathcal{Q}\otimes \kappa}$.
+We have proved that $E^*_{P, \mathcal{Q}}$ is the numeraire for $(P \otimes \kappa, \mathcal{Q} \otimes \kappa)$.
+\end{proof}
+
+
+\begin{theorem}\label{thm:numeraire_compProd_le}
+  \uses{def:numeraire}
+For any $f \in \mathcal{E}_{\mathcal{Q} \otimes H}$, we have
+\begin{align*}
+  (P \otimes \kappa)\left[\frac{f}{E^*_{P, \mathcal{Q}}E^*_{P \otimes \kappa, \{P\} \otimes H}}\right]
+  &\le 1
+  \: .
+\end{align*}
+Note that this proves the numeraire property for the candidate $E^*_{P, \mathcal{Q}}E^*_{P \otimes \kappa, P \otimes H}$, but we don't know if it is an e-variable, so can't conclude that it's the numeraire.
+As a consequence,
+\begin{align*}
+  (P \otimes \kappa)\left[\log E^*_{P \otimes \kappa, \mathcal{Q} \otimes H}\right]
+  \le P\left[\log E^*_{P, \mathcal{Q}}\right] + (P \otimes \kappa)\left[\log E^*_{P\otimes \kappa, \{P\} \otimes H}\right]
+  \: .
+\end{align*}
+If $E^*_{P, \mathcal{Q}}E^*_{P \otimes \kappa, \{P\} \otimes H}$ was an e-variable, then we would have equality.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:numeraire_compProd_same_kernel}
+Let $f \in \mathcal{E}_{\mathcal{Q} \otimes H}$.
+\begin{align*}
+  (P \otimes \kappa)\left[\frac{f}{E^*_{P, \mathcal{Q}}E^*_{P \otimes \kappa, P \otimes H}}\right]
+  &= (P \otimes \kappa)\left[\frac{f/E^*_{P, \mathcal{Q}}}{E^*_{P \otimes \kappa, P \otimes H}}\right]
+  \: .
+\end{align*}
+It suffices to show that $f/E^*_{P, \mathcal{Q}}$ is in $\mathcal{E}_{P \otimes H}$ to obtain that this is less than 1 by the numeraire property.
+Let $\eta \in H$. By Lemma~\ref{lem:numeraire_compProd_same_kernel},
+\begin{align*}
+  (P \otimes \eta) \left[\frac{f}{E^*_{P, \mathcal{Q}}}\right]
+  &= (P \otimes \eta) \left[\frac{f}{E^*_{P \otimes \eta, \mathcal{Q} \otimes \eta}}\right]
+\end{align*}
+and since $f \in \mathcal{E}_{\mathcal{Q} \otimes H}$ it is in $\mathcal{E}_{\mathcal{Q} \otimes \eta}$ and the numeraire property gives that this ratio is less than or equal to 1.
+We conclude that $E^*_{P, \mathcal{Q}}E^*_{P \otimes \kappa, P \otimes H}$ satisfies the numeraire property.
+
+We then have
+\begin{align*}
+  (P \otimes \kappa)\left[\log \frac{f}{E^*_{P, \mathcal{Q}}E^*_{P \otimes \kappa, P \otimes H}}\right]
+  &\le \log \left( (P \otimes \kappa)\left[\frac{f}{E^*_{P, \mathcal{Q}}E^*_{P \otimes \kappa, P \otimes H}}\right] \right)
+  \le 0
+  \: .
+\end{align*}
+We conclude that
+\begin{align*}
+  P[\log f]
+  \le P\left[\log E^*_{P, \mathcal{Q}}\right] + (P \otimes \kappa)\left[\log E^*_{P \otimes \kappa, P \otimes H}\right]
+  \: .
+\end{align*}
+Taking the supremum over $f \in \mathcal{E}_{\mathcal{Q} \otimes H}$, we obtain the desired inequality.
+\end{proof}
+
+
+\begin{definition}\label{def:condEVar}
+  \uses{def:eVar}
+A jointly measurable function $f : \mathcal{X} \times \mathcal{Y} \to \mathbb{R}_{+, \infty}$ is a conditional e-variable for a set of Markov kernels $H \subseteq (\mathcal{X} \rightsquigarrow \mathcal{Y})$ if $f(x, \cdot)$ is in $\mathcal{E}_{H(x)}$ for all $x \in \mathcal{X}$ (in which $H(x) = \{\eta(x) \mid \eta \in H\}$).
+We denote the set of conditional e-variables for $H$ by $\mathcal{E}_H$.
+\end{definition}
+
+
+\begin{definition}\label{def:condNumeraire}
+  \uses{def:condEVar, def:numeraire}
+Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be a Markov kernel and $H \subseteq (\mathcal{X} \rightsquigarrow \mathcal{Y})$ a set of Markov kernels.
+A conditional e-variable $f$ for $H$ is a conditional numeraire for $(\kappa, H)$ if for all $x \in \mathcal{X}$, the function $f(x, \cdot)$ is a numeraire for $(\kappa(x), H(x))$.
+We denote the conditional numeraire for $(\kappa, H)$ by $E^*_{\kappa, H}$ (if it exists).
+\end{definition}
+
+
+As we will see, conditional numeraires are not always guaranteed to exist.
+
+Question: is there always a $P$-a.e. conditional numeraire? That is, a jointly measurable function $f$ such that $f(x, \cdot)$ is a numeraire for $(\kappa(x), H(x))$ for only $P$-almost all $x \in \mathcal{X}$ instead of all $x \in \mathcal{X}$?
+
+
+\begin{lemma}\label{lem:condNumeraire_singleton}
+  \uses{def:condNumeraire}
+If there exists a conditional numeraire for $(\kappa, \{\eta\})$, then $1/E^*_{\kappa, \{\eta\}}$ is a Radon-Nikodym derivative for $\eta$ with respect to $\kappa$.
+\end{lemma}
+
+\begin{proof}
+$1/E^*_{\kappa, \{\eta\}}$ is jointly measurable and satisfies for all $x \in \mathcal{X}$, $1/E^*_{\kappa, \{\eta\}}(x, \cdot) =_{a.e.} \frac{d\eta(x)}{d \kappa(x)}$ since that's the numeraire for a singleton.
+That's the definition of a Radon-Nikodym derivative of kernels.
+\end{proof}
+
+The last lemma implies that $E^*_{\kappa, H}$ will not always exist.
+Indeed, Radon-Nikodym derivatives of kernels do not always exist, although weak hypotheses on $\mathcal{X}$ or $\mathcal{Y}$ can ensure that they do.
+$\mathcal{X}$ being countable or $\mathcal{Y}$ having countably generated sigma-algebra (for example $\mathcal{Y}$ standard Borel) is enough.
+
+\begin{theorem}\label{thm:numeraire_compProd_of_condNumeraire}
+  \uses{def:condNumeraire}
+If a conditional numeraire exists for $(\kappa, H)$, then
+$E^*_{P \otimes \kappa, \mathcal{Q} \otimes H} =_{a.e.} E^*_{P, \mathcal{Q}}E^*_{\kappa, H}$.
+\end{theorem}
+
+\begin{proof}
+  \uses{thm:numeraire_compProd_le}
+$E^*_{\kappa, H}$ is a numeraire for $(P \otimes \kappa, \{P\} \otimes H)$, so we get the numeraire property as in Theorem~\ref{thm:numeraire_compProd_le}.
+We now prove that $E^*_{P, \mathcal{Q}}E^*_{\kappa, H} \in \mathcal{E}_{\mathcal{Q} \otimes H}$.
+Let $Q \in \mathcal{Q}$ and $\eta \in H$.
+\begin{align*}
+  (Q \otimes \eta)\left[E^*_{P, \mathcal{Q}}E^*_{\kappa, H}\right]
+  &= Q\left[x \mapsto E^*_{P, \mathcal{Q}}(x) \eta(x)\left[E^*_{\kappa(x), H(x)}\right] \right]
+  \: .
+\end{align*}
+For all $x$, $\eta(x)\left[E^*_{\kappa(x), H(x)}\right] \le 1$, since $E^*_{\kappa(x), H(x)}$ is an e-variable for $H(x)$.
+\begin{align*}
+  (Q \otimes \eta)\left[E^*_{P, \mathcal{Q}}E^*_{\kappa, H}\right]
+  &\le Q\left[x \mapsto E^*_{P, \mathcal{Q}}(x)\right]
+  \le 1
+  \: .
+\end{align*}
+\end{proof}
+
+
+\begin{lemma}\label{lem:exists_condNumeraire_of_countable}
+  \uses{def:condNumeraire}
+Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be a Markov kernel and $H \subseteq (\mathcal{X} \rightsquigarrow \mathcal{Y})$ a set of Markov kernels.
+If $\mathcal{X}$ is countable with measurable singletons then there exists a conditional numeraire for $(\kappa, H)$.
+\end{lemma}
+
+\begin{proof}
+For each $x \in \mathcal{X}$, we can apply Theorem~\ref{thm:exists_numeraire} to the Markov kernel $\kappa(x)$ and the set of kernels $H(x)$ to obtain a numeraire $E^*_{\kappa(x), H(x)}$.
+If $\mathcal{X}$ is countable, we can simply take the function $E^*_{\kappa, H}(x,y) = E^*_{\kappa(x), H(x)}(y)$, and the countability ensures the joint measurability.
+\end{proof}
+
+
+\begin{theorem}\label{thm:exists_condNumeraire}
+  \uses{def:condNumeraire}
+Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be a Markov kernel and $H \subseteq (\mathcal{X} \rightsquigarrow \mathcal{Y})$ a set of Markov kernels.
+If either $\mathcal{X}$ is countable or $\mathcal{Y}$ is countably generated, then there exists a conditional numeraire for $(\kappa, H)$.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:exists_condNumeraire_of_countable}
+The case of countable $\mathcal{X}$ is covered by Lemma~\ref{lem:exists_condNumeraire_of_countable}. (TODO: only for measurable singletons though)
+
+TODO: $\kappa \ll H$ hyp?
+
+Let's now consider the case where $\mathcal{Y}$ is countably generated.
+Then there exists a sequence of finer and finer partitions of $\mathcal{Y}$ into finitely many measurable sets $(A_{n,m})_{n \in \mathbb{N}, m \le 2^n}$ with $\mathcal{Y} = \bigcup_{m \le 2^n} A_{n,m}$ for all $n$, and such that the sigma-algebra on $\mathcal{Y}$ is the $\sigma$-algebra generated by the sets $A_{n,m}$.
+Let $\mathcal{F}$ be the filtration generated by the successive partitions, that is, $\mathcal{F}_n = \sigma(\{A_{n,m} \mid m \le 2^n\})$.
+
+TODO
+\end{proof}
+
+
+
+
+\subsection{Reverse information projection and duality.}
 
 \begin{definition}\label{def:ripr}
   \uses{def:numeraire, thm:exists_numeraire}
 Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
-The reverse information projection (RIPr) of $P$ onto $\mathcal{Q}$ is the measure $P^*_{\mathcal{Q}}$ absolutely continuous with respect to $P$ such that
+The reverse information projection (RIPr) of $P$ onto $\mathcal{Q}$ is the finite measure $P^*_{\mathcal{Q}}$ absolutely continuous with respect to $P$ such that
 \begin{align*}
   \frac{dP^*_{\mathcal{Q}}}{dP} = \frac{1}{E^*_{P, \mathcal{Q}}} \: .
 \end{align*}
+It satisfies $P^*_{\mathcal{Q}}[\mathcal{X}] \le 1$ and the inequality can be strict.
 \end{definition}
 
 
@@ -687,6 +900,18 @@ Then
 \end{align*}
 \end{proof}
 
+Let $\KL(P, Q)$ be the Kullback-Leibler divergence from $P$ to $Q$, defined for finite measures as
+\begin{align*}
+  \KL(P, Q)
+  &= \begin{cases}
+    P[\log \frac{dP}{dQ}] & \text{if } P \ll Q \\
+    +\infty & \text{otherwise}
+  \end{cases}
+  \: .
+\end{align*}
+Note that we don't correct the divergence if $P$ and $Q$ are not probability measures.
+
+
 \begin{theorem}\label{thm:eVar_KL_duality}
   \uses{def:numeraire, def:effectiveSet, def:ripr, def:acSet}
 Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
@@ -694,13 +919,11 @@ If $P \ll \mathcal{Q}$ then
 \begin{align*}
   P[\log E^*_{P, \mathcal{Q}}]
   = \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[\log f]
-  = \inf_{\mu \in \mathcal{Q}_{\eff}} \KL^{todo}(P, \mu)
-  = \KL^{todo}(P, P^*_{\mathcal{Q}})
+  = \inf_{\mu \in \mathcal{Q}_{\eff}} \KL(P, \mu)
+  = \KL(P, P^*_{\mathcal{Q}})
   \: .
 \end{align*}
 \end{theorem}
-
-TODO: check the precise definition of $\KL^{todo}$ on finite measures.
 
 \begin{proof}
   \uses{thm:exists_numeraire}

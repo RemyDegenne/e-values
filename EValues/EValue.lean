@@ -75,8 +75,9 @@ structure IsEVar (X : 𝓧 → ℝ≥0∞) (S : Set (Measure 𝓧)) : Prop where
 structure IsRandEVar (κ : Kernel 𝓧 ℝ≥0∞) (S : Set (Measure 𝓧)) : Prop where
   lintegral_le_one : ∀ μ ∈ S, ∫⁻ ω, ω ∂(κ ∘ₘ μ) ≤ 1
 
-lemma isRandEVar_iff_isEVar (κ : Kernel 𝓧 ℝ≥0∞) (S : Set (Measure 𝓧)) :
-    IsRandEVar κ S ↔ IsEVar (fun x ↦ ∫⁻ y, y ∂κ x) S := by
+variable {X Y : 𝓧 → ℝ≥0∞} {κ η : Kernel 𝓧 ℝ≥0∞} {S T : Set (Measure 𝓧)}
+
+lemma isRandEVar_iff_isEVar : IsRandEVar κ S ↔ IsEVar (fun x ↦ ∫⁻ y, y ∂κ x) S := by
   refine ⟨fun h ↦ ⟨by fun_prop, fun μ hμ ↦ ?_⟩, fun h ↦ ⟨fun μ hμ ↦ ?_⟩⟩
   · have h' := h.lintegral_le_one μ hμ
     rwa [Measure.lintegral_bind (by fun_prop)] at h'
@@ -85,39 +86,38 @@ lemma isRandEVar_iff_isEVar (κ : Kernel 𝓧 ℝ≥0∞) (S : Set (Measure 𝓧
     · exact h.lintegral_le_one μ hμ
     · exact measurable_id.aemeasurable
 
-structure IsRVar (X : 𝓧 → ℝ) (S : Set (Measure 𝓧)) : Prop where
-  measurable : Measurable X
-  integrable : ∀ μ ∈ S, Integrable X μ
-  integral_nonpos : ∀ μ ∈ S, ∫ ω, X ω ∂μ ≤ 0
+lemma IsEVar.isRandEVar_deterministic (hX : IsEVar X S) :
+    IsRandEVar (Kernel.deterministic X hX.measurable) S where
+  lintegral_le_one μ hμ := by
+    rw [Measure.lintegral_bind (Kernel.measurable _).aemeasurable]
+    · simpa using hX.lintegral_le_one μ hμ
+    · exact measurable_id.aemeasurable
 
-structure IsRandRVar (κ : Kernel 𝓧 ℝ) (S : Set (Measure 𝓧)) : Prop where
-  integrable : ∀ μ ∈ S, Integrable (fun ω ↦ ω) (κ ∘ₘ μ)
-  integral_nonpos : ∀ μ ∈ S, ∫ ω, ω ∂(κ ∘ₘ μ) ≤ 0
+lemma isEVar_one (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    IsEVar 1 S where
+  measurable := measurable_const
+  lintegral_le_one μ hμ := by simp [hS μ hμ]
 
-lemma isRandRVar_iff_isRVar (κ : Kernel 𝓧 ℝ) (S : Set (Measure 𝓧))
-    (h_int : ∀ μ ∈ S, Integrable (fun x ↦ x) (κ ∘ₘ μ)) :
-    IsRandRVar κ S ↔ IsRVar (fun x ↦ ∫ y, y ∂κ x) S := by
-  refine ⟨fun h ↦ ⟨?_, fun μ hμ ↦ ?_, fun μ hμ ↦ ?_⟩, fun h ↦ ⟨fun μ hμ ↦ ?_, fun μ hμ ↦ ?_⟩⟩
-  · refine StronglyMeasurable.measurable ?_
-    exact StronglyMeasurable.integral_kernel stronglyMeasurable_id
-  · have h_int := h.integrable μ hμ
-    -- rw [Measure.integrable_comp_iff] at h_int
-    sorry
-  · have h' := h.integral_nonpos μ hμ
-    have h_int := h.integrable μ hμ
-    rwa [Measure.comp_eq_comp_const_apply, Kernel.integral_comp] at h'
-    exact h_int
-  · rw [Measure.integrable_comp_iff]
-    swap; · exact Measurable.aestronglyMeasurable <| by fun_prop
-    have h' := h.integrable μ hμ
-    sorry
-  · have h' := h.integral_nonpos μ hμ
-    have h_int := h.integrable μ hμ
-    rwa [Measure.comp_eq_comp_const_apply, Kernel.integral_comp]
-    sorry
-    --rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
+lemma isEVar_fun_one (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    IsEVar (fun _ ↦ 1) S := isEVar_one S hS
 
-lemma isEVar_comp {Y : 𝓨 → ℝ≥0∞} {S : Set (Measure 𝓧)} {φ : 𝓧 → 𝓨}
+lemma IsEVar.mono (hY : IsEVar Y S) (hX : Measurable X) (hXY : X ≤ Y) : IsEVar X S where
+  measurable := hX
+  lintegral_le_one μ hμ := (lintegral_mono hXY).trans (hY.lintegral_le_one μ hμ)
+
+lemma IsRandEVar.mono (hη : IsRandEVar η S) (hκη : κ ≤ η) : IsRandEVar κ S where
+  lintegral_le_one μ hμ := by
+    refine (lintegral_mono' ?_ le_rfl).trans (hη.lintegral_le_one μ hμ)
+    sorry
+
+lemma IsEVar.anti_set (hST : S ⊆ T) (hX : IsEVar X T) : IsEVar X S where
+  measurable := hX.measurable
+  lintegral_le_one μ hμ := hX.lintegral_le_one μ (hST hμ)
+
+lemma IsRandEVar.anti_set (hST : S ⊆ T) (hκ : IsRandEVar κ T) : IsRandEVar κ S where
+  lintegral_le_one μ hμ := hκ.lintegral_le_one μ (hST hμ)
+
+lemma IsEVar.comp {Y : 𝓨 → ℝ≥0∞} {S : Set (Measure 𝓧)} {φ : 𝓧 → 𝓨}
     (hφ : Measurable φ) (h : IsEVar Y {μ.map φ | μ ∈ S}) :
     IsEVar (Y ∘ φ) S where
   measurable := h.measurable.comp hφ
@@ -126,35 +126,71 @@ lemma isEVar_comp {Y : 𝓨 → ℝ≥0∞} {S : Set (Measure 𝓧)} {φ : 𝓧 
     · rwa [lintegral_map h.measurable hφ] at h'
     · exact ⟨μ, hμ, rfl⟩
 
-lemma isRandEVar_comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)} {κ : Kernel 𝓧 𝓨}
+lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)} {κ : Kernel 𝓧 𝓨}
     (h : IsRandEVar ξ {κ ∘ₘ μ | μ ∈ S}) :
     IsRandEVar (ξ ∘ₖ κ) S where
   lintegral_le_one μ hμ := by
     have h' := h.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
     rwa [Measure.comp_assoc] at h'
 
-lemma iSup_isRandEVar_eq_iSup_isEVar (P : Measure 𝓧) (S : Set (Measure 𝓧))
-    {U : ℝ≥0∞ → ℝ} (hU : Measurable U) (hU_ccv : ConcaveOn ℝ≥0 Set.univ U) :
-    ⨆ (η : Kernel 𝓧 ℝ≥0∞) (hX : IsRandEVar η S), (η ∘ₘ P)[U]
-      = ⨆ (X : 𝓧 → ℝ≥0∞) (hX : IsEVar X S), P[U ∘ X] := by
+noncomputable
+def maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) (U : ℝ≥0∞ → ℝ) : ℝ :=
+  ⨆ (X : 𝓧 → ℝ≥0∞) (_hX : IsEVar X S), P[U ∘ X]
+
+noncomputable
+def maxRandUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) (U : ℝ≥0∞ → ℝ) : ℝ :=
+  ⨆ (η : Kernel 𝓧 ℝ≥0∞) (_hη : IsRandEVar η S), (η ∘ₘ P)[U]
+
+variable {P : Measure 𝓧} {S T : Set (Measure 𝓧)} {U : ℝ≥0∞ → ℝ} {φ : 𝓧 → 𝓨} {κ : Kernel 𝓧 𝓨}
+
+lemma maxUtility_anti (hS : S ⊆ T) (hU : Measurable U) :
+    maxUtility P T U ≤ maxUtility P S U := by
+  refine ciSup_mono ?_ fun X ↦ ?_
+  · sorry
+  by_cases hX : IsEVar X T
+  · simp [hX, hX.anti_set hS]
+  · sorry
+
+lemma maxRandUtility_anti (hS : S ⊆ T) (hU : Measurable U) :
+    maxRandUtility P T U ≤ maxRandUtility P S U := by
   sorry
 
-lemma iSup_integral_isEVar_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : 𝓧 → 𝓨}
-    (hφ : Measurable φ) {U : ℝ≥0∞ → ℝ} (hU : Measurable U) :
-    ⨆ (Y : 𝓨 → ℝ≥0∞) (hY : IsEVar Y {μ.map φ | μ ∈ S}), (P.map φ)[U ∘ Y]
-      ≤ ⨆ (X : 𝓧 → ℝ≥0∞) (hX : IsEVar X S), P[U ∘ X] := by
+lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧))
+    (hU : Measurable U) (hU_ccv : ConcaveOn ℝ≥0 Set.univ U) :
+    maxRandUtility P S U = maxUtility P S U := by
+  rw [maxRandUtility, maxUtility]
   sorry
 
-lemma iSup_integral_isRandEVar_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
-    {U : ℝ≥0∞ → ℝ} (hU : Measurable U) :
-    ⨆ (ξ : Kernel 𝓨 ℝ≥0∞) (hY : IsRandEVar ξ {κ ∘ₘ μ | μ ∈ S}), (ξ ∘ₘ κ ∘ₘ P)[U]
-      ≤ ⨆ (η : Kernel 𝓧 ℝ≥0∞) (hX : IsRandEVar η S), (η ∘ₘ P)[U] := by
+lemma maxUtility_map_le (P : Measure 𝓧) (S : Set (Measure 𝓧))
+    (hφ : Measurable φ) (hU : Measurable U) :
+    maxUtility (P.map φ) {μ.map φ | μ ∈ S} U ≤ maxUtility P S U := by
+  calc maxUtility (P.map φ) {μ.map φ | μ ∈ S} U
+  _ = ⨆ (Y) (_hY : IsEVar Y {μ.map φ | μ ∈ S}), (P.map φ)[U ∘ Y] := rfl
+  _ = ⨆ (Y) (_hY : IsEVar Y {μ.map φ | μ ∈ S}), P[U ∘ Y ∘ φ] := by
+    congr with Y
+    congr with hY
+    rw [integral_map hφ.aemeasurable]
+    · rfl
+    refine Measurable.aestronglyMeasurable ?_
+    exact hU.comp hY.measurable
+  _ = ⨆ (X) (_hX : ∃ Y, IsEVar Y {μ.map φ | μ ∈ S} ∧ X = Y ∘ φ), P[U ∘ X] := sorry
+  _ ≤ ⨆ (X) (_hX : IsEVar X S), P[U ∘ X] := by
+    rw [ciSup_le_iff]
+    swap; · sorry
+    intro X
+    sorry
+  _ = maxUtility P S U := rfl
+
+lemma maxRandUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
+    (hU : Measurable U) :
+    maxRandUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxRandUtility P S U := by
   sorry
 
-lemma iSup_integral_isEVar_le' (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
-    {U : ℝ≥0∞ → ℝ} (hU : Measurable U) (hU_ccv : ConcaveOn ℝ≥0 Set.univ U) :
-    ⨆ (Y : 𝓨 → ℝ≥0∞) (hY : IsEVar Y {κ ∘ₘ μ | μ ∈ S}), (κ ∘ₘ P)[U ∘ Y]
-      ≤ ⨆ (X : 𝓧 → ℝ≥0∞) (hX : IsEVar X S), P[U ∘ X] := by
-  sorry
+lemma maxUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
+    (hU : Measurable U) (hU_ccv : ConcaveOn ℝ≥0 Set.univ U) :
+    maxUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxUtility P S U := by
+  rw [← maxRandUtility_eq_maxUtility _ _ hU hU_ccv,
+    ← maxRandUtility_eq_maxUtility _ _ hU hU_ccv]
+  exact maxRandUtility_comp_le P S κ hU
 
 end ProbabilityTheory

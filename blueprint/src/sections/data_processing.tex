@@ -159,7 +159,7 @@ We need to check the condition on the integrals against measures in $\mathcal{R}
 \begin{lemma}\label{lem:randEVar_comp}
   \uses{def:randEVar}
   \leanok
-  \lean{ProbabilityTheory.isEVar_comp, ProbabilityTheory.isRandEVar_comp}
+  \lean{ProbabilityTheory.IsEVar.comp, ProbabilityTheory.IsRandEVar.comp}
 Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and let $\phi : \mathcal{X} \to \mathcal{Y}$ be a measurable function and $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be a Markov kernel.
 Then
 \begin{enumerate}
@@ -186,8 +186,8 @@ For $Q \in \mathcal{Q}$,
 \begin{theorem}[Data processing inequality with e-variables]\label{thm:dataprocessing}
   \uses{def:eVar}
   \leanok
-  \lean{ProbabilityTheory.iSup_integral_isEVar_le, ProbabilityTheory.iSup_integral_isRandEVar_le,
-    ProbabilityTheory.iSup_integral_isEVar_le'}
+  \lean{ProbabilityTheory.maxUtility_map_le, ProbabilityTheory.maxRandUtility_comp_le,
+    ProbabilityTheory.maxUtility_comp_le}
 Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and $P \in \mathcal{P}(\mathcal{X})$.
 Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$.
 Then for all measurable functions $\phi : \mathcal{X} \to \mathcal{Y}$ and all Markov kernels $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$,
