@@ -45,20 +45,26 @@ lemma Measure.integrable_comp_iff
   · simp
   · simpa [Kernel.comp_apply]
 
+/-- The almost everywhere filter with respect to a set of measures, defined as the supremum of the
+almost everywhere filters of the measures in the set. -/
 def aeSet (S : Set (Measure 𝓧)) : Filter 𝓧 := ⨆ m ∈ S, ae m
 
 lemma mem_aeSet_iff {t : Set 𝓧} : t ∈ aeSet S ↔ ∀ m ∈ S, m tᶜ = 0 := by simp [aeSet, mem_ae_iff]
 
+/-- The pairing function between a signed measure and a real function. -/
 noncomputable
 def pairingFun (s : SignedMeasure 𝓧) (f : 𝓧 → ℝ) : ℝ :=
   ∫ ω, f ω ∂s.toJordanDecomposition.posPart
     - ∫ ω, f ω ∂s.toJordanDecomposition.negPart
 
+/-- The set of functions that are integrable against all measures in a given set. -/
 def integrableFunctions (S : Set (Measure 𝓧)) :=
   {f : 𝓧 → ℝ // Measurable f ∧ ∀ μ ∈ S, Integrable f μ}
 
+/-- The set of measures against which all functions in a given set are integrable. -/
 def integrableMeasures (L : Set (𝓧 → ℝ)) := {μ : Measure 𝓧 // ∀ f ∈ L, Integrable f μ}
 
+/-- The set of signed measures against which all functions in a given set are integrable. -/
 def integrableSignedMeasures (L : Set (𝓧 → ℝ)) :=
   {s : SignedMeasure 𝓧 // ∀ f ∈ L, Integrable f s.totalVariation}
 -- being integrable against `totalVariation` is equivalent to being integrable against both
@@ -133,10 +139,14 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)} {κ
     have h' := h.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
     rwa [Measure.comp_assoc] at h'
 
+/-- The maximum utility `P[U ∘ X]` of a measure `P` over all e-variables `X` for
+a set of measures `S`. -/
 noncomputable
 def maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) (U : ℝ≥0∞ → ℝ) : ℝ :=
   ⨆ (X : 𝓧 → ℝ≥0∞) (_hX : IsEVar X S), P[U ∘ X]
 
+/-- The maximum randomized utility `(η ∘ₘ P)[U]` of a measure `P` over all randomized e-variables
+`η` for a set of measures `S`. -/
 noncomputable
 def maxRandUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) (U : ℝ≥0∞ → ℝ) : ℝ :=
   ⨆ (η : Kernel 𝓧 ℝ≥0∞) (_hη : IsRandEVar η S), (η ∘ₘ P)[U]
