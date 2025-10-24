@@ -109,7 +109,7 @@ theorem mem_realPolar_singleton {x : E} (y : F) : y ∈ B.realPolar {x} ↔ re (
   simp only [realPolar_singleton, Set.mem_setOf_eq]
 
 theorem realPolar_zero : B.realPolar ({0} : Set E) = Set.univ := by
-  simp only [realPolar_singleton, map_zero, zero_apply, norm_zero, zero_le_one, Set.setOf_true]
+  simp only [realPolar_singleton, map_zero, zero_apply, zero_le_one, Set.setOf_true]
 
 theorem subset_biRealPolar (s : Set E) : s ⊆ B.flip.realPolar (B.realPolar s) := fun x hx y hy ↦ by
   rw [B.flip_apply]
