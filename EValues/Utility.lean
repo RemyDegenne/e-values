@@ -25,6 +25,7 @@ noncomputable instance : SMul ℝ≥0∞ EReal where smul c x := c * x
 /-- A utility function is a concave, monotone and differentiable function from `ℝ≥0∞` to `EReal`,
 which is finite on `(0, ∞)`. -/
 structure Utility where
+  /-- The function itself. -/
   toFun : ℝ≥0∞ → EReal
   eq_coe' : ∀ x, x ≠ 0 → x ≠ ∞ → toFun x ≠ ⊥ ∧ toFun x ≠ ⊤
   monotone' : Monotone toFun
