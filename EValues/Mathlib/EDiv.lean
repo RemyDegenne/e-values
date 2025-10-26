@@ -81,8 +81,10 @@ lemma ediv_eq_one_iff_eq_enn (a b : ℝ≥0∞) : a /ₑ b = 1 ↔ a = b := by
       constructor
       all_goals intro _; contradiction
     · push_neg at b₀
-      by_cases b₁ : b = ⊤
-      · rw [b₁, div_top]
+      by_cases bₜ : b = ⊤
+      · rw [bₜ, div_top]
         simp_all
-      · push_neg at b₁
-        rw [ENNReal.div_eq_one_iff b₀ b₁]
+      · push_neg at bₜ
+        rw [ENNReal.div_eq_one_iff b₀ bₜ]
+
+example : (⊤ : ℝ≥0∞) * 1 / ⊤ = ⊤ / ⊤ := by simp
