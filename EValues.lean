@@ -1,2 +1,7 @@
 import EValues.EValue
+import EValues.Mathlib.Convex
+import EValues.Mathlib.EDiv
+import EValues.Mathlib.ENNReal
+import EValues.Mathlib.Jensen
+import EValues.Numeraire
 import EValues.RealPolar

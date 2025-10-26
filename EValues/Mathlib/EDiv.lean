@@ -15,12 +15,16 @@ noncomputable
 def ediv {α : Type*} [One α] [HDiv α α α] [DecidableEq α] (a b : α) : α :=
     if a = b then 1 else a / b
 
+/-- Equality-normalized division that associates `1` when the numerator and denominator are equal.
+Otherwise, it behaves like regular division. -/
 infixl:70 " /ₑ " => ediv
 
+/-- Point-wise equality-normalized division of functions. -/
 noncomputable
 abbrev fun_ediv {α β : Type*} [One α] [HDiv α α α] [DecidableEq α] (f g : β → α) : β → α :=
     fun x ↦ f x /ₑ g x
 
+/-- Point-wise equality-normalized division of functions. -/
 infixl:70 " /ₑ " => fun_ediv
 
 variable {α : Type*} [DecidableEq α]

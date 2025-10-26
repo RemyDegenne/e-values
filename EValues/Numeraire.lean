@@ -60,82 +60,88 @@ lemma ae_pos (hX : IsNumeraire X hS μ) : ∀ᵐ ω ∂μ, X ω ≠ 0 := by
   ext ω
   simp
 
-lemma lintegral_eq_lintegral_on_support (hX : IsNumeraire X hS μ)
-    (hY : IsEVar Y S) : ∫⁻ ω, Y ω / X ω ∂μ = ∫⁻ ω in {ω | X ω ≠ ⊤ ∧ X ω ≠ 0}, Y ω / X ω ∂μ := by
-  rw [← lintegral_add_compl _ hX.measurable_support]
-  suffices ∫⁻ ω in {ω | X ω ≠ ⊤ ∧ X ω ≠ 0}ᶜ, Y ω / X ω ∂μ = 0 by
+lemma lintegral_eq_lintegral_on_fsupport (hX : IsNumeraire X hS μ)
+    (hY : IsEVar Y S) : ∫⁻ ω, Y ω / X ω ∂μ = ∫⁻ ω in X.fsupport, Y ω / X ω ∂μ := by
+  rw [← lintegral_add_compl _ hX.measurable_fsupport]
+  suffices ∫⁻ ω in X.fsupportᶜ, Y ω / X ω ∂μ = 0 by
     simp [this]
-  rw [setLIntegral_eq_zero_iff (hX.measurable_support).compl <| hY.measurable.div hX.measurable]
+  rw [setLIntegral_eq_zero_iff (hX.measurable_fsupport).compl
+    <| hY.measurable.div hX.measurable]
   filter_upwards [hX.ae_pos] with ω hω hω₂
-  simp only [ne_eq, mem_compl_iff, mem_setOf_eq, not_and_or, not_not] at hω₂
+  rw [X.fsupport_compl] at hω₂
   rcases hω₂ with hω₂ | hω₂
-  · simp [hω₂]
+  · simp_all
   · contradiction
 
-lemma lintegral_eq_lintegral_on_reverse_support (hX : IsNumeraire X hS μ)
-    (hY : IsEVar Y S) : ∫⁻ ω, Y ω / X ω ∂μ = ∫⁻ ω in {ω | Y ω ≠ ⊤ ∧ Y ω ≠ 0}, Y ω / X ω ∂μ := by
-  rw [← lintegral_add_compl _ hY.measurable_support]
-  suffices ∫⁻ ω in {ω | Y ω ≠ ⊤ ∧ Y ω ≠ 0}ᶜ, Y ω / X ω ∂μ = 0 by
-    simp [this]
-  rw [setLIntegral_eq_zero_iff (hY.measurable_support).compl <| hY.measurable.div hX.measurable]
-  have : ∀ᵐ ω ∂μ, Y ω = ⊤ → X ω = ⊤ := by
-    by_contra h
-    have lintegral_ratio_le_one := hX.lintegral_ratio_le_one hY
-    unfold Filter.Eventually at h
-    replace h : μ {ω | Y ω = ⊤ → X ω = ⊤}ᶜ ≠ 0 := h
-    have : {ω | Y ω = ⊤ → X ω = ⊤}ᶜ = {ω | Y ω = ⊤ ∧ X ω ≠ ⊤} := by
+lemma ae_top_implies_numeraire_top (hX : IsNumeraire X hS μ) (hY : IsEVar Y S) :
+    ∀ᵐ ω ∂μ, Y ω = ⊤ → X ω = ⊤ := by
+  by_contra h
+  unfold Filter.Eventually at h
+  replace h : μ {ω | Y ω = ⊤ ∧ X ω ≠ ⊤} ≠ 0 := by
+    suffices {ω | Y ω = ⊤ ∧ X ω ≠ ⊤} = {ω | Y ω = ⊤ → X ω = ⊤}ᶜ by
+      rw [this]
+      exact h
+    ext ω
+    simp
+  have m : MeasurableSet {ω | Y ω = ⊤ ∧ X ω ≠ ⊤} := by
+    suffices MeasurableSet {ω | Y ω = ⊤} ∧ MeasurableSet {ω | X ω ≠ ⊤} from this.1.inter this.2
+    constructor
+    · exact hY.measurable <| measurableSet_singleton ⊤
+    · rw [← MeasurableSet.compl_iff]
+      suffices {ω | X ω ≠ ⊤}ᶜ = {ω | X ω = ⊤} by
+        rw [this]
+        exact hX.measurable <| measurableSet_singleton ⊤
       ext ω
       simp
-    rw [this] at h
-    clear this
-    have m : MeasurableSet {ω | Y ω = ⊤ ∧ X ω ≠ ⊤} := by
-      suffices MeasurableSet {ω | Y ω = ⊤} ∧ MeasurableSet {ω | X ω ≠ ⊤} from this.1.inter this.2
-      constructor
-      · exact hY.measurable <| measurableSet_singleton ⊤
-      · rw [← MeasurableSet.compl_iff]
-        suffices {ω | X ω ≠ ⊤}ᶜ = {ω | X ω = ⊤} by
-          rw [this]
-          exact hX.measurable <| measurableSet_singleton ⊤
-        ext ω
-        simp
-    rw [← lintegral_add_compl _ m] at lintegral_ratio_le_one
-    suffices ∀ ω ∈ {ω | Y ω = ⊤ ∧ X ω ≠ ⊤}, Y ω / X ω = ⊤ by
-      rw [setLIntegral_congr_fun m this] at lintegral_ratio_le_one
-      simp only [ne_eq, lintegral_const, MeasurableSet.univ, Measure.restrict_apply,
-        univ_inter] at lintegral_ratio_le_one
-      rw [top_mul h] at lintegral_ratio_le_one
-      contradiction
-    intro ω hω
-    simp [hω.1, ENNReal.top_div, hω.2]
-  filter_upwards [this] with ω hω hω₂
-  simp only [ne_eq, mem_compl_iff, mem_setOf_eq, not_and_or, not_not] at hω₂
+  have lintegral_ratio_le_one := hX.lintegral_ratio_le_one hY
+  rw [← lintegral_add_compl _ m] at lintegral_ratio_le_one
+  suffices ∀ ω ∈ {ω | Y ω = ⊤ ∧ X ω ≠ ⊤}, Y ω / X ω = ⊤ by
+    rw [setLIntegral_congr_fun m this] at lintegral_ratio_le_one
+    simp only [ne_eq, lintegral_const, MeasurableSet.univ, Measure.restrict_apply,
+      univ_inter] at lintegral_ratio_le_one
+    rw [top_mul h] at lintegral_ratio_le_one
+    contradiction
+  intro ω hω
+  simp [hω.1, ENNReal.top_div, hω.2]
+
+lemma lintegral_eq_lintegral_on_rev_fsupport (hX : IsNumeraire X hS μ)
+    (hY : IsEVar Y S) : ∫⁻ ω, Y ω / X ω ∂μ = ∫⁻ ω in Y.fsupport, Y ω / X ω ∂μ := by
+  rw [← lintegral_add_compl _ hY.measurable_fsupport]
+  suffices ∫⁻ ω in Y.fsupportᶜ, Y ω / X ω ∂μ = 0 by
+    simp [this]
+  rw [setLIntegral_eq_zero_iff (hY.measurable_fsupport).compl
+    <| hY.measurable.div hX.measurable]
+  filter_upwards [hX.ae_top_implies_numeraire_top hY] with ω hω hω₂
+  rw [Y.fsupport_compl] at hω₂
   rcases hω₂ with hω₂ | hω₂
   · rw [hω₂, hω hω₂]
     simp
   · rw [hω₂]
     simp
 
-lemma measure_support_ne_zero_or_ae_top (hX : IsNumeraire X hS μ) :
-    μ {ω | X ω ≠ ⊤ ∧ X ω ≠ 0} ≠ 0 ∨ X =ᵐ[μ] ⊤ := by
+lemma measure_fsupport_ne_zero_or_ae_top (hX : IsNumeraire X hS μ) :
+    μ X.fsupport ≠ 0 ∨ X =ᵐ[μ] ⊤ := by
   by_contra h
   push_neg at h
   have ratio_eq_zero : ∫⁻ ω, X ω / X ω ∂μ = 0 := by
-    rw [hX.lintegral_eq_lintegral_on_support hX.toIsEVar]
+    rw [hX.lintegral_eq_lintegral_on_fsupport hX.toIsEVar]
     exact setLIntegral_measure_zero _ _ h.1
   rw [lintegral_eq_zero_iff <| hX.measurable.div hX.measurable] at ratio_eq_zero
   have mₜ : MeasurableSet {ω | X ω = ⊤} := hX.measurable <| measurableSet_singleton ⊤
   have m₀ : MeasurableSet {ω | X ω = 0} := hX.measurable <| measurableSet_singleton 0
-  replace ratio_eq_zero : μ ({ω | X ω = 0} ∪ {ω | X ω = ⊤}) = μ univ := by
-    rw [measure_univ, ← prob_compl_eq_zero_iff <| m₀.union mₜ]
-    suffices ({ω | X ω = 0} ∪ {ω | X ω = ⊤}) ∈ ae μ by
-      simp_all [MeasureTheory.ae]
+  replace ratio_eq_zero : μ X.fsupportᶜ = μ univ := by
+    rw [measure_univ, ← prob_compl_eq_zero_iff hX.measurable_fsupport.compl]
+    suffices X.fsupportᶜ ∈ ae μ by
+      simp_all [X.fsupport_compl, MeasureTheory.ae]
     filter_upwards [ratio_eq_zero] with ω hω
-    simp_all
-  rw [measure_union ?_ mₜ] at ratio_eq_zero
+    simp_all only [measurableSet_setOf, X.fsupport_compl, Pi.zero_apply,
+      ENNReal.div_eq_zero_iff, mem_union, mem_setOf_eq]
+    exact hω.symm
+  rw [X.fsupport_compl, measure_union ?_ m₀] at ratio_eq_zero
   · have : {ω | X ω = 0} = {ω | X ω ≠ 0}ᶜ := by
       ext ω
       simp
-    rw [this, hX.ae_pos, zero_add, measure_univ, ← prob_compl_eq_zero_iff mₜ] at ratio_eq_zero
+    rw [this, hX.ae_pos, add_zero, measure_univ, ← prob_compl_eq_zero_iff mₜ] at ratio_eq_zero
     exact h.2 ratio_eq_zero
   · rw [disjoint_iff_inter_eq_empty]
     ext ω
@@ -144,80 +150,62 @@ lemma measure_support_ne_zero_or_ae_top (hX : IsNumeraire X hS μ) :
     rw [hω]
     simp
 
-/-- This is most-likely false as `X` can be infinite a.e. and therefore the measure of
-`{ω | X ω ≠ ⊤ ∧ X ω ≠ 0}` can be `0`. If it happens, `Y` must also be equal to `⊤` a.e. as
-the integral of `X / Y` must be finite. In the original paper, the authors
-set `⊤ / ⊤ = 1` which makes this lemma true, but this is not compatible with Lean's
-definition of division on `ℝ≥0∞`. -/
-lemma inv_lintegral_eq_one (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS μ) :
-    (∫⁻ ω, Y ω / X ω ∂μ)⁻¹ = 1 := by
+lemma inv_lintegral_eq_one (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS μ)
+    (h : μ X.fsupport ≠ 0) : (∫⁻ ω, Y ω / X ω ∂μ)⁻¹ = 1 := by
   set W := Y / X
-  set E := {ω | X ω ≠ ⊤ ∧ X ω ≠ 0}
-  have mE : MeasurableSet E := hX.measurable_support
-  rw [hX.lintegral_eq_lintegral_on_support hY.toIsEVar]
-  suffices 1 ≤ (∫⁻ ω in E, W ω ∂μ)⁻¹ by
+  rw [hX.lintegral_eq_lintegral_on_fsupport hY.toIsEVar]
+  suffices 1 ≤ (∫⁻ ω in X.fsupport, W ω ∂μ)⁻¹ by
     refine ENNReal.le_antisymm_iff_toReal this ?_
-    suffices (∫⁻ ω in E, W ω ∂μ)⁻¹ ≤ ∫⁻ ω in E, (W ω)⁻¹ ∂μ by
-      trans ∫⁻ ω in E, (W ω)⁻¹ ∂μ
+    suffices (∫⁻ ω in X.fsupport, W ω ∂μ)⁻¹ ≤ ∫⁻ ω in X.fsupport, (W ω)⁻¹ ∂μ by
+      trans ∫⁻ ω in X.fsupport, (W ω)⁻¹ ∂μ
       · assumption
-      · have : ∀ ω ∈ E, ((Y / X) ω)⁻¹ = Y ω / X ω := by sorry
-        rw [setLIntegral_congr_fun mE this]
-        rw [← hX.lintegral_eq_lintegral_on_support hY.toIsEVar]
-        exact hX.lintegral_ratio_le_one hY.toIsEVar
-    rcases hX.measure_support_ne_zero_or_ae_top with hX₀ | hXₜ
-    · refine strictConvexOn_inv.convexOn.map_set_lintegral_le continuousOn_inv ?_ hX₀ ?_ ?_
-      · exact isClosed_univ
-      · simp
-      · simp
-    · have : ∀ᵐ ω ∂μ, ω ∈ E → W ω = 0 := by sorry
-      rw [setLIntegral_congr_fun_ae mE this]
-      have : ∀ᵐ ω ∂μ, ω ∈ E → (W ω)⁻¹ = ⊤ := by sorry
-      rw [setLIntegral_congr_fun_ae mE this]
-      simp
-      sorry
-  simp only [ne_eq, Pi.div_apply, ← hX.lintegral_eq_lintegral_on_support hY.toIsEVar,
-    le_inv_iff_mul_le, one_mul, E, W]
+      · rw [setLIntegral_congr_fun hX.measurable_fsupport <| ENNReal.inv_div_fsupport Y X]
+        rw [← hY.lintegral_eq_lintegral_on_rev_fsupport hX.toIsEVar]
+        exact hY.lintegral_ratio_le_one hX.toIsEVar
+    refine strictConvexOn_inv.convexOn.map_set_lintegral_le continuousOn_inv ?_ h ?_ ?_
+    · exact isClosed_univ
+    · simp
+    · simp
+  simp only [Pi.div_apply, ← hX.lintegral_eq_lintegral_on_fsupport hY.toIsEVar, le_inv_iff_mul_le,
+    one_mul, W]
   exact hX.lintegral_ratio_le_one hY.toIsEVar
 
+/-- The Numeraire is almost-everywhere unique. -/
 lemma ae_unique (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS μ) : X =ᵐ[μ] Y := by
   have strc_convex := strictConvexOn_inv
-  let W := X / Y
-  let E := {ω | Y ω ≠ ⊤ ∧ Y ω ≠ 0}
-  have mE : MeasurableSet E := hY.measurable_support
-  have inv_avg_eq_one : (∫⁻ ω in E, W ω ∂μ)⁻¹ = 1 := by
-    simp only [ne_eq, Pi.div_apply, ← hY.lintegral_eq_lintegral_on_support hX.toIsEVar, E, W]
-    exact hY.inv_lintegral_eq_one hX
-  have avg_eq_one : ∫⁻ ω, W ω ∂μ = 1 := by
-    simp only [ne_eq, Pi.div_apply, ENNReal.inv_eq_one, E, W] at inv_avg_eq_one
-    rwa [← hY.lintegral_eq_lintegral_on_support hX.toIsEVar] at inv_avg_eq_one
-  rcases hY.measure_support_ne_zero_or_ae_top with hY₀ | hYₜ
-  · have strict_Jensen : W =ᵐ[μ] const 𝓧 (∫⁻ ω, W ω ∂μ) ∨
-        (∫⁻ ω in E, W ω ∂μ)⁻¹ < ∫⁻ ω in E, (W ω)⁻¹ ∂μ := by
-      refine strc_convex.ae_eq_const_or_map_set_lintegral_lt continuousOn_inv ?_ hY₀ ?_ ?_
-      · exact isClosed_univ
-      · simp
-      · simp
-    rcases strict_Jensen with h | h
-    · rw [avg_eq_one] at h
-      filter_upwards [h] with ω hx
-      simp only [Pi.div_apply, const_apply, W] at hx
-      exact ENNReal.div_eq_one_imp_eq hx
-    · exfalso
-      rw [inv_avg_eq_one] at h
-      have inv_div : ∀ ω ∈ E, ((X / Y) ω)⁻¹ = Y ω / X ω := by
-        intro ω hω
-        simp only [Pi.div_apply]
-        rw [ENNReal.inv_div]
-        · exact Or.inl hω.1
-        · exact Or.inl hω.2
-      rw [setLIntegral_congr_fun mE inv_div] at h
-      refine ENNReal.lt_and_le_false h ?_
-      rw [← hX.lintegral_eq_lintegral_on_reverse_support hY.toIsEVar]
-      exact hX.lintegral_ratio_le_one hY.toIsEVar
-  · suffices ∀ᵐ ω ∂μ, W ω = 0 by
-      simp [lintegral_congr_ae this] at avg_eq_one
-    filter_upwards [hYₜ] with ω hω
-    simp_all [W]
+  rcases hY.measure_fsupport_ne_zero_or_ae_top with μ_fsupport | hYₜ
+  · let W := X / Y
+    have inv_avg_eq_one : (∫⁻ ω in Y.fsupport, W ω ∂μ)⁻¹ = 1 := by
+      simp only [Pi.div_apply, ← hY.lintegral_eq_lintegral_on_fsupport hX.toIsEVar, W]
+      exact hY.inv_lintegral_eq_one hX μ_fsupport
+    have avg_eq_one : ∫⁻ ω, W ω ∂μ = 1 := by
+      simp only [Pi.div_apply, ENNReal.inv_eq_one, W] at inv_avg_eq_one
+      rwa [← hY.lintegral_eq_lintegral_on_fsupport hX.toIsEVar] at inv_avg_eq_one
+    rcases hY.measure_fsupport_ne_zero_or_ae_top with hY₀ | hYₜ
+    · have strict_Jensen : W =ᵐ[μ] const 𝓧 (∫⁻ ω, W ω ∂μ) ∨
+          (∫⁻ ω in Y.fsupport, W ω ∂μ)⁻¹ < ∫⁻ ω in Y.fsupport, (W ω)⁻¹ ∂μ := by
+        refine strc_convex.ae_eq_const_or_map_set_lintegral_lt continuousOn_inv ?_ hY₀ ?_ ?_
+        · exact isClosed_univ
+        · simp
+        · simp
+      rcases strict_Jensen with h | h
+      · rw [avg_eq_one] at h
+        filter_upwards [h] with ω hx
+        simp only [Pi.div_apply, const_apply, W] at hx
+        exact ENNReal.div_eq_one_imp_eq hx
+      · exfalso
+        rw [inv_avg_eq_one] at h
+        rw [setLIntegral_congr_fun hY.measurable_fsupport <| ENNReal.inv_div_fsupport X Y] at h
+        refine ENNReal.lt_and_le_false h ?_
+        rw [← hX.lintegral_eq_lintegral_on_rev_fsupport hY.toIsEVar]
+        exact hX.lintegral_ratio_le_one hY.toIsEVar
+    · suffices ∀ᵐ ω ∂μ, W ω = 0 by
+        simp [lintegral_congr_ae this] at avg_eq_one
+      filter_upwards [hYₜ] with ω hω
+      simp_all [W]
+  · filter_upwards [hYₜ, hX.ae_top_implies_numeraire_top hY.toIsEVar] with ω hω hω₂
+    simp_all
+
 
 end IsNumeraire
 
