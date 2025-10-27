@@ -91,30 +91,36 @@ lemma exists_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
   simp_rw [deriv_logUtility_eq_ennreal] at h_opt
   sorry
 
+open Classical in
 /-- The numeraire e-variable. -/
 noncomputable
 def numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    (S : Set (Measure 𝓧)) :
     𝓧 → ℝ≥0∞ :=
-  Classical.choose (exists_numeraire P S hS)
+  if hS : ∀ μ ∈ S, IsProbabilityMeasure μ
+    then Classical.choose (exists_numeraire P S hS)
+    else 0
 
 lemma isEVar_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
-    IsEVar (numeraire P S hS) S :=
-  (Classical.choose_spec (exists_numeraire P S hS)).1
+    (S : Set (Measure 𝓧)) :
+    IsEVar (numeraire P S) S := by
+  by_cases hS : ∀ μ ∈ S, IsProbabilityMeasure μ
+  · rw [numeraire, dif_pos hS]
+    exact (Classical.choose_spec (exists_numeraire P S hS)).1
+  · rw [numeraire, dif_neg hS]
+    exact isEVar_zero
 
 lemma lintegral_div_numeraire_le (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞}
-    (hX_evar : IsEVar X S) :
-    ∫⁻ x, X x / (numeraire P S hS x) ∂P ≤ ∫⁻ x, (numeraire P S hS x) / (numeraire P S hS x) ∂P :=
-  ((Classical.choose_spec (exists_numeraire P S hS)).2 X hX_evar)
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
+    ∫⁻ x, X x / (numeraire P S x) ∂P ≤ ∫⁻ x, (numeraire P S x) / (numeraire P S x) ∂P := by
+  rw [numeraire, dif_pos hS]
+  exact ((Classical.choose_spec (exists_numeraire P S hS)).2 X hX_evar)
 
 lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞}
-    (hX_evar : IsEVar X S) :
-    ∫⁻ x, X x / (numeraire P S hS x) ∂P ≤ 1 := by
-  refine (lintegral_div_numeraire_le P S hS hX_evar).trans ?_
-  calc ∫⁻ x, numeraire P S hS x / numeraire P S hS x ∂P
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
+    ∫⁻ x, X x / (numeraire P S x) ∂P ≤ 1 := by
+  refine (lintegral_div_numeraire_le P hS hX_evar).trans ?_
+  calc ∫⁻ x, numeraire P S x / numeraire P S x ∂P
   _ ≤ ∫⁻ x, 1 ∂P := by
     gcongr with x
     exact ENNReal.div_self_le_one
