@@ -33,29 +33,6 @@ end Function
 
 namespace ENNReal
 
-lemma le_antisymm_iff_toReal {a b : ℝ≥0∞} (h1 : b ≤ a) (h2 : a ≤ b) : a = b := by
-  by_cases aₜ : a = ⊤
-  · rw [aₜ] at h1 h2 ⊢
-    simp_all
-  · push_neg at aₜ
-    have bₜ : b ≠ ⊤ := ne_top_of_le_ne_top aₜ h1
-    refine (toReal_eq_toReal_iff' aₜ bₜ).mp ?_
-    rw [← toReal_le_toReal bₜ aₜ] at h1
-    rw [← toReal_le_toReal aₜ bₜ] at h2
-    linarith
-
-lemma lt_and_le_false {a b : ℝ≥0∞} (h1 : b < a) (h2 : a ≤ b) : False := by
-  by_cases aₜ : a = ⊤
-  · rw [aₜ] at h1 h2
-    rw [top_le_iff] at h2
-    have : b ≠ ⊤ := LT.lt.ne_top h1
-    contradiction
-  · push_neg at aₜ
-    have bₜ : b ≠ ⊤ := LT.lt.ne_top h1
-    rw [← toReal_lt_toReal bₜ aₜ] at h1
-    rw [← toReal_le_toReal aₜ bₜ] at h2
-    linarith
-
 lemma eq_of_div_eq_one {a b : ℝ≥0∞} (h : a / b = 1) : a = b := by
   by_cases hb_zero : b = 0
   · simp only [hb_zero] at h ⊢

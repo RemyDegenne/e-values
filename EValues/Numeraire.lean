@@ -155,7 +155,7 @@ lemma inv_lintegral_eq_one (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS μ)
   set W := Y / X
   rw [hX.lintegral_eq_lintegral_on_fsupport hY.toIsEVar]
   suffices 1 ≤ (∫⁻ ω in X.fsupport, W ω ∂μ)⁻¹ by
-    refine ENNReal.le_antisymm_iff_toReal this ?_
+    refine le_antisymm ?_ this
     suffices (∫⁻ ω in X.fsupport, W ω ∂μ)⁻¹ ≤ ∫⁻ ω in X.fsupport, (W ω)⁻¹ ∂μ by
       trans ∫⁻ ω in X.fsupport, (W ω)⁻¹ ∂μ
       · assumption
@@ -192,11 +192,11 @@ lemma ae_unique (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS μ) : X =ᵐ[�
       · rw [avg_eq_one] at h
         filter_upwards [h] with ω hx
         simp only [Pi.div_apply, const_apply, W] at hx
-        exact ENNReal.div_eq_one_imp_eq hx
+        exact ENNReal.eq_of_div_eq_one hx
       · exfalso
         rw [inv_avg_eq_one] at h
         rw [setLIntegral_congr_fun hY.measurable_fsupport <| ENNReal.inv_div_fsupport X Y] at h
-        refine ENNReal.lt_and_le_false h ?_
+        refine h.not_ge ?_
         rw [← hX.lintegral_eq_lintegral_on_rev_fsupport hY.toIsEVar]
         exact hX.lintegral_ratio_le_one hY.toIsEVar
     · suffices ∀ᵐ ω ∂μ, W ω = 0 by
