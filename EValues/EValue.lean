@@ -10,6 +10,7 @@ import Mathlib.Order.CompletePartialOrder
 import Mathlib.Probability.Kernel.Composition.MeasureComp
 import Mathlib.Probability.Kernel.Composition.IntegralCompProd
 import Mathlib.Probability.Notation
+import EValues.Mathlib.ENNReal
 
 /-!
 # E-variables
@@ -115,6 +116,42 @@ lemma isEVar_one (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasu
 
 lemma isEVar_fun_one (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
     IsEVar (fun _ ↦ 1) S := isEVar_one S hS
+
+lemma IsEVar.ae_ne_top (hX : IsEVar X S) : ∀ μ ∈ S, ∀ᵐ ω ∂μ, X ω < ⊤ := by
+  intro μ hμ
+  by_contra h
+  suffices ∫⁻ ω, X ω ∂μ = ⊤ by
+    have lintegral_le_one := hX.lintegral_le_one μ hμ
+    rw [this] at lintegral_le_one
+    contradiction
+  refine lintegral_eq_top_of_measure_eq_top_ne_zero hX.measurable.aemeasurable ?_
+  · unfold Filter.Eventually at h
+    simp [MeasureTheory.ae] at h
+    suffices {ω | X ω < ⊤}ᶜ = {ω | X ω = ⊤} by
+      rwa [← this]
+    ext ω
+    simp
+
+lemma IsEVar.ae_finite (hX : IsEVar X S) : ∀ μ ∈ S, ∀ᵐ ω ∂μ, X ω ≠ ⊤ := by
+  intro μ hμ
+  filter_upwards [hX.ae_ne_top μ hμ] with ω hω using hω.ne
+
+lemma IsEVar.measurable_fsupport (hX : IsEVar X S) :
+    MeasurableSet X.fsupport := by
+  suffices MeasurableSet {ω | X ω ≠ ⊤} ∧ MeasurableSet {ω | X ω ≠ 0} from this.1.inter this.2
+  constructor
+  · rw [← MeasurableSet.compl_iff]
+    suffices {ω | X ω ≠ ⊤}ᶜ = {ω | X ω = ⊤} by
+      rw [this]
+      exact hX.measurable <| measurableSet_singleton ⊤
+    ext ω
+    simp
+  · rw [← MeasurableSet.compl_iff]
+    suffices {ω | X ω ≠ 0}ᶜ = {ω | X ω = 0} by
+      rw [this]
+      exact hX.measurable <| measurableSet_singleton 0
+    ext ω
+    simp
 
 lemma IsEVar.mono (hY : IsEVar Y S) (hX : Measurable X) (hXY : X ≤ Y) : IsEVar X S where
   measurable := hX
