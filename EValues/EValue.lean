@@ -105,6 +105,10 @@ lemma IsEVar.isRandEVar_deterministic (hX : IsEVar X S) :
     · simpa using hX.lintegral_le_one μ hμ
     · exact measurable_id.aemeasurable
 
+lemma isEVar_zero : IsEVar 0 S where
+  measurable := measurable_const
+  lintegral_le_one μ hμ := by simp
+
 lemma isEVar_one (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
     IsEVar 1 S where
   measurable := measurable_const
