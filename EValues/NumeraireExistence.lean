@@ -128,17 +128,23 @@ lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
     exact ENNReal.div_self_le_one
   _ = 1 := by simp
 
+-- todo: prove that log-optimal implies numeraire
 /-- The numeraire is log-optimal. -/
-theorem eintegral_log_le_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
+theorem eintegral_log_div_numeraire_nonpos (P : Measure 𝓧) [IsProbabilityMeasure P]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
-    ∫ᵉ x, ENNReal.log (X x) ∂P ≤ ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P := by
-  suffices ∫ᵉ x, ENNReal.log (X x / numeraire P S x) ∂P ≤ 0 by
-    simp_rw [ENNReal.log_div] at this
-    rwa [eintegral_sub, EReal.sub_nonpos] at this
+    ∫ᵉ x, ENNReal.log (X x / numeraire P S x) ∂P ≤ 0:= by
   calc ∫ᵉ x, ENNReal.log (X x / numeraire P S x) ∂P
   _ ≤ ENNReal.log (∫⁻ x, X x / numeraire P S x ∂P) := sorry -- Jensen's inequality
   _ ≤ 0 := by
     simp only [ENNReal.log_le_zero_iff]
     exact lintegral_div_numeraire_le_one P hS hX_evar
+
+/-- The numeraire maximizes the integral of the logarithm. -/
+theorem eintegral_log_le_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
+    ∫ᵉ x, ENNReal.log (X x) ∂P ≤ ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P := by
+  have h_nonpos := eintegral_log_div_numeraire_nonpos P hS hX_evar
+  simp_rw [ENNReal.log_div] at h_nonpos
+  rwa [eintegral_sub, EReal.sub_nonpos] at h_nonpos
 
 end ProbabilityTheory
