@@ -66,7 +66,7 @@ section Log
 
 /-- The logarithmic utility function. -/
 noncomputable def logUtility : Utility where
-  toFun := fun x ↦ ENNReal.log x
+  toFun := ENNReal.log
   eq_coe' := by
     intros x hx0 hx_top
     simp [ENNReal.log_eq_bot_iff, ENNReal.log_eq_top_iff, hx0, hx_top]

@@ -81,7 +81,8 @@ lemma eintegral_deriv_log_mul_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
       ∫ᵉ x, logUtility.deriv (Y x) * (X x - Y x) ∂P ≤ 0 := by
   sorry
 
-lemma exists_numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
+lemma exists_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S →
       ∫⁻ x, X x / Y x ∂P ≤ ∫⁻ x, Y x / Y x ∂P := by -- todo change conclusion to most convenient
   obtain ⟨Y, hY_evar, h_opt⟩ := eintegral_deriv_log_mul_le P S
@@ -89,5 +90,34 @@ lemma exists_numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
   specialize h_opt X hX_evar
   simp_rw [deriv_logUtility_eq_ennreal] at h_opt
   sorry
+
+/-- The numeraire e-variable. -/
+noncomputable
+def numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    𝓧 → ℝ≥0∞ :=
+  Classical.choose (exists_numeraire P S hS)
+
+lemma isEVar_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    IsEVar (numeraire P S hS) S :=
+  (Classical.choose_spec (exists_numeraire P S hS)).1
+
+lemma lintegral_div_numeraire_le (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞}
+    (hX_evar : IsEVar X S) :
+    ∫⁻ x, X x / (numeraire P S hS x) ∂P ≤ ∫⁻ x, (numeraire P S hS x) / (numeraire P S hS x) ∂P :=
+  ((Classical.choose_spec (exists_numeraire P S hS)).2 X hX_evar)
+
+lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞}
+    (hX_evar : IsEVar X S) :
+    ∫⁻ x, X x / (numeraire P S hS x) ∂P ≤ 1 := by
+  refine (lintegral_div_numeraire_le P S hS hX_evar).trans ?_
+  calc ∫⁻ x, numeraire P S hS x / numeraire P S hS x ∂P
+  _ ≤ ∫⁻ x, 1 ∂P := by
+    gcongr with x
+    exact ENNReal.div_self_le_one
+  _ = 1 := by simp
 
 end ProbabilityTheory
