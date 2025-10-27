@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
 import EValues.EValue
+import EValues.Numeraire
 import EValues.Utility
 import EValues.Mathlib.Convex
 import EValues.Mathlib.Jensen
@@ -317,32 +318,13 @@ lemma lintegral_div_numeraire_le_one (hS : ∀ μ ∈ S, IsProbabilityMeasure μ
     exact ENNReal.div_self_le_one
   _ = 1 := by simp
 
-lemma lintegral_div_self_le_iff_lintegral_div_le (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
-  {Y : 𝓧 → ℝ≥0∞} (hY_evar : IsEVar Y S) :
-  (∀ X, IsEVar X S → ∫⁻ ω, X ω / Y ω ∂P ≤ ∫⁻ ω, Y ω / Y ω ∂P) ↔
-    ∀ X, IsEVar X S → ∫⁻ ω, X ω / Y ω ∂P ≤ 1 := by
-  refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
-  · intro X hX_evar
-    refine (h X hX_evar).trans ?_
-    calc ∫⁻ ω, Y ω / Y ω ∂P
-    _ ≤ ∫⁻ ω, 1 ∂P := by
-      gcongr with ω
-      exact ENNReal.div_self_le_one
-    _ = 1 := by simp
-  · intro X hX_evar
-    have ae_eq_numeraire := ae_unique_numeraire P hS h hY_evar
-      (fun _ ↦ lintegral_div_numeraire_le_one P hS) (isEVar_numeraire P S)
-    calc ∫⁻ ω, X ω / Y ω ∂P
-    _ = ∫⁻ ω, X ω / (numeraire P S ω) ∂P := by
-      refine lintegral_congr_ae ?_
-      filter_upwards [ae_eq_numeraire] with ω hω
-      rw [hω]
-    _ ≤ ∫⁻ ω, (numeraire P S ω) / (numeraire P S ω) ∂P := lintegral_div_numeraire_le P hS hX_evar
-    _ = ∫⁻ ω, Y ω / Y ω ∂P := by
-      refine lintegral_congr_ae ?_
-      filter_upwards [ae_eq_numeraire] with ω hω
-      rw [hω]
+/-- `numeraire` is a numeraire. -/
+lemma isNumeraire_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    IsNumeraire (numeraire P S) hS P :=
+  ⟨isEVar_numeraire P S, fun _ ↦ lintegral_div_numeraire_le_one P hS⟩
 
+-- todo: prove under IsNumeraire assumption, move to the other file
 -- todo: prove that log-optimal implies numeraire
 /-- The numeraire is log-optimal. -/
 theorem eintegral_log_div_numeraire_nonpos (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
@@ -356,6 +338,7 @@ theorem eintegral_log_div_numeraire_nonpos (hS : ∀ μ ∈ S, IsProbabilityMeas
     simp only [ENNReal.log_le_zero_iff]
     exact lintegral_div_numeraire_le_one P hS hX_evar
 
+-- todo: prove under IsNumeraire assumption, move to the other file
 /-- The numeraire maximizes the integral of the logarithm. -/
 theorem eintegral_log_le_numeraire (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
