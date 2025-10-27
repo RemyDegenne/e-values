@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
 import EValues.EValue
+import EValues.Numeraire
 import EValues.Utility
 
 /-!
@@ -131,6 +132,13 @@ lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
     exact ENNReal.div_self_le_one
   _ = 1 := by simp
 
+/-- `numeraire` is a numeraire. -/
+lemma isNumeraire_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    IsNumeraire (numeraire P S) hS P :=
+  ⟨isEVar_numeraire P S, fun _ ↦ lintegral_div_numeraire_le_one P hS⟩
+
+-- todo: prove under IsNumeraire assumption, move to the other file
 -- todo: prove that log-optimal implies numeraire
 /-- The numeraire is log-optimal. -/
 theorem eintegral_log_div_numeraire_nonpos (P : Measure 𝓧) [IsProbabilityMeasure P]
@@ -144,6 +152,7 @@ theorem eintegral_log_div_numeraire_nonpos (P : Measure 𝓧) [IsProbabilityMeas
     simp only [ENNReal.log_le_zero_iff]
     exact lintegral_div_numeraire_le_one P hS hX_evar
 
+-- todo: prove under IsNumeraire assumption, move to the other file
 /-- The numeraire maximizes the integral of the logarithm. -/
 theorem eintegral_log_le_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
