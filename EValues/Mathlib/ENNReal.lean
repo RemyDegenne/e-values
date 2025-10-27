@@ -56,21 +56,15 @@ lemma lt_and_le_false {a b : ℝ≥0∞} (h1 : b < a) (h2 : a ≤ b) : False := 
     rw [← toReal_le_toReal aₜ bₜ] at h2
     linarith
 
-lemma div_eq_one_imp_eq {a b : ℝ≥0∞} (h : a / b = 1) : a = b := by
-  by_cases hb : b ≠ 0 ∧ b ≠ ⊤
-  · rcases hb with ⟨b₀, bₜ⟩
-    rwa [← ENNReal.div_eq_one_iff b₀ bₜ]
-  · simp only [not_and_or] at hb
-    rcases hb with b₀ | bₜ
-    · push_neg at b₀
-      by_cases a₀ : a = 0
-      · rw [a₀, b₀]
-      · push_neg at a₀
-        rw [b₀, ENNReal.div_zero a₀] at h
-        contradiction
-    · push_neg at bₜ
-      rw [bₜ] at h
-      simp_all
+lemma eq_of_div_eq_one {a b : ℝ≥0∞} (h : a / b = 1) : a = b := by
+  by_cases hb_zero : b = 0
+  · simp only [hb_zero] at h ⊢
+    by_cases ha_zero : a = 0
+    · exact ha_zero
+    · simp [ENNReal.div_zero ha_zero] at h
+  by_cases hb_top : b = ⊤
+  · simp [hb_top] at h
+  rwa [ENNReal.div_eq_one_iff hb_zero hb_top] at h
 
 lemma inv_div_fsupport {α : Type*} (f g : α → ℝ≥0∞) :
     ∀ x ∈ g.fsupport, ((f / g) x)⁻¹ = g x / f x := by
