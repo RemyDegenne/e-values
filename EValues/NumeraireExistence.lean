@@ -3,7 +3,6 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-import EValues.EIntegral
 import EValues.EValue
 import EValues.Utility
 
@@ -112,6 +111,10 @@ lemma isEVar_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P] (S : Set (Mea
   · rw [numeraire, dif_neg hS]
     exact isEVar_zero
 
+@[fun_prop]
+lemma measurable_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P] (S : Set (Measure 𝓧)) :
+    Measurable (numeraire P S) := (isEVar_numeraire P S).measurable
+
 lemma lintegral_div_numeraire_le (P : Measure 𝓧) [IsProbabilityMeasure P]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
     ∫⁻ x, X x / (numeraire P S x) ∂P ≤ ∫⁻ x, (numeraire P S x) / (numeraire P S x) ∂P := by
@@ -134,7 +137,9 @@ theorem eintegral_log_div_numeraire_nonpos (P : Measure 𝓧) [IsProbabilityMeas
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
     ∫ᵉ x, ENNReal.log (X x / numeraire P S x) ∂P ≤ 0:= by
   calc ∫ᵉ x, ENNReal.log (X x / numeraire P S x) ∂P
-  _ ≤ ENNReal.log (∫⁻ x, X x / numeraire P S x ∂P) := sorry -- Jensen's inequality
+  _ ≤ ENNReal.log (∫⁻ x, X x / numeraire P S x ∂P) := by
+    refine Utility.eintegral_le_map logUtility ?_
+    exact hX_evar.measurable.aemeasurable.div (by fun_prop)
   _ ≤ 0 := by
     simp only [ENNReal.log_le_zero_iff]
     exact lintegral_div_numeraire_le_one P hS hX_evar

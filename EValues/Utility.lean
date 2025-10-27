@@ -3,16 +3,18 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
+import EValues.EIntegral
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLog
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-!
 # Utility functions
 
 -/
 
-open Filter
+open Filter MeasureTheory
 open scoped ENNReal NNReal Topology
 
 namespace ProbabilityTheory
@@ -61,6 +63,12 @@ def Utility.deriv (U : Utility) (x : ℝ≥0∞) : EReal :=
     limsup (fun y : ℝ≥0∞ ↦ ((deriv U.real y.toReal : ℝ) : EReal)) (𝓝[<] ∞)
   else
     ((deriv U.real x.toReal : ℝ) : EReal)
+
+/-- Jensen's inequality. -/
+theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
+    {μ : Measure α} (U : Utility) {X : α → ℝ≥0∞} (hX_meas : AEMeasurable X μ) :
+    ∫ᵉ x, U (X x) ∂μ ≤ U (∫⁻ x, X x ∂μ) := by
+  sorry
 
 section Log
 
