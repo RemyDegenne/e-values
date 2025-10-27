@@ -104,8 +104,7 @@ def numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
     then Classical.choose (exists_numeraire P S hS)
     else 0
 
-lemma isEVar_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (S : Set (Measure 𝓧)) :
+lemma isEVar_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P] (S : Set (Measure 𝓧)) :
     IsEVar (numeraire P S) S := by
   by_cases hS : ∀ μ ∈ S, IsProbabilityMeasure μ
   · rw [numeraire, dif_pos hS]
@@ -130,7 +129,7 @@ lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
   _ = 1 := by simp
 
 /-- The numeraire is log-optimal. -/
-theorem eintegral_log_le_numeraire [IsProbabilityMeasure P]
+theorem eintegral_log_le_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
     ∫ᵉ x, ENNReal.log (X x) ∂P ≤ ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P := by
   suffices ∫ᵉ x, ENNReal.log (X x / numeraire P S x) ∂P ≤ 0 by
