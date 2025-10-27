@@ -15,6 +15,9 @@ import EValues.Utility
 open MeasureTheory Filter
 open scoped ENNReal NNReal Topology
 
+lemma ENNReal.log_div (a b : ℝ≥0∞) : ENNReal.log (a / b) = ENNReal.log a - ENNReal.log b := by
+  simp_rw [div_eq_mul_inv, ENNReal.log_mul_add, ENNReal.log_inv, sub_eq_add_neg]
+
 namespace ProbabilityTheory
 
 variable {𝓧 : Type*} {m𝓧 : MeasurableSpace 𝓧} {P : Measure 𝓧} {S : Set (Measure 𝓧)}
@@ -125,5 +128,18 @@ lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
     gcongr with x
     exact ENNReal.div_self_le_one
   _ = 1 := by simp
+
+/-- The numeraire is log-optimal. -/
+theorem eintegral_log_le_numeraire [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
+    ∫ᵉ x, ENNReal.log (X x) ∂P ≤ ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P := by
+  suffices ∫ᵉ x, ENNReal.log (X x / numeraire P S x) ∂P ≤ 0 by
+    simp_rw [ENNReal.log_div] at this
+    rwa [eintegral_sub, EReal.sub_nonpos] at this
+  calc ∫ᵉ x, ENNReal.log (X x / numeraire P S x) ∂P
+  _ ≤ ENNReal.log (∫⁻ x, X x / numeraire P S x ∂P) := sorry -- Jensen's inequality
+  _ ≤ 0 := by
+    simp only [ENNReal.log_le_zero_iff]
+    exact lintegral_div_numeraire_le_one P hS hX_evar
 
 end ProbabilityTheory
