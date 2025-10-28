@@ -31,7 +31,7 @@ open MeasureTheory ProbabilityTheory Set Function
 
 variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableSpace 𝓨}
 
-namespace MeasureTheory
+namespace ProbabilityTheory
 
 /-- A random variable `X` is the numeraire for a set of measures `S` and a measure `μ`
 if it is an E-variable for `S` and the expectation of the ratio of any E-variable `Y` over `X`
@@ -138,7 +138,7 @@ lemma lintegral_div_eq_one (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS μ)
   exact hX.inv_lintegral_div_eq_one hY h
 
 /-- The Numeraire is almost-everywhere unique. -/
-lemma ae_unique (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS μ) : X =ᵐ[μ] Y := by
+theorem ae_unique (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS μ) : X =ᵐ[μ] Y := by
   rcases hY.measure_fsupport_ne_zero_or_ae_top with μ_fsupport | hYₜ
   swap
   · filter_upwards [hYₜ, hX.ae_top_implies_numeraire_top hY.toIsEVar] with ω hω hω₂
@@ -191,4 +191,4 @@ end LogOptimal
 
 end IsNumeraire
 
-end MeasureTheory
+end ProbabilityTheory
