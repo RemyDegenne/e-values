@@ -4,8 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré
 -/
 
--- import EVariable.Utils.Filter
-import Mathlib
+import Mathlib.MeasureTheory.Integral.Average
 
 open Function Set ENNReal
 

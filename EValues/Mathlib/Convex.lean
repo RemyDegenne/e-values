@@ -4,11 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré
 -/
 
-import Mathlib.Algebra.Field.Defs
-import Mathlib.Algebra.Group.Action.Basic
-import Mathlib.Algebra.GroupWithZero.Action.Pi
-import Mathlib.Algebra.GroupWithZero.Action.Prod
-import Mathlib.Algebra.Order.Module.Defs
 import Mathlib.Analysis.Convex.Slope
 import Mathlib.Analysis.InnerProductSpace.Basic
 
