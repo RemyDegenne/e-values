@@ -15,9 +15,6 @@ import EValues.Utility
 open MeasureTheory Filter
 open scoped ENNReal NNReal Topology
 
-lemma ENNReal.log_div (a b : ℝ≥0∞) : ENNReal.log (a / b) = ENNReal.log a - ENNReal.log b := by
-  simp_rw [div_eq_mul_inv, ENNReal.log_mul_add, ENNReal.log_inv, sub_eq_add_neg]
-
 namespace ProbabilityTheory
 
 variable {𝓧 : Type*} {m𝓧 : MeasurableSpace 𝓧} {P : Measure 𝓧} {S : Set (Measure 𝓧)}
@@ -138,27 +135,9 @@ lemma isNumeraire_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
     IsNumeraire (numeraire P S) hS P :=
   ⟨isEVar_numeraire P S, fun _ ↦ lintegral_div_numeraire_le_one P hS⟩
 
--- todo: prove under IsNumeraire assumption, move to the other file
--- todo: prove that log-optimal implies numeraire
-/-- The numeraire is log-optimal. -/
-theorem eintegral_log_div_numeraire_nonpos (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
-    ∫ᵉ x, ENNReal.log (X x / numeraire P S x) ∂P ≤ 0:= by
-  calc ∫ᵉ x, ENNReal.log (X x / numeraire P S x) ∂P
-  _ ≤ ENNReal.log (∫⁻ x, X x / numeraire P S x ∂P) := by
-    refine Utility.eintegral_le_map logUtility ?_
-    exact hX_evar.measurable.aemeasurable.div (by fun_prop)
-  _ ≤ 0 := by
-    simp only [ENNReal.log_le_zero_iff]
-    exact lintegral_div_numeraire_le_one P hS hX_evar
-
--- todo: prove under IsNumeraire assumption, move to the other file
-/-- The numeraire maximizes the integral of the logarithm. -/
-theorem eintegral_log_le_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
-    ∫ᵉ x, ENNReal.log (X x) ∂P ≤ ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P := by
-  have h_nonpos := eintegral_log_div_numeraire_nonpos P hS hX_evar
-  simp_rw [ENNReal.log_div] at h_nonpos
-  rwa [eintegral_sub, EReal.sub_nonpos] at h_nonpos
+lemma IsNumeraire.ae_eq_numeraire [IsProbabilityMeasure P] {X : 𝓧 → ℝ≥0∞}
+    {hS : ∀ μ ∈ S, IsProbabilityMeasure μ} (hX : IsNumeraire X hS P) :
+    X =ᵐ[P] numeraire P S :=
+  hX.ae_unique (isNumeraire_numeraire P hS)
 
 end ProbabilityTheory
