@@ -163,6 +163,16 @@ theorem ae_unique (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS μ) : X =ᵐ
     filter_upwards [hYₜ] with ω hω
     simp [W, hω]
 
+lemma congr (hX : IsNumeraire X hS μ) (hY_evar : IsEVar Y S) (hY : Y =ᵐ[μ] X) :
+    IsNumeraire Y hS μ := by
+  refine ⟨hY_evar, fun Z hZ_evar ↦ ?_⟩
+  calc ∫⁻ ω, Z ω / Y ω ∂μ
+    _ = ∫⁻ ω, Z ω / X ω ∂μ := by
+      refine lintegral_congr_ae ?_
+      filter_upwards [hY] with ω hω
+      rw [hω]
+    _ ≤ 1 := hX.lintegral_div_le_one hZ_evar
+
 section LogOptimal
 
 lemma ENNReal.log_div (a b : ℝ≥0∞) : ENNReal.log (a / b) = ENNReal.log a - ENNReal.log b := by
