@@ -24,9 +24,8 @@ of the numeraires. -/
 lemma numeraire_prod (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
     IsNumeraire (fun (x : 𝓧 × 𝓨) ↦ numeraire P S x.1 * numeraire Q T x.2)
       {ρ | ∃ μ ∈ S, ∃ ν ∈ T, ρ = μ.prod ν} (P.prod Q) where
-  toIsEVar := by
-    constructor
-    · fun_prop
+  measurable := by fun_prop
+  lintegral_le_one := by
     rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
     specialize hS μ hμS
     specialize hT ν hνT
@@ -35,7 +34,7 @@ lemma numeraire_prod (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ �
     have h2 := (isEVar_numeraire Q T).lintegral_le_one
     exact mul_le_one' (h1 μ hμS) (h2 ν hνT)
   isProbabilityMeasure := by
-    rintro ρ ⟨μ, hμS, ν, hνT, rfl⟩
+    rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
     specialize hS μ hμS
     specialize hT ν hνT
     infer_instance
