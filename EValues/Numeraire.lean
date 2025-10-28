@@ -4,13 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré, Rémy Degenne
 -/
 
-import Mathlib
 import EValues.EValue
-import EValues.Utility
-import EValues.Mathlib.EDiv
 import EValues.Mathlib.Convex
 import EValues.Mathlib.Jensen
-import EValues.Mathlib.ENNReal
+import EValues.Utility
+import Mathlib.MeasureTheory.Constructions.Polish.Basic
 
 /-!
 # Numeraire E-variables
