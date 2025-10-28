@@ -3,11 +3,13 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-import EValues.EValue
 import EValues.Numeraire
+<<<<<<< HEAD
 import EValues.Utility
 import EValues.Mathlib.Convex
 import EValues.Mathlib.Jensen
+=======
+>>>>>>> e030b73 (min_imports)
 
 /-!
 # Existence of the Numeraire
