@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rémy Degenne
+Authors: Rémy Degenne, Gaëtan Serré
 -/
 import EValues.Numeraire
 
@@ -137,5 +137,32 @@ lemma IsNumeraire.ae_eq_numeraire [IsProbabilityMeasure P] {X : 𝓧 → ℝ≥0
     {hS : ∀ μ ∈ S, IsProbabilityMeasure μ} (hX : IsNumeraire X hS P) :
     X =ᵐ[P] numeraire P S :=
   hX.ae_unique (isNumeraire_numeraire P hS)
+
+/-- For a given e-variable `Y`, the property of being a numeraire is equivalent to the property
+that the expectation of the ratio of any e-variable `X` over `Y` is less
+than the expectation of the ratio of `Y` over itself. -/
+lemma lintegral_div_self_le_iff_IsNumeraire [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
+    {Y : 𝓧 → ℝ≥0∞} (hY_evar : IsEVar Y S) :
+    (∀ X, IsEVar X S → ∫⁻ ω, X ω / Y ω ∂P ≤ ∫⁻ ω, Y ω / Y ω ∂P) ↔ IsNumeraire Y hS P := by
+  refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
+  · refine ⟨hY_evar, fun X hX_evar ↦ (h X hX_evar).trans ?_⟩
+    calc ∫⁻ ω, Y ω / Y ω ∂P
+    _ ≤ ∫⁻ ω, 1 ∂P := by
+      gcongr with ω
+      exact ENNReal.div_self_le_one
+    _ = 1 := by simp
+  · intro X hX_evar
+    have ae_eq_numeraire := h.ae_eq_numeraire
+    calc ∫⁻ ω, X ω / Y ω ∂P
+    _ = ∫⁻ ω, X ω / (numeraire P S ω) ∂P := by
+      refine lintegral_congr_ae ?_
+      filter_upwards [ae_eq_numeraire] with ω hω
+      rw [hω]
+    _ ≤ ∫⁻ ω, (numeraire P S ω) / (numeraire P S ω) ∂P := lintegral_div_numeraire_le P hS hX_evar
+    _ = ∫⁻ ω, Y ω / Y ω ∂P := by
+      refine lintegral_congr_ae ?_
+      filter_upwards [ae_eq_numeraire] with ω hω
+      rw [hω]
 
 end ProbabilityTheory
