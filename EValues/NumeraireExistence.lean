@@ -17,9 +17,6 @@ import EValues.Mathlib.Jensen
 open MeasureTheory Filter Set ENNReal Function
 open scoped ENNReal NNReal Topology
 
-lemma ENNReal.log_div (a b : ℝ≥0∞) : ENNReal.log (a / b) = ENNReal.log a - ENNReal.log b := by
-  simp_rw [div_eq_mul_inv, ENNReal.log_mul_add, ENNReal.log_inv, sub_eq_add_neg]
-
 namespace ProbabilityTheory
 
 variable {𝓧 : Type*} {m𝓧 : MeasurableSpace 𝓧} {P : Measure 𝓧} {S : Set (Measure 𝓧)}
@@ -324,6 +321,7 @@ lemma isNumeraire_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
     IsNumeraire (numeraire P S) hS P :=
   ⟨isEVar_numeraire P S, fun _ ↦ lintegral_div_numeraire_le_one P hS⟩
 
+<<<<<<< HEAD
 -- todo: prove under IsNumeraire assumption, move to the other file
 -- todo: prove that log-optimal implies numeraire
 /-- The numeraire is log-optimal. -/
@@ -346,6 +344,12 @@ theorem eintegral_log_le_numeraire (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
   have h_nonpos := eintegral_log_div_numeraire_nonpos P hS hX_evar
   simp_rw [ENNReal.log_div] at h_nonpos
   rwa [eintegral_sub, EReal.sub_nonpos] at h_nonpos
+=======
+lemma IsNumeraire.ae_eq_numeraire [IsProbabilityMeasure P] {X : 𝓧 → ℝ≥0∞}
+    {hS : ∀ μ ∈ S, IsProbabilityMeasure μ} (hX : IsNumeraire X hS P) :
+    X =ᵐ[P] numeraire P S :=
+  hX.ae_unique (isNumeraire_numeraire P hS)
+>>>>>>> ce82df3 (move lemmas to Numeraire.lean)
 
 lemma ae_pos_numeraire (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) : ∀ᵐ ω ∂P, numeraire P S ω ≠ 0 :=
   ae_pos_numeraire₀ P (fun _ ↦ lintegral_div_numeraire_le_one P hS) (isEVar_numeraire P S) hS
