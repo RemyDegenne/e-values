@@ -130,13 +130,13 @@ lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
 /-- `numeraire` is a numeraire. -/
 lemma isNumeraire_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
-    IsNumeraire (numeraire P S) hS P :=
-  ⟨isEVar_numeraire P S, fun _ ↦ lintegral_div_numeraire_le_one P hS⟩
+    IsNumeraire (numeraire P S) S P :=
+  ⟨isEVar_numeraire P S, hS, fun _ ↦ lintegral_div_numeraire_le_one P hS⟩
 
 lemma IsNumeraire.ae_eq_numeraire [IsProbabilityMeasure P] {X : 𝓧 → ℝ≥0∞}
-    {hS : ∀ μ ∈ S, IsProbabilityMeasure μ} (hX : IsNumeraire X hS P) :
+    (hX : IsNumeraire X S P) :
     X =ᵐ[P] numeraire P S :=
-  hX.ae_unique (isNumeraire_numeraire P hS)
+  hX.ae_unique (isNumeraire_numeraire P hX.isProbabilityMeasure)
 
 /-- For a given e-variable `Y`, the property of being a numeraire is equivalent to the property
 that the expectation of the ratio of any e-variable `X` over `Y` is less
@@ -144,9 +144,9 @@ than the expectation of the ratio of `Y` over itself. -/
 lemma lintegral_div_self_le_iff_IsNumeraire [IsProbabilityMeasure P]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
     {Y : 𝓧 → ℝ≥0∞} (hY_evar : IsEVar Y S) :
-    (∀ X, IsEVar X S → ∫⁻ ω, X ω / Y ω ∂P ≤ ∫⁻ ω, Y ω / Y ω ∂P) ↔ IsNumeraire Y hS P := by
+    (∀ X, IsEVar X S → ∫⁻ ω, X ω / Y ω ∂P ≤ ∫⁻ ω, Y ω / Y ω ∂P) ↔ IsNumeraire Y S P := by
   refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
-  · refine ⟨hY_evar, fun X hX_evar ↦ (h X hX_evar).trans ?_⟩
+  · refine ⟨hY_evar, hS, fun X hX_evar ↦ (h X hX_evar).trans ?_⟩
     calc ∫⁻ ω, Y ω / Y ω ∂P
     _ ≤ ∫⁻ ω, 1 ∂P := by
       gcongr with ω
