@@ -21,7 +21,8 @@ variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableS
 
 /-- The numeraire of a product measure with respect to a product of sets is the product
 of the numeraires. -/
-lemma numeraire_prod (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
+theorem isNumeraire_mul_numeraire_prod (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
+    (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
     IsNumeraire (fun (x : 𝓧 × 𝓨) ↦ numeraire P S x.1 * numeraire Q T x.2)
       {ρ | ∃ μ ∈ S, ∃ ν ∈ T, ρ = μ.prod ν} (P.prod Q) where
   measurable := by fun_prop
