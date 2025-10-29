@@ -95,9 +95,13 @@ lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
     ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by
   sorry
 
-
 theorem eintegral_map {β : Type*} {mβ : MeasurableSpace β} {f : β → EReal} {g : α → β}
     (hf : Measurable f) (hg : Measurable g) : ∫ᵉ a, f a ∂μ.map g = ∫ᵉ a, f (g a) ∂μ := by
+  sorry
+
+theorem eintegral_bind {β : Type*} {mβ : MeasurableSpace β} {m : α → Measure β} {f : β → EReal}
+    (hμ : AEMeasurable m μ) (hf : AEMeasurable f (μ.bind m)) :
+    ∫ᵉ x, f x ∂μ.bind m = ∫ᵉ a, ∫ᵉ x, f x ∂m a ∂μ := by
   sorry
 
 end MeasureTheory
