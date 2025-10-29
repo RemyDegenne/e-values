@@ -38,10 +38,11 @@ lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
   gcongr 1
   sorry
 
-lemma erenyiDiv_prod (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
-    (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
-    erenyiDiv α (Measure.prod.uncurry '' (S ×ˢ T)) (Measure.prod.uncurry '' (S ×ˢ T))
-      = erenyiDiv α S T + erenyiDiv α T S := by
+lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
+    (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
+    (hT₁ : ∀ μ ∈ T₁, IsProbabilityMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsProbabilityMeasure μ) :
+    erenyiDiv α (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) (Measure.prod.uncurry '' (S₂ ×ˢ T₂))
+      = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
   sorry
 
 -- todo: rename
