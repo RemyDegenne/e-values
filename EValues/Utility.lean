@@ -48,6 +48,9 @@ lemma Utility.continuous (U : Utility) : Continuous U := U.continuous'
 @[fun_prop]
 lemma Utility.measurable (U : Utility) : Measurable U := U.continuous.measurable
 
+lemma Utility.aemeasurable {μ : Measure ℝ≥0∞} (U : Utility) :
+  AEMeasurable U μ := U.continuous.measurable.aemeasurable
+
 lemma Utility.concave (U : Utility) : ConcaveOn ℝ≥0 Set.univ U := U.concave'
 
 /-- The real-valued representation of a utility function. -/
