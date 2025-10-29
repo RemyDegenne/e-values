@@ -70,10 +70,36 @@ lemma maxRandUtility_anti (hS : S ⊆ T) : maxRandUtility P T U ≤ maxRandUtili
   rintro y ⟨η, hη₁, hη₂, hy⟩
   exact ⟨η, hη₁, hη₂.anti_set hS, hy⟩
 
-lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) (hU : Measurable U) :
+lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     maxRandUtility P S U = maxUtility P S U := by
-  rw [maxRandUtility, maxUtility]
-  sorry
+  refine le_antisymm ?_ ?_
+  · rw [maxRandUtility_eq_sSup]
+    rw [sSup_le_iff]
+    rintro y ⟨η, hη₁, hη₂, hy⟩
+    obtain ⟨X, hX, h_le⟩ : ∃ X, IsEVar X S ∧ y ≤ ∫ᵉ x, (U ∘ X) x ∂P := by
+      let X := fun x ↦ ∫⁻ y, y ∂(η x)
+      refine ⟨X, ⟨by fun_prop, fun μ hμ ↦ ?_⟩, ?_⟩
+      · rw [isRandEVar_iff_isEVar] at hη₂
+        exact hη₂.lintegral_le_one μ hμ
+      · rw [hy, eintegral_bind η.aemeasurable U.aemeasurable]
+        sorry
+    trans ∫ᵉ x, (U ∘ X) x ∂P
+    · exact h_le
+    · rw [maxUtility_eq_sSup]
+      refine le_sSup ?_
+      exact ⟨X, hX, rfl⟩
+  · rw [maxRandUtility_eq_sSup, maxUtility_eq_sSup]
+    refine sSup_le_sSup ?_
+    rintro y ⟨X, hX, hy⟩
+    refine ⟨Kernel.deterministic X hX.measurable, inferInstance, ⟨fun μ hμ ↦ ?_⟩, ?_⟩
+    · rw [Measure.deterministic_comp_eq_map hX.measurable,
+        lintegral_map (by measurability) hX.measurable]
+      exact hX.lintegral_le_one μ hμ
+    · rw [hy, Measure.deterministic_comp_eq_map hX.measurable,
+        eintegral_map U.measurable hX.measurable]
+      rfl
+
+example : Measurable ENNReal.log := by measurability
 
 lemma maxRandUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
     [IsMarkovKernel κ] : maxRandUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxRandUtility P S U := by
@@ -101,18 +127,17 @@ lemma maxRandUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : K
     rw [hξ, ← μ.comp_assoc]
     exact hη₂.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
 
-lemma maxUtility_map_le (P : Measure 𝓧) (S : Set (Measure 𝓧))
-    (hφ : Measurable φ) (hU : Measurable U) :
+lemma maxUtility_map_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (hφ : Measurable φ) :
     maxUtility (P.map φ) {μ.map φ | μ ∈ S} U ≤ maxUtility P S U := by
-  rw [← maxRandUtility_eq_maxUtility _ _ hU, ← maxRandUtility_eq_maxUtility _ _ hU]
-  rw [← Measure.deterministic_comp_eq_map hφ]
+  rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _,
+    ← Measure.deterministic_comp_eq_map hφ]
   simp_rw [← Measure.deterministic_comp_eq_map hφ]
   exact maxRandUtility_comp_le P S <| Kernel.deterministic φ hφ
 
 lemma maxUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
-    [IsMarkovKernel κ] (hU : Measurable U) :
+    [IsMarkovKernel κ] :
     maxUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxUtility P S U := by
-  rw [← maxRandUtility_eq_maxUtility _ _ hU, ← maxRandUtility_eq_maxUtility _ _ hU]
+  rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _]
   exact maxRandUtility_comp_le P S κ
 
 end MeasureTheory
