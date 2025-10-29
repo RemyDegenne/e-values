@@ -30,7 +30,8 @@ def maxRandUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) (U : Utility) : E
 
 variable {P : Measure 𝓧} {S T : Set (Measure 𝓧)} {U : Utility} {φ : 𝓧 → 𝓨}
 
-lemma maxUtility_eq_sSup : maxUtility P S U = sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := by
+lemma maxUtility_eq_sSup : maxUtility P S U =
+    sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := by
   rw [sSup_eq_iSup]
   simp_rw [Set.mem_setOf_eq, iSup_exists, iSup_and]
   simp only [maxUtility]
@@ -58,13 +59,13 @@ lemma maxRandUtility_eq_sSup : maxRandUtility P S U =
   rw [iSup_comm]
 
 lemma maxUtility_anti (hS : S ⊆ T) : maxUtility P T U ≤ maxUtility P S U := by
-  rw [maxUtility_sSup, maxUtility_sSup]
+  rw [maxUtility_eq_sSup, maxUtility_eq_sSup]
   refine sSup_le_sSup ?_
   rintro y ⟨X, hX, hy⟩
   exact ⟨X, hX.anti_set hS, hy⟩
 
 lemma maxRandUtility_anti (hS : S ⊆ T) : maxRandUtility P T U ≤ maxRandUtility P S U := by
-  rw [maxRandUtility_sSup, maxRandUtility_sSup]
+  rw [maxRandUtility_eq_sSup, maxRandUtility_eq_sSup]
   refine sSup_le_sSup ?_
   rintro y ⟨η, hη₁, hη₂, hy⟩
   exact ⟨η, hη₁, hη₂.anti_set hS, hy⟩
@@ -78,7 +79,7 @@ lemma maxRandUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : K
     [IsMarkovKernel κ] : maxRandUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxRandUtility P S U := by
   calc maxRandUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U
   _ = sSup {y | ∃ η, IsMarkovKernel η ∧ IsRandEVar η {κ ∘ₘ μ | μ ∈ S} ∧
-      y = ∫ᵉ x, U x ∂(η ∘ₘ κ ∘ₘ P)} := maxRandUtility_sSup
+      y = ∫ᵉ x, U x ∂(η ∘ₘ κ ∘ₘ P)} := maxRandUtility_eq_sSup
   _ = sSup {y | ∃ ξ, ∃ η, IsMarkovKernel η ∧ IsRandEVar η {κ ∘ₘ μ | μ ∈ S} ∧
       ξ = η ∘ₖ κ ∧ y = ∫ᵉ x, U x ∂(ξ ∘ₘ P)} := by
     congr with y
@@ -90,7 +91,7 @@ lemma maxRandUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : K
       refine ⟨η, hη₁, hη₂, ?_⟩
       rw [hξ_int, hξ, P.comp_assoc]
   _ ≤ maxRandUtility P S U := by
-    rw [maxRandUtility_sSup]
+    rw [maxRandUtility_eq_sSup]
     refine sSup_le_sSup <| fun y ↦ ?_
     rintro ⟨ξ, η, hη₁, hη₂, hξ, hξ_int⟩
     haveI : IsMarkovKernel ξ := by
