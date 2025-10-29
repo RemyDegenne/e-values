@@ -1,4 +1,5 @@
 import EValues.EIntegral
+import EValues.ERenyi
 import EValues.EValue
 import EValues.Mathlib.Convex
 import EValues.Mathlib.EDiv

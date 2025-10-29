@@ -3,7 +3,7 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-import EValues.NumeraireExistence
+import EValues.Product
 
 /-!
 # E-Rényi divergence
@@ -36,6 +36,20 @@ lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
     erenyiDiv α (Measure.map f '' S) (Measure.map f '' T) ≤ erenyiDiv α S T := by
   unfold erenyiDiv
   gcongr 1
+  sorry
+
+lemma erenyiDiv_prod (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
+    (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
+    erenyiDiv α (Measure.prod.uncurry '' (S ×ˢ T)) (Measure.prod.uncurry '' (S ×ˢ T))
+      = erenyiDiv α S T + erenyiDiv α T S := by
+  sorry
+
+-- todo: rename
+theorem main_result_one_sample {f : 𝓧 → ℝ≥0∞} (hf : Measurable f) (hf_le : ∀ x, f x ≤ 1)
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
+    {δ : ℝ≥0∞}
+    (hSf : ∀ μ ∈ S, ∫⁻ ω, f ω ∂μ ≤ δ) (hTf : ∀ ν ∈ T, 1 - δ ≤ ∫⁻ ω, f ω ∂ν) :
+    ENNReal.ofReal (Real.log (1 / (4 * δ.toReal * (1 - δ).toReal))) ≤ erenyiDiv 2⁻¹ S T := by
   sorry
 
 end ProbabilityTheory
