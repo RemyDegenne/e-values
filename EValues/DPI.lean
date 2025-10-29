@@ -30,7 +30,7 @@ def maxRandUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) (U : Utility) : E
 
 variable {P : Measure 𝓧} {S T : Set (Measure 𝓧)} {U : Utility} {φ : 𝓧 → 𝓨}
 
-lemma maxUtility_sSup : maxUtility P S U = sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := by
+lemma maxUtility_eq_sSup : maxUtility P S U = sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := by
   rw [sSup_eq_iSup]
   simp_rw [Set.mem_setOf_eq, iSup_exists, iSup_and]
   simp only [maxUtility]
