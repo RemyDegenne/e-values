@@ -35,7 +35,7 @@ theorem isNumeraire_mul_numeraire
     have h1 := (isEVar_numeraire P S).lintegral_le_one
     have h2 := (isEVar_numeraire Q T).lintegral_le_one
     exact mul_le_one' (h1 μ hμS) (h2 ν hνT)
-  isProbabilityMeasure := by
+  isProbabilityMeasure_set := by
     rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
     specialize hS μ hμS
     specialize hT ν hνT
@@ -60,7 +60,7 @@ theorem isNumeraire_mul_numeraire
     constructor
     · fun_prop
     intro μ hμS
-    have := (isNumeraire_numeraire P hS).isProbabilityMeasure μ hμS
+    have := (isNumeraire_numeraire P hS).isProbabilityMeasure_set μ hμS
     rw [lintegral_lintegral_swap (by fun_prop)]
     have h_eq' : ∫⁻ y, ∫⁻ x, Y (x, y) / numeraire Q T y ∂μ ∂Q
         = ∫⁻ y, (∫⁻ x, Y (x, y) ∂μ) / numeraire Q T y ∂Q := by
@@ -73,7 +73,7 @@ theorem isNumeraire_mul_numeraire
     constructor
     · fun_prop
     intro ν hνT
-    have := (isNumeraire_numeraire Q hT).isProbabilityMeasure ν hνT
+    have := (isNumeraire_numeraire Q hT).isProbabilityMeasure_set ν hνT
     rw [lintegral_lintegral_symm (by fun_prop)]
     exact hY_evar.lintegral_le_one (μ.prod ν) ⟨μ, hμS, ν, hνT, rfl⟩
 

@@ -36,18 +36,18 @@ namespace ProbabilityTheory
 /-- A random variable `X` is the numeraire for a set of measures `S` and a measure `μ`
 if it is an E-variable for `S` and the expectation of the ratio of any E-variable `Y` over `X`
 is at most one under `μ`. -/
-structure IsNumeraire (X : 𝓧 → ℝ≥0∞) (S : Set (Measure 𝓧))
-    (μ : Measure 𝓧) [IsProbabilityMeasure μ] : Prop extends IsEVar X S where
-  isProbabilityMeasure : ∀ μ ∈ S, IsProbabilityMeasure μ
+structure IsNumeraire (X : 𝓧 → ℝ≥0∞) (S : Set (Measure 𝓧)) (μ : Measure 𝓧) : Prop
+    extends IsEVar X S where
+  isProbabilityMeasure_set : ∀ μ ∈ S, IsProbabilityMeasure μ
   lintegral_div_le_one : ∀ ⦃Y⦄, IsEVar Y S → ∫⁻ ω, Y ω / X ω ∂μ ≤ 1
 
 namespace IsNumeraire
 
-variable {X Y : 𝓧 → ℝ≥0∞} {μ : Measure 𝓧} [IsProbabilityMeasure μ] {S : Set (Measure 𝓧)}
+variable {X Y : 𝓧 → ℝ≥0∞} {μ : Measure 𝓧} {S : Set (Measure 𝓧)}
   {hS : ∀ μ ∈ S, IsProbabilityMeasure μ}
 
 lemma lintegral_inv_le_one (hX : IsNumeraire X S μ) : ∫⁻ ω, (X ω)⁻¹ ∂μ ≤ 1 := by
-  simpa using hX.lintegral_div_le_one (isEVar_one S hX.isProbabilityMeasure)
+  simpa using hX.lintegral_div_le_one (isEVar_one S hX.isProbabilityMeasure_set)
 
 lemma ae_pos (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, 0 < X ω := by
   suffices ∀ᵐ ω ∂μ, (X ω)⁻¹ < ∞ by
@@ -118,8 +118,8 @@ lemma setLIntegral_fsupport_inv_le_one (hX : IsEVar X S) (hY : IsNumeraire Y S �
     ← hY.lintegral_eq_setLIntegral_rev_fsupport hX]
   exact hY.lintegral_div_le_one hX
 
-lemma inv_lintegral_div_eq_one (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ)
-    (h : μ X.fsupport ≠ 0) :
+lemma inv_lintegral_div_eq_one [IsProbabilityMeasure μ]
+    (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) (h : μ X.fsupport ≠ 0) :
     (∫⁻ ω, Y ω / X ω ∂μ)⁻¹ = 1 := by
   set W := Y / X
   rw [hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar]
@@ -132,14 +132,15 @@ lemma inv_lintegral_div_eq_one (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S �
   · simp only [← hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar, le_inv_iff_mul_le, one_mul]
     exact hX.lintegral_div_le_one hY.toIsEVar
 
-lemma lintegral_div_eq_one (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ)
-    (h : μ X.fsupport ≠ 0) :
+lemma lintegral_div_eq_one [IsProbabilityMeasure μ]
+    (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) (h : μ X.fsupport ≠ 0) :
     ∫⁻ ω, Y ω / X ω ∂μ = 1 := by
   rw [← ENNReal.inv_eq_one]
   exact hX.inv_lintegral_div_eq_one hY h
 
 /-- The Numeraire is almost-everywhere unique. -/
-theorem ae_unique (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) : X =ᵐ[μ] Y := by
+theorem ae_unique [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) :
+    X =ᵐ[μ] Y := by
   rcases hY.measure_fsupport_ne_zero_or_ae_top with μ_fsupport | hYₜ
   swap
   · filter_upwards [hYₜ, hX.ae_top_implies_numeraire_top hY.toIsEVar] with ω hω hω₂
@@ -166,7 +167,7 @@ theorem ae_unique (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) : X =ᵐ[�
 
 lemma congr (hX : IsNumeraire X S μ) (hY_evar : IsEVar Y S) (hY : Y =ᵐ[μ] X) :
     IsNumeraire Y S μ := by
-  refine ⟨hY_evar, hX.isProbabilityMeasure, fun Z hZ_evar ↦ ?_⟩
+  refine ⟨hY_evar, hX.isProbabilityMeasure_set, fun Z hZ_evar ↦ ?_⟩
   calc ∫⁻ ω, Z ω / Y ω ∂μ
     _ = ∫⁻ ω, Z ω / X ω ∂μ := by
       refine lintegral_congr_ae ?_
