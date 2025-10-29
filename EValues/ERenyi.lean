@@ -10,6 +10,8 @@ import EValues.Product
 
 An analogue of the Rényi divergence for e-variables.
 
+TODO: redefine the divergences using `maxUtility` of `logUtility`?
+
 -/
 
 open MeasureTheory Filter
