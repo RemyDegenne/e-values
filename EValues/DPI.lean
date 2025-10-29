@@ -18,10 +18,9 @@ namespace MeasureTheory
 
 /-- The maximum utility `P[U ∘ X]` of a measure `P` over all e-variables `X` for
 a set of measures `S`. -/
-
 noncomputable
 def maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) (U : Utility) : EReal :=
-  sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P}
+  ⨆ (X : 𝓧 → ℝ≥0∞) (_hX : IsEVar X S), ∫ᵉ x, (U ∘ X) x ∂P
 
 /-- The maximum randomized utility `(η ∘ₘ P)[U]` of a measure `P` over all randomized e-variables
 `η` for a set of measures `S`. -/
@@ -31,10 +30,24 @@ def maxRandUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) (U : Utility) : E
 
 variable {P : Measure 𝓧} {S T : Set (Measure 𝓧)} {U : Utility} {φ : 𝓧 → 𝓨} {κ : Kernel 𝓧 𝓨}
 
-lemma maxUtility_anti (hS : S ⊆ T) : maxUtility P T U ≤ maxUtility P S U := by
-  refine sSup_le_sSup ?_
-  rintro y ⟨X, hX, hy⟩
-  exact ⟨X, hX.anti_set hS, hy⟩
+lemma maxUtility_sSup : maxUtility P S U = sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := by
+  rw [sSup_eq_iSup]
+  simp_rw [Set.mem_setOf_eq, iSup_exists, iSup_and]
+  simp only [maxUtility]
+  suffices ⨆ a, ⨆ i, ⨆ (_ : IsEVar i S), ⨆ (_ : a = ∫ᵉ x, (U ∘ i) x ∂P), a =
+      ⨆ i, ⨆ (_ : IsEVar i S), ⨆ a, ⨆ (_ : a = ∫ᵉ x, (U ∘ i) x ∂P), a by
+    simp_rw [this, iSup_iSup_eq_left]
+  rw [iSup_comm]
+  refine iSup_congr (fun i => ?_)
+  rw [iSup_comm]
+
+lemma maxUtility_anti (hS : S ⊆ T) (hU : Measurable U) :
+    maxUtility P T U ≤ maxUtility P S U := by
+  refine ciSup_mono ?_ fun X ↦ ?_
+  · sorry
+  by_cases hX : IsEVar X T
+  · simp [hX, hX.anti_set hS]
+  · sorry
 
 lemma maxRandUtility_anti (hS : S ⊆ T) (hU : Measurable U) :
     maxRandUtility P T U ≤ maxRandUtility P S U := by
@@ -50,7 +63,8 @@ lemma maxUtility_map_le (P : Measure 𝓧) (S : Set (Measure 𝓧))
     (hφ : Measurable φ) (hU : Measurable U) :
     maxUtility (P.map φ) {μ.map φ | μ ∈ S} U ≤ maxUtility P S U := by
   calc maxUtility (P.map φ) {μ.map φ | μ ∈ S} U
-  _ = sSup {y | ∃ Y, IsEVar Y {μ.map φ | μ ∈ S} ∧ y = ∫ᵉ x, (U ∘ Y) x ∂(P.map φ)} := rfl
+  _ = sSup {y | ∃ Y, IsEVar Y {μ.map φ | μ ∈ S} ∧ y = ∫ᵉ x, (U ∘ Y) x ∂(P.map φ)} :=
+    maxUtility_sSup
   _ = sSup {y | ∃ Y, IsEVar Y {μ.map φ | μ ∈ S} ∧ y = ∫ᵉ x, (U ∘ Y ∘ φ) x ∂P} := by
     congr with y
     constructor
@@ -75,7 +89,7 @@ lemma maxUtility_map_le (P : Measure 𝓧) (S : Set (Measure 𝓧))
     intro μ hμ
     have := hY_evar.lintegral_le_one (μ.map φ) ⟨μ, hμ, rfl⟩
     rwa [lintegral_map hY_evar.measurable hφ] at this
-  _ = maxUtility P S U := rfl
+  _ = maxUtility P S U := maxUtility_sSup.symm
 
 lemma maxRandUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
     (hU : Measurable U) :
