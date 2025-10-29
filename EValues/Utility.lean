@@ -6,7 +6,7 @@ Authors: Rémy Degenne
 import EValues.EIntegral
 import Mathlib.Analysis.Calculus.ContDiff.Basic
 import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLog
+import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-!
