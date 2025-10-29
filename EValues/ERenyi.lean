@@ -31,6 +31,13 @@ def erenyiDiv (α : ℝ≥0∞) (S T : Set (Measure 𝓧)) : ℝ≥0∞ :=
     α * (∫ᵉ x, ENNReal.log (numeraire R S x) ∂R).toENNReal +
     (1 - α) * (∫ᵉ x, ENNReal.log (numeraire R T x) ∂R).toENNReal
 
+/-- The e-Chernoff divergence between two sets of measures. -/
+noncomputable
+def echernoffDiv (S T : Set (Measure 𝓧)) : ℝ≥0∞ :=
+  ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
+    max (∫ᵉ x, ENNReal.log (numeraire R S x) ∂R).toENNReal
+      (∫ᵉ x, ENNReal.log (numeraire R T x) ∂R).toENNReal
+
 /-- Data processing inequality for the e-Rényi divergence. -/
 lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
     erenyiDiv α (Measure.map f '' S) (Measure.map f '' T) ≤ erenyiDiv α S T := by
@@ -38,11 +45,23 @@ lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
   gcongr 1
   sorry
 
+lemma echernoffDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
+    echernoffDiv (Measure.map f '' S) (Measure.map f '' T) ≤ echernoffDiv S T := by
+  unfold echernoffDiv
+  sorry
+
 lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
     (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
     (hT₁ : ∀ μ ∈ T₁, IsProbabilityMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsProbabilityMeasure μ) :
     erenyiDiv α (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) (Measure.prod.uncurry '' (S₂ ×ˢ T₂))
       = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
+  sorry
+
+lemma echernoffDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
+    (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
+    (hT₁ : ∀ μ ∈ T₁, IsProbabilityMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsProbabilityMeasure μ) :
+    echernoffDiv (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) (Measure.prod.uncurry '' (S₂ ×ˢ T₂))
+      ≤ echernoffDiv S₁ S₂ + echernoffDiv T₁ T₂ := by
   sorry
 
 -- todo: rename
