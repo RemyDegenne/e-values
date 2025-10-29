@@ -41,13 +41,11 @@ lemma maxUtility_sSup : maxUtility P S U = sSup {y | ∃ X, IsEVar X S ∧ y = �
   refine iSup_congr (fun i => ?_)
   rw [iSup_comm]
 
-lemma maxUtility_anti (hS : S ⊆ T) (hU : Measurable U) :
-    maxUtility P T U ≤ maxUtility P S U := by
-  refine ciSup_mono ?_ fun X ↦ ?_
-  · sorry
-  by_cases hX : IsEVar X T
-  · simp [hX, hX.anti_set hS]
-  · sorry
+lemma maxUtility_anti (hS : S ⊆ T) : maxUtility P T U ≤ maxUtility P S U := by
+  rw [maxUtility_sSup, maxUtility_sSup]
+  refine sSup_le_sSup ?_
+  rintro y ⟨X, hX, hy⟩
+  exact ⟨X, hX.anti_set hS, hy⟩
 
 lemma maxRandUtility_anti (hS : S ⊆ T) (hU : Measurable U) :
     maxRandUtility P T U ≤ maxRandUtility P S U := by
