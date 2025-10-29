@@ -41,7 +41,7 @@ lemma maxUtility_eq_sSup : maxUtility P S U = sSup {y | ∃ X, IsEVar X S ∧ y 
   refine iSup_congr (fun i => ?_)
   rw [iSup_comm]
 
-lemma maxRandUtility_sSup : maxRandUtility P S U =
+lemma maxRandUtility_eq_sSup : maxRandUtility P S U =
       sSup {y | ∃ η, IsMarkovKernel η ∧ IsRandEVar η S ∧ y = ∫ᵉ x, U x ∂(η ∘ₘ P)} := by
   rw [sSup_eq_iSup]
   simp_rw [Set.mem_setOf_eq, iSup_exists, iSup_and]
