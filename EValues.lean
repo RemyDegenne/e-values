@@ -6,5 +6,6 @@ import EValues.Mathlib.ENNReal
 import EValues.Mathlib.Jensen
 import EValues.Numeraire
 import EValues.NumeraireExistence
+import EValues.Product
 import EValues.RealPolar
 import EValues.Utility

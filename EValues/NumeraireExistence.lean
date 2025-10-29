@@ -92,29 +92,34 @@ lemma exists_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
 open Classical in
 /-- The numeraire e-variable. -/
 noncomputable
-def numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (S : Set (Measure 𝓧)) :
+def numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     𝓧 → ℝ≥0∞ :=
-  if hS : ∀ μ ∈ S, IsProbabilityMeasure μ
+  if _ : IsProbabilityMeasure P
+  then
+    if hS : ∀ μ ∈ S, IsProbabilityMeasure μ
     then Classical.choose (exists_numeraire P S hS)
     else 0
+  else 0
 
-lemma isEVar_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P] (S : Set (Measure 𝓧)) :
+lemma isEVar_numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     IsEVar (numeraire P S) S := by
-  by_cases hS : ∀ μ ∈ S, IsProbabilityMeasure μ
-  · rw [numeraire, dif_pos hS]
-    exact (Classical.choose_spec (exists_numeraire P S hS)).1
-  · rw [numeraire, dif_neg hS]
+  by_cases hP : IsProbabilityMeasure P
+  · by_cases hS : ∀ μ ∈ S, IsProbabilityMeasure μ
+    · rw [numeraire, dif_pos (by infer_instance), dif_pos hS]
+      exact (Classical.choose_spec (exists_numeraire P S hS)).1
+    · rw [numeraire, dif_pos (by infer_instance), dif_neg hS]
+      exact isEVar_zero
+  · rw [numeraire, dif_neg hP]
     exact isEVar_zero
 
 @[fun_prop]
-lemma measurable_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P] (S : Set (Measure 𝓧)) :
+lemma measurable_numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     Measurable (numeraire P S) := (isEVar_numeraire P S).measurable
 
 lemma lintegral_div_numeraire_le (P : Measure 𝓧) [IsProbabilityMeasure P]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
     ∫⁻ x, X x / (numeraire P S x) ∂P ≤ ∫⁻ x, (numeraire P S x) / (numeraire P S x) ∂P := by
-  rw [numeraire, dif_pos hS]
+  rw [numeraire, dif_pos (by infer_instance), dif_pos hS]
   exact ((Classical.choose_spec (exists_numeraire P S hS)).2 X hX_evar)
 
 lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
@@ -130,13 +135,13 @@ lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
 /-- `numeraire` is a numeraire. -/
 lemma isNumeraire_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
-    IsNumeraire (numeraire P S) hS P :=
-  ⟨isEVar_numeraire P S, fun _ ↦ lintegral_div_numeraire_le_one P hS⟩
+    IsNumeraire (numeraire P S) S P :=
+  ⟨isEVar_numeraire P S, hS, fun _ ↦ lintegral_div_numeraire_le_one P hS⟩
 
 lemma IsNumeraire.ae_eq_numeraire [IsProbabilityMeasure P] {X : 𝓧 → ℝ≥0∞}
-    {hS : ∀ μ ∈ S, IsProbabilityMeasure μ} (hX : IsNumeraire X hS P) :
+    (hX : IsNumeraire X S P) :
     X =ᵐ[P] numeraire P S :=
-  hX.ae_unique (isNumeraire_numeraire P hS)
+  hX.ae_unique (isNumeraire_numeraire P hX.isProbabilityMeasure_set)
 
 /-- For a given e-variable `Y`, the property of being a numeraire is equivalent to the property
 that the expectation of the ratio of any e-variable `X` over `Y` is less
@@ -144,9 +149,9 @@ than the expectation of the ratio of `Y` over itself. -/
 lemma lintegral_div_self_le_iff_IsNumeraire [IsProbabilityMeasure P]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
     {Y : 𝓧 → ℝ≥0∞} (hY_evar : IsEVar Y S) :
-    (∀ X, IsEVar X S → ∫⁻ ω, X ω / Y ω ∂P ≤ ∫⁻ ω, Y ω / Y ω ∂P) ↔ IsNumeraire Y hS P := by
+    (∀ X, IsEVar X S → ∫⁻ ω, X ω / Y ω ∂P ≤ ∫⁻ ω, Y ω / Y ω ∂P) ↔ IsNumeraire Y S P := by
   refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
-  · refine ⟨hY_evar, fun X hX_evar ↦ (h X hX_evar).trans ?_⟩
+  · refine ⟨hY_evar, hS, fun X hX_evar ↦ (h X hX_evar).trans ?_⟩
     calc ∫⁻ ω, Y ω / Y ω ∂P
     _ ≤ ∫⁻ ω, 1 ∂P := by
       gcongr with ω

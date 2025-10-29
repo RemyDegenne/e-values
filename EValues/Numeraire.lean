@@ -36,19 +36,20 @@ namespace ProbabilityTheory
 /-- A random variable `X` is the numeraire for a set of measures `S` and a measure `μ`
 if it is an E-variable for `S` and the expectation of the ratio of any E-variable `Y` over `X`
 is at most one under `μ`. -/
-structure IsNumeraire (X : 𝓧 → ℝ≥0∞) {S : Set (Measure 𝓧)} (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
-    (μ : Measure 𝓧) [IsProbabilityMeasure μ] : Prop extends IsEVar X S where
+structure IsNumeraire (X : 𝓧 → ℝ≥0∞) (S : Set (Measure 𝓧)) (μ : Measure 𝓧) : Prop
+    extends IsEVar X S where
+  isProbabilityMeasure_set : ∀ μ ∈ S, IsProbabilityMeasure μ
   lintegral_div_le_one : ∀ ⦃Y⦄, IsEVar Y S → ∫⁻ ω, Y ω / X ω ∂μ ≤ 1
 
 namespace IsNumeraire
 
-variable {X Y : 𝓧 → ℝ≥0∞} {μ : Measure 𝓧} [IsProbabilityMeasure μ] {S : Set (Measure 𝓧)}
+variable {X Y : 𝓧 → ℝ≥0∞} {μ : Measure 𝓧} {S : Set (Measure 𝓧)}
   {hS : ∀ μ ∈ S, IsProbabilityMeasure μ}
 
-lemma lintegral_inv_le_one (hX : IsNumeraire X hS μ) : ∫⁻ ω, (X ω)⁻¹ ∂μ ≤ 1 := by
-  simpa using hX.lintegral_div_le_one (isEVar_one S hS)
+lemma lintegral_inv_le_one (hX : IsNumeraire X S μ) : ∫⁻ ω, (X ω)⁻¹ ∂μ ≤ 1 := by
+  simpa using hX.lintegral_div_le_one (isEVar_one S hX.isProbabilityMeasure_set)
 
-lemma ae_pos (hX : IsNumeraire X hS μ) : ∀ᵐ ω ∂μ, 0 < X ω := by
+lemma ae_pos (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, 0 < X ω := by
   suffices ∀ᵐ ω ∂μ, (X ω)⁻¹ < ∞ by
     simp only [pos_iff_ne_zero]
     filter_upwards [this] with ω hω using by simpa using hω.ne
@@ -57,10 +58,10 @@ lemma ae_pos (hX : IsNumeraire X hS μ) : ∀ᵐ ω ∂μ, 0 < X ω := by
     fun_prop
   · exact ne_top_of_le_ne_top (by simp) hX.lintegral_inv_le_one
 
-lemma ae_ne_zero (hX : IsNumeraire X hS μ) : ∀ᵐ ω ∂μ, X ω ≠ 0 := by
+lemma ae_ne_zero (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, X ω ≠ 0 := by
   filter_upwards [hX.ae_pos] with ω hω using hω.ne'
 
-lemma lintegral_eq_setLIntegral_fsupport (hX : IsNumeraire X hS μ) (hY : IsEVar Y S) :
+lemma lintegral_eq_setLIntegral_fsupport (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫⁻ ω, Y ω / X ω ∂μ = ∫⁻ ω in X.fsupport, Y ω / X ω ∂μ := by
   rw [← lintegral_add_compl _ hX.measurable_fsupport]
   suffices ∫⁻ ω in X.fsupportᶜ, Y ω / X ω ∂μ = 0 by simp [this]
@@ -70,7 +71,7 @@ lemma lintegral_eq_setLIntegral_fsupport (hX : IsNumeraire X hS μ) (hY : IsEVar
     and_true, Decidable.not_not] at hω₂
   simp [hω₂]
 
-lemma ae_top_implies_numeraire_top (hX : IsNumeraire X hS μ) (hY : IsEVar Y S) :
+lemma ae_top_implies_numeraire_top (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∀ᵐ ω ∂μ, Y ω = ∞ → X ω = ∞ := by
   by_contra h
   simp only [ae_iff, Classical.not_imp] at h
@@ -86,7 +87,7 @@ lemma ae_top_implies_numeraire_top (hX : IsNumeraire X hS μ) (hY : IsEVar Y S) 
   simp [hω.1, ENNReal.top_div, hω.2]
 
 -- `rev`?
-lemma lintegral_eq_setLIntegral_rev_fsupport (hX : IsNumeraire X hS μ) (hY : IsEVar Y S) :
+lemma lintegral_eq_setLIntegral_rev_fsupport (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫⁻ ω, Y ω / X ω ∂μ = ∫⁻ ω in Y.fsupport, Y ω / X ω ∂μ := by
   rw [← lintegral_add_compl _ hY.measurable_fsupport]
   suffices ∫⁻ ω in Y.fsupportᶜ, Y ω / X ω ∂μ = 0 by simp [this]
@@ -100,7 +101,7 @@ lemma lintegral_eq_setLIntegral_rev_fsupport (hX : IsNumeraire X hS μ) (hY : Is
       Decidable.not_not] at hω₂
     simp [hω_top, hω₂]
 
-lemma measure_fsupport_ne_zero_or_ae_top (hX : IsNumeraire X hS μ) :
+lemma measure_fsupport_ne_zero_or_ae_top (hX : IsNumeraire X S μ) :
     μ X.fsupport ≠ 0 ∨ X =ᵐ[μ] fun _ ↦ ∞ := by
   by_contra! h
   rcases h with ⟨h, h_top⟩
@@ -110,15 +111,15 @@ lemma measure_fsupport_ne_zero_or_ae_top (hX : IsNumeraire X hS μ) :
   filter_upwards [h', ae_ne_zero hX] with ω hω_mem hω_ne_zero
   simpa [hω_ne_zero] using hω_mem
 
-lemma setLIntegral_fsupport_inv_le_one (hX : IsEVar X S) (hY : IsNumeraire Y hS μ) :
+lemma setLIntegral_fsupport_inv_le_one (hX : IsEVar X S) (hY : IsNumeraire Y S μ) :
     ∫⁻ ω in X.fsupport, (Y ω / X ω)⁻¹ ∂μ ≤ 1 := by
   suffices ∫⁻ ω in X.fsupport, ((Y / X) ω)⁻¹ ∂μ ≤ 1 by exact this
   rw [setLIntegral_congr_fun hX.measurable_fsupport <| ENNReal.inv_div_fsupport Y X,
     ← hY.lintegral_eq_setLIntegral_rev_fsupport hX]
   exact hY.lintegral_div_le_one hX
 
-lemma inv_lintegral_div_eq_one (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS μ)
-    (h : μ X.fsupport ≠ 0) :
+lemma inv_lintegral_div_eq_one [IsProbabilityMeasure μ]
+    (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) (h : μ X.fsupport ≠ 0) :
     (∫⁻ ω, Y ω / X ω ∂μ)⁻¹ = 1 := by
   set W := Y / X
   rw [hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar]
@@ -131,14 +132,15 @@ lemma inv_lintegral_div_eq_one (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS
   · simp only [← hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar, le_inv_iff_mul_le, one_mul]
     exact hX.lintegral_div_le_one hY.toIsEVar
 
-lemma lintegral_div_eq_one (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS μ)
-    (h : μ X.fsupport ≠ 0) :
+lemma lintegral_div_eq_one [IsProbabilityMeasure μ]
+    (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) (h : μ X.fsupport ≠ 0) :
     ∫⁻ ω, Y ω / X ω ∂μ = 1 := by
   rw [← ENNReal.inv_eq_one]
   exact hX.inv_lintegral_div_eq_one hY h
 
 /-- The Numeraire is almost-everywhere unique. -/
-theorem ae_unique (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS μ) : X =ᵐ[μ] Y := by
+theorem ae_unique [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) :
+    X =ᵐ[μ] Y := by
   rcases hY.measure_fsupport_ne_zero_or_ae_top with μ_fsupport | hYₜ
   swap
   · filter_upwards [hYₜ, hX.ae_top_implies_numeraire_top hY.toIsEVar] with ω hω hω₂
@@ -163,9 +165,9 @@ theorem ae_unique (hX : IsNumeraire X hS μ) (hY : IsNumeraire Y hS μ) : X =ᵐ
     filter_upwards [hYₜ] with ω hω
     simp [W, hω]
 
-lemma congr (hX : IsNumeraire X hS μ) (hY_evar : IsEVar Y S) (hY : Y =ᵐ[μ] X) :
-    IsNumeraire Y hS μ := by
-  refine ⟨hY_evar, fun Z hZ_evar ↦ ?_⟩
+lemma congr (hX : IsNumeraire X S μ) (hY_evar : IsEVar Y S) (hY : Y =ᵐ[μ] X) :
+    IsNumeraire Y S μ := by
+  refine ⟨hY_evar, hX.isProbabilityMeasure_set, fun Z hZ_evar ↦ ?_⟩
   calc ∫⁻ ω, Z ω / Y ω ∂μ
     _ = ∫⁻ ω, Z ω / X ω ∂μ := by
       refine lintegral_congr_ae ?_
@@ -180,7 +182,7 @@ lemma ENNReal.log_div (a b : ℝ≥0∞) : ENNReal.log (a / b) = ENNReal.log a -
 
 -- todo: prove that log-optimal implies numeraire
 /-- A Numeraire is log-optimal. -/
-theorem eintegral_log_div_nonpos (hX : IsNumeraire X hS μ) (hY : IsEVar Y S) :
+theorem eintegral_log_div_nonpos (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫ᵉ ω, ENNReal.log (Y ω / X ω) ∂μ ≤ 0:= by
   calc ∫ᵉ ω, ENNReal.log (Y ω / X ω) ∂μ
   _ ≤ ENNReal.log (∫⁻ ω, Y ω / X ω ∂μ) := by
@@ -191,7 +193,7 @@ theorem eintegral_log_div_nonpos (hX : IsNumeraire X hS μ) (hY : IsEVar Y S) :
     exact lintegral_div_le_one hX hY
 
 /-- A Numeraire maximizes the integral of the logarithm. -/
-theorem eintegral_log_le (hX : IsNumeraire X hS μ) (hY : IsEVar Y S) :
+theorem eintegral_log_le (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫ᵉ ω, ENNReal.log (Y ω) ∂μ ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by
   have h_nonpos := eintegral_log_div_nonpos hX hY
   simp_rw [ENNReal.log_div] at h_nonpos
