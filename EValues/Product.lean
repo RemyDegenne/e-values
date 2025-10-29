@@ -21,7 +21,7 @@ variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableS
 
 /-- The numeraire of a product measure with respect to a product of sets is the product
 of the numeraires. -/
-theorem isNumeraire_mul_numeraire_prod (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
+theorem isNumeraire_mul_numeraire (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
     (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
     IsNumeraire (fun (x : 𝓧 × 𝓨) ↦ numeraire P S x.1 * numeraire Q T x.2)
       {ρ | ∃ μ ∈ S, ∃ ν ∈ T, ρ = μ.prod ν} (P.prod Q) where
@@ -75,5 +75,30 @@ theorem isNumeraire_mul_numeraire_prod (hS : ∀ μ ∈ S, IsProbabilityMeasure 
     have := (isNumeraire_numeraire Q hT).isProbabilityMeasure ν hνT
     rw [lintegral_lintegral_symm (by fun_prop)]
     exact hY_evar.lintegral_le_one (μ.prod ν) ⟨μ, hμS, ν, hνT, rfl⟩
+
+lemma isNumeraire_prod_numeraire_fintype {ι : Type*} {𝓧 : ι → Type*} [hι : Fintype ι]
+    {m𝓧 : ∀ i, MeasurableSpace (𝓧 i)} {P : (i : ι) → Measure (𝓧 i)}
+    {S : (i : ι) → Set (Measure (𝓧 i))} [∀ i, IsProbabilityMeasure (P i)]
+    (hS : ∀ i, ∀ μ ∈ S i, IsProbabilityMeasure μ) :
+    IsNumeraire (fun x ↦ ∏ i, numeraire (P i) (S i) (x i))
+      (Measure.pi '' (Set.pi Set.univ S))
+      --{μ | ∃ ν : (i : ι) → Measure (𝓧 i), (∀ i, ν i ∈ S i) ∧ μ = Measure.pi ν}
+      (Measure.pi P) := by
+  sorry
+
+lemma isNumeraire_prod_numeraire_finset {ι : Type*} {𝓧 : ι → Type*} {s : Finset ι}
+    {m𝓧 : ∀ i, MeasurableSpace (𝓧 i)} {P : (i : ι) → Measure (𝓧 i)}
+    {S : (i : ι) → Set (Measure (𝓧 i))} [∀ i, IsProbabilityMeasure (P i)]
+    (hS : ∀ i ∈ s, ∀ μ ∈ S i, IsProbabilityMeasure μ) :
+    IsNumeraire (fun x ↦ ∏ i : s, numeraire (P i) (S i) (x i))
+      {μ | ∃ ν : (i : ι) → Measure (𝓧 i), (∀ i ∈ s, ν i ∈ S i) ∧ μ = Measure.pi (fun i : s ↦ ν i)}
+      (Measure.pi (fun i : s ↦ P i)) := by
+  classical
+  induction s using Finset.induction with
+  | empty =>
+    simp only [Finset.univ_eq_empty, Finset.prod_empty]
+    sorry
+  | insert a s has hs =>
+    sorry
 
 end ProbabilityTheory
