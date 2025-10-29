@@ -79,7 +79,7 @@ theorem isNumeraire_mul_numeraire
 
 /-- The logarithmic utility of the numeraire on a product is the sum of the two logarithmic
 utilities. -/
-theorem logUtility_numeraire_mul (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
+theorem logUtility_numeraire_prod (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
     (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
     ∫ᵉ x, ENNReal.log (numeraire (P.prod Q) (Measure.prod.uncurry '' (S ×ˢ T)) x) ∂(P.prod Q)
       = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P + ∫ᵉ x, ENNReal.log (numeraire Q T x) ∂Q := by
