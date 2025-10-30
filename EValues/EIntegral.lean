@@ -3,8 +3,7 @@ Copyright (c) 2025 Gaëtan Serré. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré, Rémy Degenne
 -/
-import Mathlib.MeasureTheory.Integral.Lebesgue.Basic
-import Mathlib.MeasureTheory.Measure.Prod
+import Mathlib
 
 namespace MeasureTheory
 
@@ -76,15 +75,24 @@ lemma eintegral_const (c : EReal) (μ : Measure α) :
     · exact EReal.neg_nonneg.mpr hc
 
 lemma eintegral_mono_ae {f g : α → EReal} (hfg : f ≤ᵐ[μ] g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ := by
-  sorry
+  refine EReal.sub_le_sub ?_ ?_
+  · rw [EReal.coe_ennreal_le_coe_ennreal_iff]
+    refine lintegral_mono_ae ?_
+    filter_upwards [hfg] with x hfgx
+    exact EReal.toENNReal_le_toENNReal hfgx
+  · rw [EReal.coe_ennreal_le_coe_ennreal_iff]
+    refine lintegral_mono_ae ?_
+    filter_upwards [hfg] with x hfgx
+    rw [← EReal.neg_le_neg_iff] at hfgx
+    exact EReal.toENNReal_le_toENNReal hfgx
 
 lemma eintegral_mono {f g : α → EReal} (hfg : f ≤ g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ :=
   eintegral_mono_ae <| ae_of_all _ hfg
 
 lemma eintegral_add (μ : Measure α) (f g : α → EReal) :
     ∫ᵉ x, f x + g x ∂μ = ∫ᵉ x, f x ∂μ + ∫ᵉ x, g x ∂μ := by
-  -- cut the space into four parts depending on the signs of `f` and `g`
   sorry
+  -- cut the space into four parts depending on the signs of `f` and `g`
 
 lemma eintegral_sub (μ : Measure α) (f g : α → EReal) :
     ∫ᵉ x, f x - g x ∂μ = ∫ᵉ x, f x ∂μ - ∫ᵉ x, g x ∂μ := by
