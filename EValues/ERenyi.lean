@@ -35,8 +35,7 @@ def erenyiDiv (α : ℝ≥0∞) (S T : Set (Measure 𝓧)) : ℝ≥0∞ :=
 noncomputable
 def echernoffDiv (S T : Set (Measure 𝓧)) : ℝ≥0∞ :=
   ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
-    max (∫ᵉ x, ENNReal.log (numeraire R S x) ∂R).toENNReal
-      (∫ᵉ x, ENNReal.log (numeraire R T x) ∂R).toENNReal
+    max (maxUtility R S logUtility).toENNReal (maxUtility R T logUtility).toENNReal
 
 /-- Data processing inequality for the e-Rényi divergence. -/
 lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
