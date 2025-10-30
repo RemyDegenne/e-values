@@ -3,14 +3,13 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
+import EValues.DPI
 import EValues.Product
 
 /-!
 # E-Rényi divergence
 
 An analogue of the Rényi divergence for e-variables.
-
-TODO: redefine the divergences using `maxUtility` of `logUtility`?
 
 -/
 
@@ -30,8 +29,7 @@ truncate. -/
 noncomputable
 def erenyiDiv (α : ℝ≥0∞) (S T : Set (Measure 𝓧)) : ℝ≥0∞ :=
   (1 - α)⁻¹ * ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
-    α * (∫ᵉ x, ENNReal.log (numeraire R S x) ∂R).toENNReal +
-    (1 - α) * (∫ᵉ x, ENNReal.log (numeraire R T x) ∂R).toENNReal
+    α * (maxUtility R S logUtility).toENNReal + (1 - α) * (maxUtility R T logUtility).toENNReal
 
 /-- The e-Chernoff divergence between two sets of measures. -/
 noncomputable
