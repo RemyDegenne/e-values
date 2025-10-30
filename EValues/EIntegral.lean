@@ -75,6 +75,12 @@ lemma eintegral_const (c : EReal) (μ : Measure α) :
     · simp
     · exact EReal.neg_nonneg.mpr hc
 
+lemma eintegral_mono_ae {f g : α → EReal} (hfg : f ≤ᵐ[μ] g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ := by
+  sorry
+
+lemma eintegral_mono {f g : α → EReal} (hfg : f ≤ g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ :=
+  eintegral_mono_ae (ae_of_all _ hfg)
+
 lemma eintegral_add (μ : Measure α) (f g : α → EReal) :
     ∫ᵉ x, f x + g x ∂μ = ∫ᵉ x, f x ∂μ + ∫ᵉ x, g x ∂μ := by
   -- cut the space into four parts depending on the signs of `f` and `g`

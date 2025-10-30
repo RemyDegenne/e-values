@@ -82,7 +82,8 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
       · rw [isRandEVar_iff_isEVar] at hη₂
         exact hη₂.lintegral_le_one μ hμ
       · rw [hy, eintegral_bind η.aemeasurable U.aemeasurable]
-        sorry
+        refine eintegral_mono (fun _ ↦ ?_)
+        exact U.eintegral_le_map (by measurability)
     trans ∫ᵉ x, (U ∘ X) x ∂P
     · exact h_le
     · rw [maxUtility_eq_sSup]
@@ -98,8 +99,6 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     · rw [hy, Measure.deterministic_comp_eq_map hX.measurable,
         eintegral_map U.measurable hX.measurable]
       rfl
-
-example : Measurable ENNReal.log := by measurability
 
 lemma maxRandUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
     [IsMarkovKernel κ] : maxRandUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxRandUtility P S U := by
