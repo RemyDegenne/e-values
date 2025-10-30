@@ -49,7 +49,7 @@ lemma Utility.continuous (U : Utility) : Continuous U := U.continuous'
 lemma Utility.measurable (U : Utility) : Measurable U := U.continuous.measurable
 
 lemma Utility.aemeasurable {μ : Measure ℝ≥0∞} (U : Utility) :
-  AEMeasurable U μ := U.continuous.measurable.aemeasurable
+    AEMeasurable U μ := U.measurable.aemeasurable
 
 lemma Utility.concave (U : Utility) : ConcaveOn ℝ≥0 Set.univ U := U.concave'
 
