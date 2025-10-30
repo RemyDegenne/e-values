@@ -39,7 +39,7 @@ lemma maxUtility_eq_sSup : maxUtility P S U =
       ⨆ X, ⨆ (_ : IsEVar X S), ⨆ a, ⨆ (_ : a = ∫ᵉ x, (U ∘ X) x ∂P), a by
     simp_rw [this, iSup_iSup_eq_left]
   rw [iSup_comm]
-  refine iSup_congr <| fun i => ?_
+  refine iSup_congr fun i => ?_
   rw [iSup_comm]
 
 lemma maxRandUtility_eq_sSup : maxRandUtility P S U =
@@ -53,9 +53,9 @@ lemma maxRandUtility_eq_sSup : maxRandUtility P S U =
         ⨆ a, ⨆ (_ : a = ∫ᵉ x, U x ∂(η ∘ₘ P)), a by
     simp_rw [this, iSup_iSup_eq_left]
   rw [iSup_comm]
-  refine iSup_congr <| fun i => ?_
+  refine iSup_congr fun i => ?_
   rw [iSup_comm]
-  refine iSup_congr <| fun η => ?_
+  refine iSup_congr fun η => ?_
   rw [iSup_comm]
 
 lemma maxUtility_anti (hS : S ⊆ T) : maxUtility P T U ≤ maxUtility P S U := by
@@ -82,7 +82,7 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
       · rw [isRandEVar_iff_isEVar] at hη₂
         exact hη₂.lintegral_le_one μ hμ
       · rw [hy, eintegral_bind η.aemeasurable U.aemeasurable]
-        refine eintegral_mono <| fun _ ↦ ?_
+        refine eintegral_mono fun _ ↦ ?_
         exact U.eintegral_le_map (by measurability)
     trans ∫ᵉ x, (U ∘ X) x ∂P
     · exact h_le
@@ -117,7 +117,7 @@ lemma maxRandUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : K
       rw [hξ_int, hξ, P.comp_assoc]
   _ ≤ maxRandUtility P S U := by
     rw [maxRandUtility_eq_sSup]
-    refine sSup_le_sSup <| fun y ↦ ?_
+    refine sSup_le_sSup fun y ↦ ?_
     rintro ⟨ξ, η, hη₁, hη₂, hξ, hξ_int⟩
     haveI : IsMarkovKernel ξ := by
       rw [hξ]
