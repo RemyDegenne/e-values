@@ -75,6 +75,12 @@ lemma eintegral_const (c : EReal) (μ : Measure α) :
     · simp
     · exact EReal.neg_nonneg.mpr hc
 
+lemma eintegral_mono_ae {f g : α → EReal} (hfg : f ≤ᵐ[μ] g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ := by
+  sorry
+
+lemma eintegral_mono {f g : α → EReal} (hfg : f ≤ g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ :=
+  eintegral_mono_ae <| ae_of_all _ hfg
+
 lemma eintegral_add (μ : Measure α) (f g : α → EReal) :
     ∫ᵉ x, f x + g x ∂μ = ∫ᵉ x, f x ∂μ + ∫ᵉ x, g x ∂μ := by
   -- cut the space into four parts depending on the signs of `f` and `g`
@@ -93,6 +99,15 @@ lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
     {ν : Measure β} [SFinite ν]
     (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) :
     ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by
+  sorry
+
+theorem eintegral_map {β : Type*} {mβ : MeasurableSpace β} {f : β → EReal} {g : α → β}
+    (hf : Measurable f) (hg : Measurable g) : ∫ᵉ a, f a ∂μ.map g = ∫ᵉ a, f (g a) ∂μ := by
+  sorry
+
+theorem eintegral_bind {β : Type*} {mβ : MeasurableSpace β} {m : α → Measure β} {f : β → EReal}
+    (hμ : AEMeasurable m μ) (hf : AEMeasurable f (μ.bind m)) :
+    ∫ᵉ x, f x ∂μ.bind m = ∫ᵉ a, ∫ᵉ x, f x ∂m a ∂μ := by
   sorry
 
 end MeasureTheory

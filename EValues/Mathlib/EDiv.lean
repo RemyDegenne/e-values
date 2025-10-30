@@ -90,5 +90,3 @@ lemma ediv_eq_one_iff_eq_enn (a b : ℝ≥0∞) : a /ₑ b = 1 ↔ a = b := by
         simp_all
       · push_neg at bₜ
         rw [ENNReal.div_eq_one_iff b₀ bₜ]
-
-example : (⊤ : ℝ≥0∞) * 1 / ⊤ = ⊤ / ⊤ := by simp
