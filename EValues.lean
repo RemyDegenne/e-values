@@ -1,3 +1,4 @@
+import EValues.DPI
 import EValues.EIntegral
 import EValues.EValue
 import EValues.Mathlib.Convex
