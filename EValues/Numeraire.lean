@@ -199,6 +199,10 @@ theorem eintegral_log_le (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
   simp_rw [ENNReal.log_div] at h_nonpos
   rwa [eintegral_sub, EReal.sub_nonpos] at h_nonpos
 
+lemma eintegral_log_nonneg (hX : IsNumeraire X S μ) :
+    0 ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by
+  simpa using eintegral_log_le hX (isEVar_one S hX.isProbabilityMeasure_set)
+
 end LogOptimal
 
 end IsNumeraire
