@@ -4,10 +4,12 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré
 -/
 
+import Mathlib.Algebra.Order.Module.OrderedSMul
 import Mathlib.Analysis.Convex.Slope
 import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLog
 
-open Set ENNReal
+open Set ENNReal NNReal
 
 lemma strictConvexOn_inv_Ioi : StrictConvexOn ℝ (Ioi (0 : ℝ)) Inv.inv := by
   apply strictConvexOn_of_slope_strict_mono_adjacent (convex_Ioi (0 : ℝ))
@@ -97,3 +99,9 @@ lemma strictConvexOn_inv : StrictConvexOn ℝ≥0∞ univ <| Inv.inv (α := ℝ�
 lemma convexOn_inv_Ioi : ConvexOn ℝ (Ioi (0 : ℝ)) Inv.inv := strictConvexOn_inv_Ioi.convexOn
 
 lemma convexOn_inv : ConvexOn ℝ≥0∞ univ <| Inv.inv (α := ℝ≥0∞) := strictConvexOn_inv.convexOn
+
+noncomputable instance : SMul ℝ≥0 EReal where smul c x := c * x
+noncomputable instance : SMul ℝ≥0∞ EReal where smul c x := c * x
+
+lemma ConcaveOn_log : ConcaveOn ℝ≥0 univ ENNReal.log := by
+  sorry

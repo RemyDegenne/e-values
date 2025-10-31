@@ -4,10 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
 import EValues.EIntegral
-import Mathlib.Analysis.Calculus.ContDiff.Basic
-import Mathlib.Analysis.InnerProductSpace.Basic
+import EValues.Mathlib.Convex
+import Mathlib.Algebra.Lie.OfAssociative
+import Mathlib.Analysis.Calculus.ContDiff.Defs
 import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
-import Mathlib.MeasureTheory.Integral.Bochner.Basic
 
 /-!
 # Utility functions
@@ -20,9 +20,6 @@ open scoped ENNReal NNReal Topology
 namespace ProbabilityTheory
 
 variable {U : ℝ≥0∞ → EReal}
-
-noncomputable instance : SMul ℝ≥0 EReal where smul c x := c * x
-noncomputable instance : SMul ℝ≥0∞ EReal where smul c x := c * x
 
 /-- A utility function is a concave, monotone and differentiable function from `ℝ≥0∞` to `EReal`,
 which is finite on `(0, ∞)`. -/
@@ -85,8 +82,8 @@ noncomputable def logUtility : Utility where
     intros x hx0 hx_top
     simp [ENNReal.log_eq_bot_iff, ENNReal.log_eq_top_iff, hx0, hx_top]
   monotone' := ENNReal.log_monotone
-  continuous' := sorry
-  concave' := sorry
+  continuous' := ENNReal.continuous_log
+  concave' := ConcaveOn_log
   differentiable' := by
     have h_eq x (hx : 0 < x) : (ENNReal.log (ENNReal.ofReal x)).toReal = Real.log x := by
       simp [ENNReal.log_ofReal, not_le.mpr hx]
