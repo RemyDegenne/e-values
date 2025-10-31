@@ -7,7 +7,7 @@ import Mathlib
 
 namespace MeasureTheory
 
-variable {α : Type*} {mα : MeasurableSpace α} {μ : Measure α} {f : α → EReal}
+variable {α : Type*} {mα : MeasurableSpace α} {μ : Measure α}
 
 /-- The integral of an `EReal`-valued function with respect to a measure `μ`, defined as the
 difference of two lower Lebesgue integrals. -/
@@ -39,22 +39,24 @@ lemma eintegral_congr_ae {f g : α → EReal} (h : ∀ᵐ x ∂μ, f x = g x) :
   simp_rw [eintegral]
   congr 2 <;> exact lintegral_congr_ae <| by filter_upwards [h] with x hx using by rw [hx]
 
-lemma eintegral_of_nonneg (hf : ∀ x, 0 ≤ f x) : ∫ᵉ x, f x ∂μ = ∫⁻ x, (f x).toENNReal ∂μ := by
+lemma eintegral_of_nonneg {f : α → EReal} (hf : ∀ x, 0 ≤ f x) :
+    ∫ᵉ x, f x ∂μ = ∫⁻ x, (f x).toENNReal ∂μ := by
   simp [eintegral, hf]
 
-lemma eintegral_of_ae_nonneg (hf : AEMeasurable f μ) (hf_nonneg : ∀ᵐ x ∂μ, 0 ≤ f x) :
-    ∫ᵉ x, f x ∂μ = ∫⁻ x, (f x).toENNReal ∂μ := by
+lemma eintegral_of_ae_nonneg {f : α → EReal} (hf : AEMeasurable f μ)
+    (hf_nonneg : ∀ᵐ x ∂μ, 0 ≤ f x) : ∫ᵉ x, f x ∂μ = ∫⁻ x, (f x).toENNReal ∂μ := by
   rw [eintegral]
   suffices ∫⁻ x, (-f x).toENNReal ∂μ = 0 by simp [this]
   rw [lintegral_eq_zero_iff']
   · filter_upwards [hf_nonneg] with x hx using by simp [hx]
   · fun_prop
 
-lemma eintegral_of_nonpos (hf : ∀ x, f x ≤ 0) : ∫ᵉ x, f x ∂μ = - ∫⁻ x, (-f x).toENNReal ∂μ := by
+lemma eintegral_of_nonpos {f : α → EReal} (hf : ∀ x, f x ≤ 0) :
+    ∫ᵉ x, f x ∂μ = - ∫⁻ x, (-f x).toENNReal ∂μ := by
   simp [eintegral, hf]
 
-lemma eintegral_of_ae_nonpos (hf : AEMeasurable f μ) (hf_nonpos : ∀ᵐ x ∂μ, f x ≤ 0) :
-    ∫ᵉ x, f x ∂μ = - ∫⁻ x, (-f x).toENNReal ∂μ := by
+lemma eintegral_of_ae_nonpos {f : α → EReal} (hf : AEMeasurable f μ)
+    (hf_nonpos : ∀ᵐ x ∂μ, f x ≤ 0) : ∫ᵉ x, f x ∂μ = - ∫⁻ x, (-f x).toENNReal ∂μ := by
   rw [eintegral]
   suffices ∫⁻ x, (f x).toENNReal ∂μ = 0 by simp [this]
   rw [lintegral_eq_zero_iff']
@@ -89,6 +91,10 @@ lemma eintegral_mono_ae {f g : α → EReal} (hfg : f ≤ᵐ[μ] g) : ∫ᵉ x, 
 lemma eintegral_mono {f g : α → EReal} (hfg : f ≤ g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ :=
   eintegral_mono_ae <| ae_of_all _ hfg
 
+lemma eintegral_mul_const {c : EReal} {f : α → EReal} :
+    ∫ᵉ x, c * f x ∂μ = c * ∫ᵉ x, f x ∂μ := by
+  sorry
+
 lemma eintegral_add (μ : Measure α) (f g : α → EReal) :
     ∫ᵉ x, f x + g x ∂μ = ∫ᵉ x, f x ∂μ + ∫ᵉ x, g x ∂μ := by
   sorry
@@ -96,7 +102,13 @@ lemma eintegral_add (μ : Measure α) (f g : α → EReal) :
 
 lemma eintegral_sub (μ : Measure α) (f g : α → EReal) :
     ∫ᵉ x, f x - g x ∂μ = ∫ᵉ x, f x ∂μ - ∫ᵉ x, g x ∂μ := by
-  sorry
+  have h₁ : ∀ x, f x - g x = f x + (-g x) := fun _ ↦ rfl
+  have h₂ : ∀ x, -g x = (-1 : EReal) * g x := fun _ ↦ (neg_one_mul _).symm
+  simp_rw [h₁, h₂]
+  rw [eintegral_add]
+  congr 1
+  rw [eintegral_mul_const]
+  simp
 
 lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [SFinite ν]
     (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) :
@@ -111,11 +123,27 @@ lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
 
 theorem eintegral_map {β : Type*} {mβ : MeasurableSpace β} {f : β → EReal} {g : α → β}
     (hf : Measurable f) (hg : Measurable g) : ∫ᵉ a, f a ∂μ.map g = ∫ᵉ a, f (g a) ∂μ := by
-  sorry
+  simp only [eintegral]
+  repeat rw [lintegral_map (by fun_prop) hg]
+
+
+example {β : Type*} {mβ : MeasurableSpace β} {m : α → Measure β} {f : β → EReal} :
+    ∫ᵉ a, (∫⁻ x, (f x).toENNReal ∂m a).toEReal ∂μ =
+      ∫⁻ a, ∫⁻ x, (f x).toENNReal ∂m a ∂μ := by
+  simp only [eintegral]
+  simp only [EReal.toENNReal_coe]
+  have : ∀ x, (-(∫⁻ (x : β), (f x).toENNReal ∂m x).toEReal).toENNReal = 0 := by
+    intro x
+    simp
+  simp_rw [this]
+  simp
 
 theorem eintegral_bind {β : Type*} {mβ : MeasurableSpace β} {m : α → Measure β} {f : β → EReal}
     (hμ : AEMeasurable m μ) (hf : AEMeasurable f (μ.bind m)) :
     ∫ᵉ x, f x ∂μ.bind m = ∫ᵉ a, ∫ᵉ x, f x ∂m a ∂μ := by
+  simp only [eintegral]
+  rw [μ.lintegral_bind hμ (by fun_prop)]
+  rw [μ.lintegral_bind hμ (by fun_prop)]
   sorry
 
 end MeasureTheory
