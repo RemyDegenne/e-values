@@ -82,7 +82,7 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
         exact hη₂.lintegral_le_one μ hμ
       · rw [hy, eintegral_bind η.aemeasurable U.aemeasurable]
         refine eintegral_mono fun _ ↦ ?_
-        exact U.eintegral_le_map (by measurability)
+        exact U.eintegral_le_map (by fun_prop)
     trans ∫ᵉ x, (U ∘ X) x ∂P
     · exact h_le
     · rw [maxUtility_eq_sSup]
@@ -93,7 +93,7 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     rintro y ⟨X, hX, hy⟩
     refine ⟨Kernel.deterministic X hX.measurable, inferInstance, ⟨fun μ hμ ↦ ?_⟩, ?_⟩
     · rw [Measure.deterministic_comp_eq_map hX.measurable,
-        lintegral_map (by measurability) hX.measurable]
+        lintegral_map (by fun_prop) hX.measurable]
       exact hX.lintegral_le_one μ hμ
     · rw [hy, Measure.deterministic_comp_eq_map hX.measurable,
         eintegral_map U.measurable hX.measurable]
