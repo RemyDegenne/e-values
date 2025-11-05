@@ -13,7 +13,7 @@ open MeasureTheory ProbabilityTheory
 variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableSpace 𝓨}
   {μ : Measure 𝓧} {S : Set (Measure 𝓧)}
 
-namespace MeasureTheory
+namespace ProbabilityTheory
 
 /-- The maximum utility `∫ᵉ x, (U ∘ X) x ∂P` of a measure `P` over all e-variables `X` for
 a set of measures `S`. -/
@@ -138,4 +138,4 @@ lemma maxUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kerne
   rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _]
   exact maxRandUtility_comp_le P S κ
 
-end MeasureTheory
+end ProbabilityTheory
