@@ -110,7 +110,7 @@ lemma EReal.toReal_log {x : ℝ≥0∞} (hx₀ : x ≠ 0) (hxₜ : x ≠ ⊤) :
     (ENNReal.log x).toReal = Real.log x.toReal := by
   sorry
 
-lemma ConcaveOn_log : ConcaveOn ℝ≥0∞ univ ENNReal.log := by
+lemma ConcaveOn_log' : ConcaveOn ℝ≥0∞ univ ENNReal.log := by
   refine ⟨convex_univ, ?_⟩
   intro x _ y _ a b a₀ b₀ hab
   simp only [smul_eq_mul]
@@ -189,3 +189,13 @@ lemma ConcaveOn_log : ConcaveOn ℝ≥0∞ univ ENNReal.log := by
         rw [yₜ, log_top, EReal.mul_top_of_pos <| EReal.coe_ennreal_pos.mpr b₀]
         rw [ENNReal.mul_top b₀.ne']
         simp
+
+lemma ConcaveOn_log : ConcaveOn ℝ≥0 univ ENNReal.log := by
+  refine ⟨convex_univ, ?_⟩
+  intro x hx y hy a b a₀ b₀ hab
+  obtain ⟨_, conv⟩ := ConcaveOn_log'
+  refine conv hx hy ?_ ?_ ?_
+  · exact zero_le _
+  · exact zero_le _
+  · refine (toNNReal_eq_one_iff (↑a + ↑b)).mp ?_
+    exact hab
