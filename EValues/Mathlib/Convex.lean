@@ -5,7 +5,8 @@ Authors: Gaëtan Serré
 -/
 
 import EValues.Mathlib.EReal
-import Mathlib
+import Mathlib.Algebra.Lie.OfAssociative
+import Mathlib.Analysis.Convex.SpecificFunctions.Basic
 
 open Set ENNReal NNReal
 

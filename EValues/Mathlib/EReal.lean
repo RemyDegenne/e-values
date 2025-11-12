@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré
 -/
 
-import Mathlib
+import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLog
 
 open ENNReal
 
