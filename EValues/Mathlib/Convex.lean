@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré
 -/
 
+import EValues.Mathlib.EReal
 import Mathlib
 
 open Set ENNReal NNReal
@@ -100,17 +101,7 @@ lemma convexOn_inv : ConvexOn ℝ≥0∞ univ <| Inv.inv (α := ℝ≥0∞) := s
 noncomputable instance : SMul ℝ≥0 EReal where smul c x := c * x
 noncomputable instance : SMul ℝ≥0∞ EReal where smul c x := c * x
 
-lemma test {a b : EReal} (h1 : a ≠ ⊤) (h2 : b ≠ ⊤) (h3 : a ≠ ⊥) (h4 : b ≠ ⊥)
-    (h5 : b.toReal ≤ a.toReal) : b ≤ a := by
-  lift a to ℝ using ⟨h1, h3⟩
-  lift b to ℝ using ⟨h2, h4⟩
-  exact EReal.coe_le_coe_iff.mpr h5
-
-lemma EReal.toReal_log {x : ℝ≥0∞} (hx₀ : x ≠ 0) (hxₜ : x ≠ ⊤) :
-    (ENNReal.log x).toReal = Real.log x.toReal := by
-  sorry
-
-lemma ConcaveOn_log' : ConcaveOn ℝ≥0∞ univ ENNReal.log := by
+lemma ConcaveOn_log' : ConcaveOn ℝ≥0∞ univ log := by
   refine ⟨convex_univ, ?_⟩
   intro x _ y _ a b a₀ b₀ hab
   simp only [smul_eq_mul]
@@ -125,8 +116,18 @@ lemma ConcaveOn_log' : ConcaveOn ℝ≥0∞ univ ENNReal.log := by
   by_cases h : x ≠ 0 ∧ x ≠ ⊤ ∧ y ≠ 0 ∧ y ≠ ⊤
   · obtain ⟨x₀, xₜ, y₀, yₜ⟩ := h
     suffices (a * x.log + b * y.log).toReal ≤ ((a * x + b * y).log).toReal by
-      refine test ?_ ?_ ?_ ?_ this
-      any_goals sorry
+      refine EReal.le_real_imp_le ?_ ?_ ?_ ?_ this
+      · simp only [ne_eq, log_eq_top_iff, add_eq_top, not_or]
+        exact ⟨mul_ne_top aₜ xₜ, mul_ne_top bₜ yₜ⟩
+      · refine EReal.add_ne_top ?_ ?_
+        all_goals
+          rw [EReal.mul_ne_top]
+          simp_all
+      · aesop
+      · rw [EReal.add_ne_bot_iff, EReal.mul_ne_bot]
+        refine ⟨?_, ?_⟩
+        · simp_all
+        · simp_all [EReal.mul_ne_bot]
     rw [EReal.toReal_add, EReal.toReal_mul, EReal.toReal_mul, EReal.toReal_log, EReal.toReal_log,
       EReal.toReal_log, toReal_add, toReal_mul, toReal_mul]
     · simp only [EReal.toReal_coe_ennreal]
@@ -137,7 +138,7 @@ lemma ConcaveOn_log' : ConcaveOn ℝ≥0∞ univ ENNReal.log := by
       exact (toReal_eq_one_iff (a + b)).mpr hab
     · exact mul_ne_top aₜ xₜ
     · exact mul_ne_top bₜ yₜ
-    · sorry
+    · aesop
     · refine add_ne_top.mpr ⟨?_, ?_⟩
       · exact mul_ne_top aₜ xₜ
       · exact mul_ne_top bₜ yₜ
@@ -146,27 +147,25 @@ lemma ConcaveOn_log' : ConcaveOn ℝ≥0∞ univ ENNReal.log := by
     · exact x₀
     · exact xₜ
     · refine (EReal.mul_ne_top _ _).mpr ?_
-      sorry
+      aesop
     · refine (EReal.mul_ne_bot _ _).mpr ?_
-      sorry
+      aesop
     · refine (EReal.mul_ne_top _ _).mpr ?_
-      sorry
+      aesop
     · refine (EReal.mul_ne_bot _ _).mpr ?_
-      sorry
+      aesop
   · simp only [not_and_or] at h
     rcases h with x₀ | xₜ | y₀ | yₜ
     · push_neg at x₀
       by_cases a_eq₀ : a = 0
-      · simp [a_eq₀]
-        sorry
+      · simp_all
       · push_neg at a_eq₀
         replace a₀ : 0 < a := pos_of_ne_zero a_eq₀
         rw [x₀, log_zero, EReal.mul_bot_of_pos <| EReal.coe_ennreal_pos.mpr a₀]
         simp
     · push_neg at xₜ
       by_cases a_eq₀ : a = 0
-      · simp [a_eq₀]
-        sorry
+      · simp_all
       · push_neg at a_eq₀
         replace a₀ : 0 < a := pos_of_ne_zero a_eq₀
         rw [xₜ, log_top, EReal.mul_top_of_pos <| EReal.coe_ennreal_pos.mpr a₀]
@@ -174,28 +173,22 @@ lemma ConcaveOn_log' : ConcaveOn ℝ≥0∞ univ ENNReal.log := by
         simp
     · push_neg at y₀
       by_cases b_eq₀ : b = 0
-      · simp [b_eq₀]
-        sorry
+      · simp_all
       · push_neg at b_eq₀
         replace b₀ : 0 < b := pos_of_ne_zero b_eq₀
         rw [y₀, log_zero, EReal.mul_bot_of_pos <| EReal.coe_ennreal_pos.mpr b₀]
         simp
     · push_neg at yₜ
       by_cases b_eq₀ : b = 0
-      · simp [b_eq₀]
-        sorry
+      · simp_all
       · push_neg at b_eq₀
         replace b₀ : 0 < b := pos_of_ne_zero b_eq₀
         rw [yₜ, log_top, EReal.mul_top_of_pos <| EReal.coe_ennreal_pos.mpr b₀]
         rw [ENNReal.mul_top b₀.ne']
         simp
 
-lemma ConcaveOn_log : ConcaveOn ℝ≥0 univ ENNReal.log := by
+lemma ConcaveOn_log : ConcaveOn ℝ≥0 univ log := by
   refine ⟨convex_univ, ?_⟩
   intro x hx y hy a b a₀ b₀ hab
   obtain ⟨_, conv⟩ := ConcaveOn_log'
-  refine conv hx hy ?_ ?_ ?_
-  · exact zero_le _
-  · exact zero_le _
-  · refine (toNNReal_eq_one_iff (↑a + ↑b)).mp ?_
-    exact hab
+  exact conv hx hy (zero_le _) (zero_le _) <| (toNNReal_eq_one_iff _).mp hab
