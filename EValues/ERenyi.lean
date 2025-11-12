@@ -5,6 +5,7 @@ Authors: Rémy Degenne
 -/
 import EValues.DPI
 import EValues.Product
+import EValues.Mathlib.iSup
 
 /-!
 # E-Rényi divergence
@@ -37,6 +38,11 @@ def echernoffDiv (S T : Set (Measure 𝓧)) : ℝ≥0∞ :=
   ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
     max (maxUtility R S logUtility).toENNReal (maxUtility R T logUtility).toENNReal
 
+lemma echernoffDiv_eq_sInf : echernoffDiv S T =
+    sInf {y | ∃ R, IsProbabilityMeasure R ∧
+    y = max (maxUtility R S logUtility).toENNReal (maxUtility R T logUtility).toENNReal} :=
+  iInf₂_eq_sInf (ι := ℝ≥0∞)
+
 /-- Data processing inequality for the e-Rényi divergence. -/
 lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
     erenyiDiv α (Measure.map f '' S) (Measure.map f '' T) ≤ erenyiDiv α S T := by
@@ -44,10 +50,24 @@ lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
   gcongr 1
   sorry
 
+/-- Data processing inequality for the e-Chernoff divergence. -/
 lemma echernoffDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
-    echernoffDiv (Measure.map f '' S) (Measure.map f '' T) ≤ echernoffDiv S T := by
-  unfold echernoffDiv
-  sorry
+    echernoffDiv {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} ≤ echernoffDiv S T := by
+  set S' := {μ.map f | μ ∈ S}
+  set T' := {μ.map f | μ ∈ T}
+  calc echernoffDiv S' T'
+  _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R), max
+      (maxUtility (R.map f) S' logUtility).toENNReal
+      (maxUtility (R.map f) T' logUtility).toENNReal := by
+    rw [iInf₂_eq_sInf (ι := ℝ≥0∞), echernoffDiv_eq_sInf]
+    refine sInf_le_sInf fun y ↦ ?_
+    rintro ⟨R, hR, rfl⟩
+    exact ⟨R.map f, R.isProbabilityMeasure_map hf.aemeasurable, rfl⟩
+  _ ≤ echernoffDiv S T := by
+    refine iInf₂_mono fun R _ ↦ max_le_max ?_ ?_
+    · exact (EReal.toENNReal_le_toENNReal <| maxUtility_map_le R hf)
+    · exact (EReal.toENNReal_le_toENNReal <| maxUtility_map_le R hf)
+
 
 lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
     (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
