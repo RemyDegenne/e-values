@@ -5,6 +5,7 @@ Authors: Rémy Degenne, Gaëtan Serré
 -/
 import EValues.EValue
 import EValues.Utility
+import EValues.Mathlib.iSup
 
 open scoped ENNReal NNReal ProbabilityTheory
 
@@ -30,32 +31,11 @@ def maxRandUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) (U : Utility) : E
 variable {P : Measure 𝓧} {S T : Set (Measure 𝓧)} {U : Utility} {φ : 𝓧 → 𝓨}
 
 lemma maxUtility_eq_sSup : maxUtility P S U =
-    sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := by
-  rw [sSup_eq_iSup]
-  simp_rw [Set.mem_setOf_eq, iSup_exists, iSup_and]
-  simp only [maxUtility]
-  suffices ⨆ a, ⨆ X, ⨆ (_ : IsEVar X S), ⨆ (_ : a = ∫ᵉ x, (U ∘ X) x ∂P), a =
-      ⨆ X, ⨆ (_ : IsEVar X S), ⨆ a, ⨆ (_ : a = ∫ᵉ x, (U ∘ X) x ∂P), a by
-    simp_rw [this, iSup_iSup_eq_left]
-  rw [iSup_comm]
-  refine iSup_congr fun i => ?_
-  rw [iSup_comm]
+    sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := iSup₂_eq_sSup (ι := EReal)
 
 lemma maxRandUtility_eq_sSup : maxRandUtility P S U =
-      sSup {y | ∃ η, IsMarkovKernel η ∧ IsRandEVar η S ∧ y = ∫ᵉ x, U x ∂(η ∘ₘ P)} := by
-  rw [sSup_eq_iSup]
-  simp_rw [Set.mem_setOf_eq, iSup_exists, iSup_and]
-  simp only [maxRandUtility]
-  suffices ⨆ a, ⨆ η, ⨆ (_ : IsMarkovKernel η), ⨆ (_ : IsRandEVar η S),
-      ⨆ (_ : a = ∫ᵉ x, U x ∂(η ∘ₘ P)), a =
-        ⨆ η, ⨆ (_ : IsMarkovKernel η), ⨆ (_ : IsRandEVar η S),
-        ⨆ a, ⨆ (_ : a = ∫ᵉ x, U x ∂(η ∘ₘ P)), a by
-    simp_rw [this, iSup_iSup_eq_left]
-  rw [iSup_comm]
-  refine iSup_congr fun i => ?_
-  rw [iSup_comm]
-  refine iSup_congr fun η => ?_
-  rw [iSup_comm]
+      sSup {y | ∃ η, IsMarkovKernel η ∧ IsRandEVar η S ∧ y = ∫ᵉ x, U x ∂(η ∘ₘ P)} :=
+  iSup₃_eq_sSup (ι := EReal)
 
 lemma maxUtility_anti (hS : S ⊆ T) : maxUtility P T U ≤ maxUtility P S U := by
   rw [maxUtility_eq_sSup, maxUtility_eq_sSup]
