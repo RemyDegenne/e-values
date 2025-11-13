@@ -4,7 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré
 -/
 
-import Mathlib.Data.ENNReal.Inv
+import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLog
+import Mathlib.Order.CompletePartialOrder
 
 open ENNReal
 
@@ -50,5 +51,8 @@ lemma inv_div_fsupport {α : Type*} (f g : α → ℝ≥0∞) :
   rw [ENNReal.inv_div]
   · exact Or.inl hx.1
   · exact Or.inl hx.2
+
+lemma log_div (a b : ℝ≥0∞) : ENNReal.log (a / b) = ENNReal.log a - ENNReal.log b := by
+  simp_rw [div_eq_mul_inv, ENNReal.log_mul_add, ENNReal.log_inv, sub_eq_add_neg]
 
 end ENNReal
