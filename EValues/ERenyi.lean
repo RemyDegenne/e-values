@@ -45,10 +45,27 @@ lemma echernoffDiv_eq_sInf : echernoffDiv S T =
 
 /-- Data processing inequality for the e-Rényi divergence. -/
 lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
-    erenyiDiv α (Measure.map f '' S) (Measure.map f '' T) ≤ erenyiDiv α S T := by
+    erenyiDiv α {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} ≤ erenyiDiv α S T := by
   unfold erenyiDiv
   gcongr 1
-  sorry
+  set S' := {μ.map f | μ ∈ S}
+  set T' := {μ.map f | μ ∈ T}
+  calc
+  _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
+      α * (maxUtility (R.map f) S' logUtility).toENNReal +
+        (1 - α) * (maxUtility (R.map f) T' logUtility).toENNReal := by
+    rw [iInf₂_eq_sInf (ι := ℝ≥0∞), iInf₂_eq_sInf (ι := ℝ≥0∞)]
+    refine sInf_le_sInf fun y ↦ ?_
+    rintro ⟨R, hR, rfl⟩
+    exact ⟨R.map f, R.isProbabilityMeasure_map hf.aemeasurable, rfl⟩
+  _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
+      α * (maxUtility R S logUtility).toENNReal +
+        (1 - α) * (maxUtility R T logUtility).toENNReal := by
+    refine iInf₂_mono fun R _ ↦ add_le_add ?_ ?_
+    · gcongr 1
+      exact EReal.toENNReal_le_toENNReal <| maxUtility_map_le R hf
+    · gcongr 1
+      exact EReal.toENNReal_le_toENNReal <| maxUtility_map_le R hf
 
 /-- Data processing inequality for the e-Chernoff divergence. -/
 lemma echernoffDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
@@ -65,9 +82,7 @@ lemma echernoffDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
     exact ⟨R.map f, R.isProbabilityMeasure_map hf.aemeasurable, rfl⟩
   _ ≤ echernoffDiv S T := by
     refine iInf₂_mono fun R _ ↦ max_le_max ?_ ?_
-    · exact (EReal.toENNReal_le_toENNReal <| maxUtility_map_le R hf)
-    · exact (EReal.toENNReal_le_toENNReal <| maxUtility_map_le R hf)
-
+    all_goals exact (EReal.toENNReal_le_toENNReal <| maxUtility_map_le R hf)
 
 lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
     (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
