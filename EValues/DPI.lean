@@ -6,13 +6,13 @@ Authors: Rémy Degenne, Gaëtan Serré
 import EValues.EValue
 import EValues.Utility
 import EValues.Mathlib.iSup
+import EValues.Numeraire
 
 open scoped ENNReal NNReal ProbabilityTheory
 
 open MeasureTheory ProbabilityTheory
 
-variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableSpace 𝓨}
-  {μ : Measure 𝓧} {S : Set (Measure 𝓧)}
+variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableSpace 𝓨} {S : Set (Measure 𝓧)}
 
 namespace ProbabilityTheory
 
@@ -117,5 +117,13 @@ lemma maxUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kerne
     maxUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxUtility P S U := by
   rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _]
   exact maxRandUtility_comp_le P S κ
+
+lemma maxUtility_eq_integral_numeraire {X : 𝓧 → ℝ≥0∞} (hX : IsNumeraire X S P) :
+    maxUtility P S logUtility = ∫ᵉ x, (logUtility ∘ X) x ∂P := by
+  refine le_antisymm ?_ ?_
+  · simp only [maxUtility]
+    refine iSup₂_le_iff.mpr fun Y hY ↦ ?_
+    simp [logUtility, hX.eintegral_log_le hY]
+  · exact le_iSup₂_of_le X hX.toIsEVar <| le_refl _
 
 end ProbabilityTheory
