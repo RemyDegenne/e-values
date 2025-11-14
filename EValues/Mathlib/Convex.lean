@@ -117,7 +117,7 @@ lemma ConcaveOn_log' : ConcaveOn ℝ≥0∞ univ log := by
   by_cases h : x ≠ 0 ∧ x ≠ ⊤ ∧ y ≠ 0 ∧ y ≠ ⊤
   · obtain ⟨x₀, xₜ, y₀, yₜ⟩ := h
     suffices (a * x.log + b * y.log).toReal ≤ ((a * x + b * y).log).toReal by
-      refine EReal.le_real_imp_le ?_ ?_ ?_ ?_ this
+      refine EReal.le_of_toReal_le ?_ ?_ ?_ ?_ this
       · simp only [ne_eq, log_eq_top_iff, add_eq_top, not_or]
         exact ⟨mul_ne_top aₜ xₜ, mul_ne_top bₜ yₜ⟩
       · refine EReal.add_ne_top ?_ ?_
