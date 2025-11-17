@@ -127,9 +127,9 @@ theorem eintegral_map {β : Type*} {mβ : MeasurableSpace β} {f : β → EReal}
   repeat rw [lintegral_map (by fun_prop) hg]
 
 
-example {β : Type*} {mβ : MeasurableSpace β} {m : α → Measure β} {f : β → EReal} :
-    ∫ᵉ a, (∫⁻ x, (f x).toENNReal ∂m a).toEReal ∂μ =
-      ∫⁻ a, ∫⁻ x, (f x).toENNReal ∂m a ∂μ := by
+lemma eintegral_lintegral_toEReal {β : Type*} {mβ : MeasurableSpace β} {m : α → Measure β}
+    {f : β → EReal} : ∫ᵉ a, (∫⁻ x, (f x).toENNReal ∂m a).toEReal ∂μ =
+    ∫⁻ a, ∫⁻ x, (f x).toENNReal ∂m a ∂μ := by
   simp only [eintegral]
   simp only [EReal.toENNReal_coe]
   have : ∀ x, (-(∫⁻ (x : β), (f x).toENNReal ∂m x).toEReal).toENNReal = 0 := by
