@@ -6,7 +6,7 @@ Authors: Rémy Degenne, Gaëtan Serré
 import EValues.EValue
 import EValues.Utility
 import EValues.Mathlib.iSup
-import EValues.Numeraire
+import EValues.NumeraireExistence
 
 open scoped ENNReal NNReal ProbabilityTheory
 
@@ -113,17 +113,29 @@ lemma maxUtility_map_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (hφ : Measu
   exact maxRandUtility_comp_le P S <| Kernel.deterministic φ hφ
 
 lemma maxUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
-    [IsMarkovKernel κ] :
-    maxUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxUtility P S U := by
+    [IsMarkovKernel κ] : maxUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxUtility P S U := by
   rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _]
   exact maxRandUtility_comp_le P S κ
 
-lemma maxUtility_eq_integral_numeraire {X : 𝓧 → ℝ≥0∞} (hX : IsNumeraire X S P) :
-    maxUtility P S logUtility = ∫ᵉ x, (ENNReal.log ∘ X) x ∂P := by
+lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    maxUtility P S logUtility = ∫ᵉ x, (ENNReal.log ∘ (numeraire P S)) x ∂P := by
+  have hNU := isNumeraire_numeraire P hS
   refine le_antisymm ?_ ?_
   · simp only [maxUtility]
     refine iSup₂_le_iff.mpr fun Y hY ↦ ?_
-    simp [logUtility, hX.eintegral_log_le hY]
-  · exact le_iSup₂_of_le X hX.toIsEVar <| le_refl _
+    simp [logUtility, hNU.eintegral_log_le hY]
+  · exact le_iSup₂_of_le _ hNU.toIsEVar <| le_refl _
+
+example (P : Measure 𝓧) (Q : Measure 𝓨) [IsProbabilityMeasure P] [IsProbabilityMeasure Q]
+    {T : Set (Measure 𝓨)} (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
+    (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
+    maxUtility (P.prod Q) (Measure.prod.uncurry '' (S ×ˢ T)) logUtility =
+    maxUtility P S logUtility + maxUtility Q T logUtility := by
+  rw [maxUtility_eq_integral_numeraire (P.prod Q)]
+  · sorry
+  · intro μ hμ
+
+    sorry
 
 end ProbabilityTheory
