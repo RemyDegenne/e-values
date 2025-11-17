@@ -127,15 +127,5 @@ lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure 
     simp [logUtility, hNU.eintegral_log_le hY]
   · exact le_iSup₂_of_le _ hNU.toIsEVar <| le_refl _
 
-example (P : Measure 𝓧) (Q : Measure 𝓨) [IsProbabilityMeasure P] [IsProbabilityMeasure Q]
-    {T : Set (Measure 𝓨)} (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
-    (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
-    maxUtility (P.prod Q) (Measure.prod.uncurry '' (S ×ˢ T)) logUtility =
-    maxUtility P S logUtility + maxUtility Q T logUtility := by
-  rw [maxUtility_eq_integral_numeraire (P.prod Q)]
-  · sorry
-  · intro μ hμ
-
-    sorry
 
 end ProbabilityTheory
