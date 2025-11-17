@@ -119,7 +119,7 @@ lemma maxUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kerne
   exact maxRandUtility_comp_le P S κ
 
 lemma maxUtility_eq_integral_numeraire {X : 𝓧 → ℝ≥0∞} (hX : IsNumeraire X S P) :
-    maxUtility P S logUtility = ∫ᵉ x, (logUtility ∘ X) x ∂P := by
+    maxUtility P S logUtility = ∫ᵉ x, (ENNReal.log ∘ X) x ∂P := by
   refine le_antisymm ?_ ?_
   · simp only [maxUtility]
     refine iSup₂_le_iff.mpr fun Y hY ↦ ?_
