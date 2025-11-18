@@ -1,0 +1,120 @@
+\chapter{e-Rényi and e-Chernoff divergences}
+
+\begin{definition}\label{def:erenyiDiv}
+  \leanok
+  \lean{ProbabilityTheory.erenyiDiv}
+\begin{align*}
+  \eR_\alpha(\mathcal{P}, \mathcal{Q})
+  &= \frac{1}{1 - \alpha} \inf_{R \in \mathcal{P}(\mathcal{X})} \left( \alpha \sup_{f \in \mathcal{E}_{\mathcal{P}}} R[\log f] + (1 - \alpha) \sup_{g \in \mathcal{E}_{\mathcal{Q}}} R[\log g] \right)
+  \: .
+\end{align*}
+\end{definition}
+
+
+\begin{definition}\label{def:echernoffDiv}
+  \leanok
+  \lean{ProbabilityTheory.echernoffDiv}
+\begin{align*}
+  \eC_\alpha(\mathcal{P}, \mathcal{Q})
+  &= \inf_{R \in \mathcal{P}(\mathcal{X})} \max\left\{\sup_{f \in \mathcal{E}_{\mathcal{P}}} R[\log f], \sup_{g \in \mathcal{E}_{\mathcal{Q}}} R[\log g] \right\}
+  \: .
+\end{align*}
+\end{definition}
+
+
+\begin{lemma}\label{lem:erenyiDiv_anti}
+  \uses{def:erenyiDiv}
+  \leanok
+  \lean{ProbabilityTheory.erenyiDiv_anti}
+Let $\mathcal{P}' \subseteq \mathcal{P}$ and $\mathcal{Q}' \subseteq \mathcal{Q}$.
+Then, for all $\alpha \in (0, 1)$,
+\begin{align*}
+  \eR_\alpha(\mathcal{P}', \mathcal{Q}')
+  &\ge \eR_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:echernoffDiv_anti}
+  \uses{def:echernoffDiv}
+  \leanok
+  \lean{ProbabilityTheory.echernoffDiv_anti}
+Let $\mathcal{P}' \subseteq \mathcal{P}$ and $\mathcal{Q}' \subseteq \mathcal{Q}$.
+Then
+\begin{align*}
+  \eC_\alpha(\mathcal{P}', \mathcal{Q}')
+  &\ge \eC_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:erenyiDiv_map_le}
+  \uses{def:erenyiDiv}
+  \leanok
+  \lean{ProbabilityTheory.erenyiDiv_map_le}
+Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
+\begin{align*}
+  \eR_\alpha(f_*\mathcal{P}, f_*\mathcal{Q})
+  &\le \eR_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:echernoffDiv_map_le}
+  \uses{def:echernoffDiv}
+  \leanok
+  \lean{ProbabilityTheory.echernoffDiv_map_le}
+Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
+\begin{align*}
+  \eC_\alpha(f_*\mathcal{P}, f_*\mathcal{Q})
+  &\le \eC_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:erenyiDiv_prod}
+  \uses{def:erenyiDiv}
+\begin{align*}
+  \eR_\alpha(\mathcal{P}_1 \otimes \mathcal{P}_2, \mathcal{Q}_1 \otimes \mathcal{Q}_2)
+  &= \eR_\alpha(\mathcal{P}_1, \mathcal{Q}_1) + \eR_\alpha(\mathcal{P}_2, \mathcal{Q}_2)
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:echernoffDiv_prod_le}
+  \uses{def:echernoffDiv}
+\begin{align*}
+  \eC_\alpha(\mathcal{P}_1 \otimes \mathcal{P}_2, \mathcal{Q}_1 \otimes \mathcal{Q}_2)
+  &\le \eC_\alpha(\mathcal{P}_1, \mathcal{Q}_1) + \eC_\alpha(\mathcal{P}_2, \mathcal{Q}_2)
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+
+\end{proof}

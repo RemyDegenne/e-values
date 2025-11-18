@@ -7,6 +7,12 @@ MeasureTheory.mem_aeSet_iff
 LinearMap.Nondegenerate
 LinearMap.realPolar
 WeakBilin.instTopologicalSpace
+ProbabilityTheory.erenyiDiv
+ProbabilityTheory.echernoffDiv
+ProbabilityTheory.erenyiDiv_anti
+ProbabilityTheory.echernoffDiv_anti
+ProbabilityTheory.erenyiDiv_map_le
+ProbabilityTheory.echernoffDiv_map_le
 ProbabilityTheory.IsEVar.comp
 ProbabilityTheory.IsRandEVar.comp
 ProbabilityTheory.maxUtility_map_le
