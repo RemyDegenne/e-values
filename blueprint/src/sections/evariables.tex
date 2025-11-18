@@ -126,6 +126,45 @@ Then $P \ll \mathcal{Q}$ iff $\aef_P \le \bigsqcup_{Q \in \mathcal{Q}} \aef_Q$.
 \end{proof}
 
 
+\begin{lemma}\label{lem:RN_acSet}
+  \uses{def:aeSet, def:acSet}
+For $P \in \mathcal{M}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{M}(\mathcal{X})$, there is a unique decomposition $P = P_{\mathrm{ac}} + P_{\perp}$ with $P_{\mathrm{ac}} \ll \mathcal{Q}$ and $P_{\perp} \perp \mathcal{Q}$ (meaning that there exists a $\mathcal{Q}$-null set $A$ with $P_{\perp}(A^c) = 0$).
+\end{lemma}
+
+\begin{proof}
+
+\end{proof}
+
+
+\begin{definition}\label{def:singularSet}
+  \uses{lem:RN_acSet}
+The singular set of $P$ with respect to $\mathcal{Q}$ is a $\mathcal{Q}$-null set $A$ such that the singular part $P_{\perp}$ satisfies $P_{\perp}(A^c) = 0$.
+\end{definition}
+
+
+\begin{lemma}\label{lem:singularSet_unique}
+  \uses{def:singularSet}
+The singular set of $P$ with respect to $\mathcal{Q}$ is unique up to $P$ and $\mathcal{Q}$-null sets.
+\end{lemma}
+
+\begin{proof}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:nullSet_eq_top}
+  \uses{def:aeSet, def:eVar}
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and let $f$ be an E-variable for $\mathcal{Q}$.
+Then the set $\{f = \infty\}$ is $\mathcal{Q}$-null.
+\end{lemma}
+
+\begin{proof}
+Let $Q \in \mathcal{Q}$.
+Since $f$ is an E-variable for $\mathcal{Q}$, we have $Q[f] \le 1$.
+Hence $Q[\{f = \infty\}] = 0$.
+\end{proof}
+
+
 
 \subsection{Sets of measures and functions}
 
@@ -531,6 +570,28 @@ We also have $f^* = \limsup_{n \to \infty} \tilde{f}_n$ $P$-almost surely, hence
   \: .
 \end{align*}
 Since $f^* \in \mathcal{E}_{\mathcal{Q}}$, we also have $P[U(f^*)] \le \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U(f)]$, which proves the equality.
+\end{proof}
+
+
+\begin{lemma}\label{lem:exists_integral_utility_eq_sup_forall_lt_top}
+  \uses{def:eVar}
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ a concave function which is bounded from above.
+Then there exists $f^* \in \mathcal{E}_{\mathcal{Q}}$ such that
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U(f)]
+  &= P[U(f^*)]
+  \: ,
+\end{align*}
+and such that all e-variables are $P$-a.s. finite on $\{f^* < \infty\}$.
+\end{lemma}
+
+
+\begin{proof}
+  \uses{lem:exists_integral_utility_eq_sup, lem:singularSet_unique, lem:nullSet_eq_top}
+Let $f_0$ be as in Lemma~\ref{lem:exists_integral_utility_eq_sup}.
+The set $\{f_0 = \infty\}$ is $\mathcal{Q}$-null by Lemma~\ref{lem:nullSet_eq_top}.
+
+TODO
 \end{proof}
 
 
