@@ -68,10 +68,10 @@ lemma inv_ediv_enn (a b : ℝ≥0∞) : (a /ₑ b)⁻¹ = b /ₑ a := by
   rw[ediv_eq_div ha, ediv_eq_div' ha]
   refine ENNReal.inv_div ?_ ?_
   all_goals
-  by_contra h
-  push_neg at h ha
-  rw [h.1, h.2] at ha
-  contradiction
+    by_contra h
+    push_neg at h ha
+    rw [h.1, h.2] at ha
+    contradiction
 
 lemma ediv_eq_one_iff_eq_enn (a b : ℝ≥0∞) : a /ₑ b = 1 ↔ a = b := by
   by_cases hab : a = b

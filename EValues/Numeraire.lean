@@ -7,6 +7,7 @@ Authors: Gaëtan Serré, Rémy Degenne
 import EValues.EValue
 import EValues.Mathlib.Convex
 import EValues.Mathlib.Jensen
+import EValues.Mathlib.ENNReal
 import EValues.Utility
 import Mathlib.MeasureTheory.Constructions.Polish.Basic
 
@@ -176,9 +177,6 @@ lemma congr (hX : IsNumeraire X S μ) (hY_evar : IsEVar Y S) (hY : Y =ᵐ[μ] X)
     _ ≤ 1 := hX.lintegral_div_le_one hZ_evar
 
 section LogOptimal
-
-lemma ENNReal.log_div (a b : ℝ≥0∞) : ENNReal.log (a / b) = ENNReal.log a - ENNReal.log b := by
-  simp_rw [div_eq_mul_inv, ENNReal.log_mul_add, ENNReal.log_inv, sub_eq_add_neg]
 
 -- todo: prove that log-optimal implies numeraire
 /-- A Numeraire is log-optimal. -/

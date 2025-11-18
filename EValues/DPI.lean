@@ -5,13 +5,14 @@ Authors: Rémy Degenne, Gaëtan Serré
 -/
 import EValues.EValue
 import EValues.Utility
+import EValues.Mathlib.iSup
+import EValues.NumeraireExistence
 
 open scoped ENNReal NNReal ProbabilityTheory
 
 open MeasureTheory ProbabilityTheory
 
-variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableSpace 𝓨}
-  {μ : Measure 𝓧} {S : Set (Measure 𝓧)}
+variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableSpace 𝓨} {S : Set (Measure 𝓧)}
 
 namespace ProbabilityTheory
 
@@ -30,32 +31,11 @@ def maxRandUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) (U : Utility) : E
 variable {P : Measure 𝓧} {S T : Set (Measure 𝓧)} {U : Utility} {φ : 𝓧 → 𝓨}
 
 lemma maxUtility_eq_sSup : maxUtility P S U =
-    sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := by
-  rw [sSup_eq_iSup]
-  simp_rw [Set.mem_setOf_eq, iSup_exists, iSup_and]
-  simp only [maxUtility]
-  suffices ⨆ a, ⨆ X, ⨆ (_ : IsEVar X S), ⨆ (_ : a = ∫ᵉ x, (U ∘ X) x ∂P), a =
-      ⨆ X, ⨆ (_ : IsEVar X S), ⨆ a, ⨆ (_ : a = ∫ᵉ x, (U ∘ X) x ∂P), a by
-    simp_rw [this, iSup_iSup_eq_left]
-  rw [iSup_comm]
-  refine iSup_congr fun i => ?_
-  rw [iSup_comm]
+    sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := iSup₂_eq_sSup (ι := EReal)
 
 lemma maxRandUtility_eq_sSup : maxRandUtility P S U =
-      sSup {y | ∃ η, IsMarkovKernel η ∧ IsRandEVar η S ∧ y = ∫ᵉ x, U x ∂(η ∘ₘ P)} := by
-  rw [sSup_eq_iSup]
-  simp_rw [Set.mem_setOf_eq, iSup_exists, iSup_and]
-  simp only [maxRandUtility]
-  suffices ⨆ a, ⨆ η, ⨆ (_ : IsMarkovKernel η), ⨆ (_ : IsRandEVar η S),
-      ⨆ (_ : a = ∫ᵉ x, U x ∂(η ∘ₘ P)), a =
-        ⨆ η, ⨆ (_ : IsMarkovKernel η), ⨆ (_ : IsRandEVar η S),
-        ⨆ a, ⨆ (_ : a = ∫ᵉ x, U x ∂(η ∘ₘ P)), a by
-    simp_rw [this, iSup_iSup_eq_left]
-  rw [iSup_comm]
-  refine iSup_congr fun i => ?_
-  rw [iSup_comm]
-  refine iSup_congr fun η => ?_
-  rw [iSup_comm]
+      sSup {y | ∃ η, IsMarkovKernel η ∧ IsRandEVar η S ∧ y = ∫ᵉ x, U x ∂(η ∘ₘ P)} :=
+  iSup₃_eq_sSup (ι := EReal)
 
 lemma maxUtility_anti (hS : S ⊆ T) : maxUtility P T U ≤ maxUtility P S U := by
   rw [maxUtility_eq_sSup, maxUtility_eq_sSup]
@@ -82,7 +62,7 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
         exact hη₂.lintegral_le_one μ hμ
       · rw [hy, eintegral_bind η.aemeasurable U.aemeasurable]
         refine eintegral_mono fun _ ↦ ?_
-        exact U.eintegral_le_map (by measurability)
+        exact U.eintegral_le_map (by fun_prop)
     trans ∫ᵉ x, (U ∘ X) x ∂P
     · exact h_le
     · rw [maxUtility_eq_sSup]
@@ -93,7 +73,7 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     rintro y ⟨X, hX, hy⟩
     refine ⟨Kernel.deterministic X hX.measurable, inferInstance, ⟨fun μ hμ ↦ ?_⟩, ?_⟩
     · rw [Measure.deterministic_comp_eq_map hX.measurable,
-        lintegral_map (by measurability) hX.measurable]
+        lintegral_map (by fun_prop) hX.measurable]
       exact hX.lintegral_le_one μ hμ
     · rw [hy, Measure.deterministic_comp_eq_map hX.measurable,
         eintegral_map U.measurable hX.measurable]
@@ -133,9 +113,19 @@ lemma maxUtility_map_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (hφ : Measu
   exact maxRandUtility_comp_le P S <| Kernel.deterministic φ hφ
 
 lemma maxUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
-    [IsMarkovKernel κ] :
-    maxUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxUtility P S U := by
+    [IsMarkovKernel κ] : maxUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxUtility P S U := by
   rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _]
   exact maxRandUtility_comp_le P S κ
+
+lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    maxUtility P S logUtility = ∫ᵉ x, (ENNReal.log ∘ (numeraire P S)) x ∂P := by
+  have hNU := isNumeraire_numeraire P hS
+  refine le_antisymm ?_ ?_
+  · simp only [maxUtility]
+    refine iSup₂_le_iff.mpr fun Y hY ↦ ?_
+    simp [logUtility, hNU.eintegral_log_le hY]
+  · exact le_iSup₂_of_le _ hNU.toIsEVar <| le_refl _
+
 
 end ProbabilityTheory

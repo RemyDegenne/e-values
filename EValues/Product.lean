@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
 import EValues.NumeraireExistence
+import EValues.DPI
 
 /-!
 # Numeraire of a product
@@ -102,6 +103,22 @@ theorem logUtility_numeraire_prod (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
   _ = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P + ∫ᵉ y, ENNReal.log (numeraire Q T y) ∂Q := by
     rw [eintegral_prod _ (by fun_prop), eintegral_prod_symm _ (by fun_prop)]
     simp
+
+lemma maxUtility_prod (P : Measure 𝓧) (Q : Measure 𝓨) [IsProbabilityMeasure P]
+    [IsProbabilityMeasure Q] {T : Set (Measure 𝓨)}
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
+    (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
+    maxUtility (P.prod Q) (Measure.prod.uncurry '' (S ×ˢ T)) logUtility =
+    maxUtility P S logUtility + maxUtility Q T logUtility := by
+  rw [maxUtility_eq_integral_numeraire (P.prod Q),
+    maxUtility_eq_integral_numeraire _ hT, maxUtility_eq_integral_numeraire _ hS]
+  · exact logUtility_numeraire_prod hS hT
+  · intro μ hμ
+    rw [Set.image_uncurry_prod, Set.mem_image2] at hμ
+    rcases hμ with ⟨μ₁, hμ₁S, μ₂, hμ₂T, rfl⟩
+    specialize hS μ₁ hμ₁S
+    specialize hT μ₂ hμ₂T
+    infer_instance
 
 lemma isNumeraire_prod_numeraire_fintype {ι : Type*} {𝓧 : ι → Type*} [hι : Fintype ι]
     {m𝓧 : ∀ i, MeasurableSpace (𝓧 i)} {P : (i : ι) → Measure (𝓧 i)}

@@ -5,7 +5,9 @@ import EValues.EValue
 import EValues.Mathlib.Convex
 import EValues.Mathlib.EDiv
 import EValues.Mathlib.ENNReal
+import EValues.Mathlib.EReal
 import EValues.Mathlib.Jensen
+import EValues.Mathlib.iSup
 import EValues.Numeraire
 import EValues.NumeraireExistence
 import EValues.Product

@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rémy Degenne
+Authors: Rémy Degenne, Gaëtan Serré
 -/
 import Mathlib.Analysis.InnerProductSpace.Basic
 import Mathlib.MeasureTheory.Integral.Bochner.Basic
@@ -160,7 +160,10 @@ lemma IsEVar.mono (hY : IsEVar Y S) (hX : Measurable X) (hXY : X ≤ Y) : IsEVar
 lemma IsRandEVar.mono (hη : IsRandEVar η S) (hκη : κ ≤ η) : IsRandEVar κ S where
   lintegral_le_one μ hμ := by
     refine (lintegral_mono' ?_ le_rfl).trans (hη.lintegral_le_one μ hμ)
-    sorry
+    rw [MeasureTheory.Measure.le_iff]
+    intro A hA
+    rw [μ.bind_apply hA κ.aemeasurable, μ.bind_apply hA η.aemeasurable]
+    exact lintegral_mono fun x ↦ hκη x A
 
 lemma IsEVar.anti_set (hST : S ⊆ T) (hX : IsEVar X T) : IsEVar X S where
   measurable := hX.measurable
