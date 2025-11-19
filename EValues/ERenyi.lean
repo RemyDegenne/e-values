@@ -43,6 +43,20 @@ lemma echernoffDiv_eq_sInf : echernoffDiv S T =
     y = max (maxUtility R S logUtility).toENNReal (maxUtility R T logUtility).toENNReal} :=
   iInf₂_eq_sInf (ι := ℝ≥0∞)
 
+lemma erenyiDiv_anti {α : ℝ≥0∞} {S₁ S₂ T₁ T₂ : Set (Measure 𝓧)} (hS : S₁ ⊆ S₂) (hT : T₁ ⊆ T₂) :
+    erenyiDiv α S₂ T₂ ≤ erenyiDiv α S₁ T₁ := by
+  unfold erenyiDiv
+  gcongr with P hP
+  · exact EReal.toENNReal_le_toENNReal <| maxUtility_anti hS
+  · exact EReal.toENNReal_le_toENNReal <| maxUtility_anti hT
+
+lemma echernoffDiv_anti {S₁ S₂ T₁ T₂ : Set (Measure 𝓧)} (hS : S₁ ⊆ S₂) (hT : T₁ ⊆ T₂) :
+    echernoffDiv S₂ T₂ ≤ echernoffDiv S₁ T₁ := by
+  unfold echernoffDiv
+  gcongr with P hP
+  · exact EReal.toENNReal_le_toENNReal <| maxUtility_anti hS
+  · exact EReal.toENNReal_le_toENNReal <| maxUtility_anti hT
+
 /-- Data processing inequality for the e-Rényi divergence. -/
 lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
     erenyiDiv α {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} ≤ erenyiDiv α S T := by

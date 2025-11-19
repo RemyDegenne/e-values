@@ -82,9 +82,11 @@ By concavity of $U$,
 The function $x \mapsto \eta(x)[\id]$ is a measurable function and belongs to $\mathcal{E}_{\mathcal{Q}}$.
 \end{proof}
 
-\section{Measures and functions}
 
-\subsection{Almost everywhere with respect to a set of measures}
+
+
+
+\section{Almost everywhere with respect to a set of measures}
 
 \begin{definition}\label{def:aeSet}
   \leanok
@@ -166,337 +168,22 @@ Hence $Q[\{f = \infty\}] = 0$.
 
 
 
-\subsection{Sets of measures and functions}
-
-In this section, we define and study subsets of $\mathcal{M}_s(\mathcal{X})$, the set of signed measures on $\mathcal{X}$, and $\mathcal{L}$, the set of measurable functions from $\mathcal{X}$ to $\mathbb{R}$.
-
-\begin{definition}\label{def:integrableMeasures}
-Let $\mathcal{F} \subseteq \mathcal{L}$.
-We define
-$
-\mathcal{M}_s^{\mathcal{F}}
-  = \{\mu \in \mathcal{M}_s(\mathcal{X}) \mid \forall f \in \mathcal{F}, \vert\mu\vert[\vert f \vert] < \infty\}
-  \: .
-$
-\end{definition}
-
-
-\begin{definition}\label{def:integrableFunctions}
-Let $\mathcal{M} \subseteq \mathcal{M}_s(\mathcal{X})$.
-We define
-$
-\mathcal{L}^{\mathcal{M}}
-  = \{f \in \mathcal{L} \mid \forall \mu \in \mathcal{M}, \vert \mu \vert[\vert f \vert] < \infty\}
-  \: .
-$
-\end{definition}
-
-In \cite{larsson2025variables}, the authors consider a set of functions $\mathcal{F}$ and the set of probability measures $\mathcal{P}^{\mathcal{F}}_{\le} = \mathcal{M}_s^{\mathcal{F}} \cap \{P \in \mathcal{P}(\mathcal{X}) \mid \forall f \in \mathcal{F}, \: P[f] \le 0\}$.
-Then they build $\mathcal{L}^{\mathcal{P}^{\mathcal{F}}_{\le}}$ and $\mathcal{M}_s^{\mathcal{L}^{\mathcal{P}^{\mathcal{F}}_{\le}}}$.
-
-
-\begin{lemma}\label{lem:vectorSpace_integrableMeasures}
-  \uses{def:integrableMeasures}
-$\mathcal{M}_s^{\mathcal{F}}$ is a real vector space.
-\end{lemma}
-
-\begin{proof}
-
-\end{proof}
-
-
-\begin{lemma}\label{lem:vectorSpace_integrableFunctions}
-  \uses{def:integrableFunctions}
-$\mathcal{L}^{\mathcal{M}}$ is a real vector space.
-\end{lemma}
-
-\begin{proof}
-
-\end{proof}
-
-
-\begin{lemma}\label{lem:integrableMeasures_anti}
-  \uses{def:integrableMeasures}
-Let $\mathcal{F} \subseteq \mathcal{G} \subseteq \mathcal{L}$.
-Then $\mathcal{M}_s^{\mathcal{G}} \subseteq \mathcal{M}_s^{\mathcal{F}}$.
-\end{lemma}
-
-\begin{proof}
-
-\end{proof}
-
-
-\begin{lemma}\label{lem:integrableFunctions_anti}
-  \uses{def:integrableFunctions}
-Let $\mathcal{M}_1 \subseteq \mathcal{M}_2 \subseteq \mathcal{M}_s(\mathcal{X})$.
-Then $\mathcal{L}^{\mathcal{M}_2} \subseteq \mathcal{L}^{\mathcal{M}_1}$.
-\end{lemma}
-
-\begin{proof}
-
-\end{proof}
-
-
-\begin{lemma}\label{lem:integrableMeasures_empty}
-  \uses{def:integrableMeasures}
-$\mathcal{M}_s^{\emptyset} = \mathcal{M}_s(\mathcal{X})$.
-\end{lemma}
-
-\begin{proof}
-
-\end{proof}
-
-
-\begin{lemma}\label{lem:integrableFunctions_empty}
-  \uses{def:integrableFunctions}
-  $\mathcal{L}^{\emptyset} = \mathcal{L}$.
-\end{lemma}
-
-\begin{proof}
-
-\end{proof}
-
-
-\begin{lemma}\label{lem:bounded_subset_integrableFunctions}
-  \uses{def:integrableFunctions}
-  All bounded measurable functions are in $\mathcal{L}^{\mathcal{M}}$ for all $\mathcal{M} \subseteq \mathcal{M}_s(\mathcal{X})$. In particular, indicators of measurable sets are in $\mathcal{L}^{\mathcal{M}}$.
-\end{lemma}
-
-\begin{proof}
-$\mathcal{M}_s(\mathcal{X})$ is the set of signed \emph{finite} measures, hence bounded functions are integrable.
-\end{proof}
-
-
-\begin{lemma}\label{lem:subset_integrableFunctions}
-  \uses{def:integrableMeasures, def:integrableFunctions}
-$\mathcal{F} \subseteq \mathcal{L}^{\mathcal{M}_s^{\mathcal{F}}}$ and $\mathcal{M} \subseteq \mathcal{M}_s^{\mathcal{L}^{\mathcal{M}}}$.
-\end{lemma}
-
-\begin{proof}
-Let $f \in \mathcal{F} \subseteq \mathcal{L}$.
-\begin{align*}
-  f \in \mathcal{L}^{\mathcal{M}_s^{\mathcal{F}}}
-  &\iff \forall \mu \in \mathcal{M}_s^{\mathcal{F}}, \: \vert \mu \vert[\vert f \vert] < \infty
-  \\
-  &\iff \forall \mu \in \mathcal{M}_s(\mathcal{X}), \: (\forall f' \in \mathcal{F}, \: \vert \mu \vert[\vert f' \vert] < \infty) \implies \vert \mu \vert[\vert f \vert] < \infty
-\end{align*}
-The last assertion is true because we can take $f' = f$.
-
-The second inclusion is proved similarly.
-\end{proof}
-
-
-\begin{lemma}\label{lem:stable_integrableFunctions}
-  \uses{def:integrableMeasures, def:integrableFunctions}
-$\mathcal{M}_s^{\mathcal{L}^{\mathcal{M}_s^{\mathcal{F}}}} = \mathcal{M}_s^{\mathcal{F}}$ and $\mathcal{L}^{\mathcal{M}_s^{\mathcal{L}^{\mathcal{M}}}} = \mathcal{L}^{\mathcal{M}}$.
-\end{lemma}
-
-\begin{proof}
-  \uses{lem:subset_integrableFunctions}
-\emph{First equality}.
-Since $\mathcal{F} \subseteq \mathcal{L}^{\mathcal{M}^{\mathcal{F}}}$ (Lemma~\ref{lem:subset_integrableFunctions}), we have $\mathcal{M}_s^{\mathcal{L}^{\mathcal{M}_s^{\mathcal{F}}}} \subseteq \mathcal{M}_s^{\mathcal{F}}$.
-The other inclusion is Lemma~\ref{lem:subset_integrableFunctions} applied to $\mathcal{M} = \mathcal{M}_s^{\mathcal{F}}$.
-
-\emph{Second equality}: similar.
-\end{proof}
-
-
-\begin{lemma}\label{lem:integral_bilin}
-  \uses{def:integrableMeasures, def:integrableFunctions}
-Let $\mathcal{F} \subset \mathcal{L}$ and $\mathcal{M} \subset \mathcal{M}_s(\mathcal{X})$.
-Then $(\mu, f) \mapsto \mu[f]$ is a bilinear form $\mathcal{M}_s^{\mathcal{F}} \times \mathcal{L}^{\mathcal{M}_s^{\mathcal{F}}} \to \mathbb{R}$, or $\mathcal{M}_s^{\mathcal{L}^{\mathcal{M}}} \times \mathcal{L}^{\mathcal{M}} \to \mathbb{R}$.
-\end{lemma}
-
-\begin{proof}
-
-\end{proof}
-
-
-\begin{definition}\label{def:dualPair}
-  \mathlibok
-  \lean{LinearMap.Nondegenerate}
-  A dual pair $\langle E, F \rangle$ is a pair of real vector spaces $E$ and $F$ together with a bilinear form $\langle \cdot, \cdot \rangle : E \times F \to \mathbb{R}$ such that for all $x \in E, y \in F$,
-  \begin{align*}
-    \forall y' \in F, &\langle x, y' \rangle = 0 \implies x = 0
-    \: , \\
-    \forall x' \in E, &\langle x', y \rangle = 0 \implies y = 0
-    \: .
-  \end{align*}
-  We say that a bilinear form is \emph{non-degenerate} if the two conditions above hold.
-\end{definition}
-
-
-\begin{lemma}\label{lem:dualPair_integrable}
-  \uses{def:dualPair, def:integrableMeasures, def:integrableFunctions}
-Let $\mathcal{M} \subset \mathcal{M}_s(\mathcal{X})$.
-Then $\langle \mathcal{M}_s^{\mathcal{L}^{\mathcal{M}}}, \mathcal{L}^{\mathcal{M}} \rangle$ with the integral bilinear map is a dual pair.
-\end{lemma}
-
-\begin{proof}
-  \uses{lem:integral_bilin, lem:vectorSpace_integrableMeasures, lem:vectorSpace_integrableFunctions}
-  We know that the two spaces are vector spaces by Lemma~\ref{lem:vectorSpace_integrableMeasures} and Lemma~\ref{lem:vectorSpace_integrableFunctions}.
-  The integral is a bilinear form by Lemma~\ref{lem:integral_bilin}.
-  It remains to show the separation properties.
-
-  TODO: easy since indicators are in $\mathcal{L}^{\mathcal{M}}$ and Dirac measures are in $\mathcal{M}_s^{\mathcal{L}^{\mathcal{M}}}$.
-\end{proof}
-
-
-\begin{definition}\label{def:polarSet}
-  \uses{def:dualPair}
-  \leanok
-  \lean{LinearMap.realPolar}
-Let $\langle E, F \rangle$ be a dual pair. Let $S \subseteq E$. The (real) polar set of $S$ is the set of $F$ defined as
-\begin{align*}
-  S^\circ
-  &= \{y \in F \mid \forall x \in S, \: \langle x, y \rangle \le 1\}
-  \: .
-\end{align*}
-The bipolar set of $S$ is the set of $E$ defined as
-\begin{align*}
-  S^{\circ\circ}
-  &= \{x \in E \mid \forall y \in S^\circ, \: \langle x, y \rangle \le 1\}
-  \: .
-\end{align*}
-\end{definition}
-
-
-\begin{lemma}\label{lem:polarSet_union}
-  \uses{def:polarSet}
-$(S \cup T)^\circ = S^\circ \cap T^\circ$.
-\end{lemma}
-
-\begin{proof}
-
-\end{proof}
-
-
-\begin{lemma}\label{lem:polarSet_anti}
-  \uses{def:polarSet}
-If $S \subseteq T$ then $T^\circ \subseteq S^\circ$ and $S^{\circ\circ} \subseteq T^{\circ\circ}$.
-\end{lemma}
-
-\begin{proof}
-
-\end{proof}
-
-
-\begin{lemma}\label{lem:polarSet_convexCone}
-  \uses{def:polarSet}
-If $S \subseteq E$ is a cone, then $S^\circ$ and $S^{\circ\circ}$ are also cones and can be described by
-\begin{align*}
-  S^\circ
-  &= \{y \in F \mid \forall x \in S, \: \langle x, y \rangle \le 0\}
-  \: , \\
-  S^{\circ\circ}
-  &= \{x \in E \mid \forall y \in S^\circ, \: \langle x, y \rangle \le 0\}
-  \: .
-\end{align*}
-\end{lemma}
-
-\begin{proof}
-
-\end{proof}
-
-
-\begin{definition}\label{def:weakTopology}
-  \uses{def:dualPair}
-  \mathlibok
-  \lean{WeakBilin.instTopologicalSpace}
-Let $\langle E, F \rangle$ be a dual pair.
-The weak topology $\sigma(E, F)$ on $E$ is the coarsest topology such that all the maps $x \mapsto \langle x, y \rangle$ are continuous for all $y \in F$.
-\end{definition}
-
-
-\begin{lemma}\label{lem:isClosed_polarSet}
-  \uses{def:polarSet, def:weakTopology}
-Let $\langle E, F \rangle$ be a dual pair and let $S \subseteq E$.
-Then $S^\circ$ is convex, contains 0 and is closed in the weak topology $\sigma(F, E)$.
-\end{lemma}
-
-\begin{proof}
-
-\end{proof}
-
-
-\begin{theorem}\label{thm:bipolar_theorem}
-  \uses{def:polarSet, def:weakTopology}
-Let $\langle E, F \rangle$ be a dual pair and let $S \subseteq E$.
-Then $S^{\circ\circ}$ is the $\sigma(E, F)$-closure of the convex hull of $S \cup \{0\}$.
-\end{theorem}
-
-\begin{proof}
-
-\end{proof}
-
-Note: for two convex cones $C, K$, we have $C + K = \cc(C \cup K)$.
-
-Returning to \cite{larsson2025variables}, we can observe that from $\mathcal{F} \subseteq \mathcal{L}$ the authors build the set of probability measures $\mathcal{P}^{\mathcal{F}}_{\le} = \mathcal{F}^\circ \cap \mathcal{P}(\mathcal{X})$, in which the dual pair is $\langle \mathcal{L}^{\mathcal{M}_s^{\mathcal{F}}}, \mathcal{M}_s^{\mathcal{F}} \rangle$.
-Then they build $\mathcal{L}^{\mathcal{P}^{\mathcal{F}}_{\le}}$ and $\mathcal{M}_s^{\mathcal{L}^{\mathcal{P}^{\mathcal{F}}_{\le}}}$ and put them in duality.
-We remark that the two generated spaces don't change if we replace $\mathcal{P}^{\mathcal{F}}_{\le} = \mathcal{F}^\circ \cap \mathcal{P}(\mathcal{X})$ by $\mathcal{M}^{\mathcal{F}}_{\le} = \mathcal{F}^\circ \cap \mathcal{M}(\mathcal{X})$, which is the intersection of two convex cones, hence also a convex cone.
-
-They also consider other cones: $\mathcal{L}_p^{\mathcal{F}}$ is the cone of $\mathcal{P}^{\mathcal{F}}_{\le}$-a.e. nonnegative functions of $\mathcal{L}$.
-Or: $\mathcal{L}_p^{\mathcal{P}} \subseteq \mathcal{L}^{\mathcal{P}}$ convex cone of $\mathcal{P}$-a.e. nonnegative functions of $\mathcal{L}$.
-
-TODO: check this:
-A function $f \in \mathcal{L}$ is $\mathcal{P}$-a.e. nonnegative (with $\mathcal{P}$ a set of nonnegative measures) iff for all measurable sets $A$ and all $P \in \mathcal{P}$, $P[f \mathbb{I}_A] \ge 0$.
-That is, the $\mathcal{P}$-a.e. nonnegative functions are the set $\{-P \mathbb{I}_A \mid P \in \mathcal{P}, A \text{ measurable}\}^\circ$ in $\langle \mathcal{M}_s^{\mathcal{L}^{\mathcal{P}}}, \mathcal{L}^{\mathcal{P}}\rangle$.
-
-A measure is nonnegative iff it is nonnegative on all measurable sets: $\mu[\mathbb{I}_A] \ge 0$.
-The set of nonnegative measures of $\mathcal{M}_s^{\mathcal{F}}$ is $\{- \mathbb{I}_A \mid A \text{ measurable set of } \mathcal{X}\}^\circ$ (in $\langle \mathcal{L}^{\mathcal{M}_s^{\mathcal{F}}}, \mathcal{M}_s^{\mathcal{F}}\rangle$).
-We get that $\mathcal{M}^{\mathcal{F}}_{\le} = \mathcal{F}^\circ \cap \{- \mathbb{I}_A \mid A \text{ measurable set of } \mathcal{X}\}^\circ$
-
---------------------
-
-From $\mathcal{F} \subseteq \mathcal{L}$, we build $\mathcal{M} = \mathcal{F}^\circ \cap \{- \mathbb{I}_A \mid A \text{ measurable set of } \mathcal{X}\}^\circ$ (in the dual pair $\langle \mathcal{L}^{\mathcal{M}_s^{\mathcal{F}}}, \mathcal{M}_s^{\mathcal{F}}\rangle$).
-We can then build $\mathcal{L}^{\mathcal{M}}$, which satisfies $\mathcal{L}^{\mathcal{M}_s^{\mathcal{F}}} \subseteq \mathcal{L}^{\mathcal{M}}$ since $\mathcal{M} \subseteq \mathcal{M}_s^{\mathcal{F}}$.
-Then we form $\mathcal{M}_s^{\mathcal{L}^{\mathcal{M}}}$, which satisfies $\mathcal{M}_s^{\mathcal{L}^{\mathcal{M}}} \subseteq \mathcal{M}_s^{\mathcal{L}^{\mathcal{M}_s^{\mathcal{F}}}} = \mathcal{M}_s^{\mathcal{F}}$.
-
-$\mathcal{L}_p^{\mathcal{M}}$ is the cone of $\mathcal{M}$-a.e. nonnegative functions of $\mathcal{L}^{\mathcal{M}}$.
-
-Claim: $(\cc(\mathcal{F}) - \mathcal{L}_p^{\mathcal{M}})^\circ = \mathcal{M}$ (in $\langle \mathcal{L}^{\mathcal{M}}, \mathcal{M}_s^{\mathcal{L}^{\mathcal{M}}}\rangle$).
-
-\begin{align*}
-  (\cc(\mathcal{F}) - \mathcal{L}_p^{\mathcal{M}})^\circ
-  &= (\cc(\mathcal{F}) \cup (-\mathcal{L}_p^{\mathcal{M}}))^\circ
-  \\
-  &= \cc(\mathcal{F})^\circ \cap (-\mathcal{L}_p^{\mathcal{M}})^\circ
-  \\
-  &= \mathcal{F}^\circ \cap (-\mathcal{L}_p^{\mathcal{M}})^\circ
-  \\
-  &\subseteq \mathcal{F}^\circ \cap \{- \mathbb{I}_A \mid A \text{ measurable set of } \mathcal{X}\}^\circ
-  \\
-  &= \mathcal{M}
-\end{align*}
-Let $\mu \in \mathcal{M}$ and $f - g \in \cc(\mathcal{F}) - \mathcal{L}_p^{\mathcal{M}}$.
-Then $\mu[f - g] \le \mu[f]$ since $g \in \mathcal{L}_p^{\mathcal{M}}$. And $\mu[f] \le 0$ since $\mathcal{M} \subseteq \mathcal{F}^\circ = \cc(\mathcal{F})^\circ$.
-
-
-\begin{theorem}\label{thm:eVar_fin_generated}
-  \uses{def:eVar}
-Let $\Phi = \{\phi_1, \ldots, \phi_d\}$ be a set of measurable functions from $\mathcal{X}$ to $\mathbb{R}$.
-Let $\mathcal{P}^\Phi = \{P \in \mathcal{P}(\mathcal{X}) \mid \forall \phi \in \Phi, \ P[\vert \phi \vert] < \infty \text{ and } P[\phi] \le 0\}$.
-Then $\mathcal{E}_{\mathcal{P}^\Phi}$ is equal to the set of all measurable functions $f : \mathcal{X} \to \mathbb{R}_{+, \infty}$ such that $f$ is $\mathcal{P}^{\Phi}$-a.e. lower or equal to a function of the form $1 + \sum_{i=1}^d \lambda_i \phi_i$ for some $\lambda_i \ge 0$.
-\end{theorem}
-
-\begin{proof}
-See \cite[Theorem 3.1]{larsson2025variables}.
-\end{proof}
-
 
 \section{Numeraire and duality}
 
 This section gathers results from \cite{larsson2024numeraire}.
 
-\begin{definition}\label{def:numeraire}
+\begin{definition}\label{def:IsNumeraire}
   \uses{def:eVar}
+  \leanok
+  \lean{ProbabilityTheory.IsNumeraire}
 Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
 A numeraire for $(P, \mathcal{Q})$ is a $P$-almost surely positive e-variable $f^* \in \mathcal{E}_{\mathcal{Q}}$ such that $P[f / f^*] \le 1$ for all $f \in \mathcal{E}_{\mathcal{Q}}$~.
 \end{definition}
 
 
 \begin{lemma}\label{lem:numeraire_iff_logOptimal}
-  \uses{def:numeraire}
+  \uses{def:IsNumeraire}
 Let $f$ be a $P$-almost surely positive E-variable for a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
 Then $f$ is a numeraire for $(P, \mathcal{Q})$ if and only if $P[\log \frac{g}{f}] \le 0$ for all $g \in \mathcal{E}_{\mathcal{Q}}$.
 \end{lemma}
@@ -506,7 +193,159 @@ Then $f$ is a numeraire for $(P, \mathcal{Q})$ if and only if $P[\log \frac{g}{f
 \end{proof}
 
 
-\subsection{Existence of a numeraire.}
+\begin{lemma}\label{lem:numeraire_mono}
+  \uses{def:IsNumeraire}
+Let $\mathcal{Q}_1 \subseteq \mathcal{Q}_2$. If $f^*$ is a numeraire for $(P, \mathcal{Q}_1)$ and $f^* \in \mathcal{E}_{\mathcal{Q}_2}$ then $f^*$ is also a numeraire for $(P, \mathcal{Q}_2)$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:eVarSet_anti}
+For $f \in \mathcal{E}_{\mathcal{Q}_2}$, we have $f \in \mathcal{E}_{\mathcal{Q}_1}$ since $\mathcal{Q}_1 \subseteq \mathcal{Q}_2$.
+Then $P\left[f/f^*\right] \le 1$ by the numeraire property for $(P, \mathcal{Q}_1)$.
+Thus $f^*$ is a numeraire for $(P, \mathcal{Q}_2)$.
+\end{proof}
+
+
+\begin{definition}\label{def:logUtility}
+  \uses{def:eVar}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility} % for U = logUtility
+The maximal logarithmic utility for $(P, \mathcal{Q})$ is defined as
+\begin{align*}
+  \mathcal{U}_{\log}(P, \mathcal{Q})
+  &= \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[\log f]
+  \: .
+\end{align*}
+\end{definition}
+
+
+\begin{lemma}\label{lem:logUtility_anti}
+  \uses{def:logUtility}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility_anti}
+Let $\mathcal{Q}' \subseteq \mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
+Then
+\begin{align*}
+  \mathcal{U}_{\log}(P, \mathcal{Q}')
+  &\ge \mathcal{U}_{\log}(P, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:logUtility_map_le}
+  \uses{def:logUtility}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility_map_le}
+Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable function, $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
+Then
+\begin{align*}
+  \mathcal{U}_{\log}(f_*P, f_* \mathcal{Q})
+  &\le \mathcal{U}_{\log}(P, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{thm:dataprocessing}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:logUtility_comp_le}
+  \uses{def:logUtility}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility_comp_le}
+Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be a Markov kernel, $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
+Then
+\begin{align*}
+  \mathcal{U}_{\log}(\kappa \circ P, \kappa \circ \mathcal{Q})
+  &\le \mathcal{U}_{\log}(P, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{thm:dataprocessing}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:logUtility_eq_integral}
+  \uses{def:logUtility, def:IsNumeraire}
+  \leanok
+  \lean{ProbabilityTheory.IsNumeraire.maxUtility_eq_integral}
+Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
+If $f^*$ is a numeraire for $(P, \mathcal{Q})$ then
+\begin{align*}
+  \mathcal{U}_{\log}(P, \mathcal{Q})
+  &= P[\log f^*]
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:convex_logUtility}
+  \uses{def:logUtility}
+The function $R \mapsto \mathcal{U}_{\log}(R, \mathcal{P})$ is convex.
+\end{lemma}
+
+\begin{proof}
+Let $R_1, R_2 \in \mathcal{P}(\mathcal{X})$ and let $\theta \in [0,1]$.
+\begin{align*}
+  \mathcal{U}_{\log}(\theta R_1 + (1 - \theta) R_2, \mathcal{P})
+  &= \sup_{f \in \mathcal{E}_{\mathcal{P}}} (\theta R_1 + (1 - \theta) R_2)\left[\log f\right]
+  \\
+  &= \sup_{f \in \mathcal{E}_{\mathcal{P}}} \left\{\theta R_1[\log f] + (1 - \theta) R_2[\log f]\right\}
+  \\
+  &\le \theta \sup_{f \in \mathcal{E}_{\mathcal{P}}} R_1[\log f] + (1 - \theta) \sup_{f \in \mathcal{E}_{\mathcal{P}}} R_2[\log f]
+  \\
+  &= \theta \mathcal{U}_{\log}(R_1, \mathcal{P}) + (1 - \theta) \mathcal{U}_{\log}(R_2, \mathcal{P})
+  \: .
+\end{align*}
+\end{proof}
+
+
+\begin{lemma}\label{lem:logUtility_map_swap}
+Let $R \in \mathcal{P}(\mathcal{X})$, $\mathcal{P} \subseteq \mathcal{P}(\mathcal{X})$ and let $\phi : \mathcal{X} \to \mathcal{X}$ be a measurable map such that $\phi \circ \phi = \id$.
+Then
+\begin{align*}
+  \mathcal{U}_{\log}(R, \phi_* \mathcal{P})
+  &= \mathcal{U}_{\log}(\phi_* R, \mathcal{P})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:logUtility_map_le}
+To prove the first inequality, we use Lemma~\ref{lem:logUtility_map_le}:
+\begin{align*}
+  \mathcal{U}_{\log}(R, \phi_* \mathcal{P})
+  &= \mathcal{U}_{\log}(\phi_* (\phi_* R), \phi_* \mathcal{P})
+  \\
+  &\le \mathcal{U}_{\log}(\phi_* R, \mathcal{P})
+  \: .
+\end{align*}
+For the reverse inequality,
+\begin{align*}
+  \mathcal{U}_{\log}(\phi_* R, \mathcal{P})
+  &= \mathcal{U}_{\log}(\phi_* R, \phi_* (\phi_* \mathcal{P}))
+  \\
+  &\le \mathcal{U}_{\log}(R, \phi_* \mathcal{P})
+  \: .
+\end{align*}
+\end{proof}
+
+
+\subsection{Existence of a numeraire}
 
 
 \begin{lemma}\label{lem:exists_mem_conv_tendsto}
@@ -515,9 +354,7 @@ There exists a sequence of measurable functions $\tilde{X}_n \in \mathrm{conv}(X
 \end{lemma}
 
 \begin{proof}
-It suffices to find a sequence of measurable functions $\tilde{X}_n$ and an $X$ such that $\tilde{X}_n \to X$ in probability, since we can then obtain a.e. convergence for a sub-sequence (Mathlib's lemma \href{https://leanprover-community.github.io/mathlib4_docs/Mathlib/MeasureTheory/Function/ConvergenceInMeasure.html#MeasureTheory.TendstoInMeasure.exists_seq_tendsto_ae}{TendstoInMeasure.exists\_seq\_tendsto\_ae}).
-
-TODO
+Proved in the Brownian motion project.
 \end{proof}
 
 
@@ -585,7 +422,6 @@ Then there exists $f^* \in \mathcal{E}_{\mathcal{Q}}$ such that
 and such that all e-variables are $P$-a.s. finite on $\{f^* < \infty\}$.
 \end{lemma}
 
-
 \begin{proof}
   \uses{lem:exists_integral_utility_eq_sup, lem:singularSet_unique, lem:nullSet_eq_top}
 Let $f_0$ be as in Lemma~\ref{lem:exists_integral_utility_eq_sup}.
@@ -595,30 +431,39 @@ TODO
 \end{proof}
 
 
+\begin{lemma}\label{lem:bounded_numeraire_first_order}
+  \uses{def:eVar, lem:exists_integral_utility_eq_sup_forall_lt_top}
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ a non-decreasing concave $C^1$ function which is bounded from above.
+Then the e-variable $f^*$ in Lemma~\ref{lem:exists_integral_utility_eq_sup} is such that for all e-variables $g \in \mathcal{E}_{\mathcal{Q}}$,
+\begin{align*}
+  P\left[ U'(f^*) (g - f^*) \right] \le 0 \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+For $f \in \mathcal{E}_{\mathcal{Q}}$, let $f_t = t f + (1-t) f^*$ for $t \in [0,1]$.
+By concavity of $U$, $U(f_t) \ge t U(f) + (1-t) U(f^*)$, hence
+\begin{align*}
+  \frac{U(f_t) - U(f^*)}{t}
+  &\ge U(f) - U(f^*)
+  \: .
+\end{align*}
+TODO
+\end{proof}
+
+
 \begin{theorem}[Existence of the numeraire]\label{thm:exists_numeraire}
-  \uses{def:numeraire}
+  \uses{def:IsNumeraire}
 Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
 A numeraire for $(P, \mathcal{Q})$ exists and is $P$-a.e. unique.
 \end{theorem}
 
 \begin{proof}
+  \uses{lem:bounded_numeraire_first_order}
 
 \end{proof}
 
 We will write $E^*_{P, \mathcal{Q}}$ for the numeraire for $(P, \mathcal{Q})$.
-
-
-\begin{lemma}\label{lem:numeraire_mono}
-  \uses{def:numeraire}
-Let $\mathcal{Q}_1 \subseteq \mathcal{Q}_2$. If $f^*$ is a numeraire for $(P, \mathcal{Q}_1)$ and $f^* \in \mathcal{E}_{\mathcal{Q}_2}$ then $f^*$ is also a numeraire for $(P, \mathcal{Q}_2)$.
-\end{lemma}
-
-\begin{proof}
-  \uses{lem:eVarSet_anti}
-For $f \in \mathcal{E}_{\mathcal{Q}_2}$, we have $f \in \mathcal{E}_{\mathcal{Q}_1}$ since $\mathcal{Q}_1 \subseteq \mathcal{Q}_2$.
-Then $P\left[f/f^*\right] \le 1$ by the numeraire property for $(P, \mathcal{Q}_1)$.
-Thus $f^*$ is a numeraire for $(P, \mathcal{Q}_2)$.
-\end{proof}
 
 
 
@@ -627,7 +472,7 @@ Thus $f^*$ is a numeraire for $(P, \mathcal{Q}_2)$.
 
 
 \begin{theorem}[Numeraire of a product]\label{thm:numeraire_prod}
-  \uses{def:numeraire}
+  \uses{def:IsNumeraire, thm:exists_numeraire}
 Let $P_1 \in \mathcal{P}(\mathcal{X}), P_2 \in \mathcal{P}(\mathcal{Y})$ and $\mathcal{Q}_1 \subseteq \mathcal{P}(\mathcal{X}), \mathcal{Q}_2 \subseteq \mathcal{P}(\mathcal{Y})$.
 Then the numeraire for the product $(P_1 \times P_2, \mathcal{Q}_1 \times \mathcal{Q}_2)$ is given by the product of the numeraires for $(P_1, \mathcal{Q}_1)$ and $(P_2, \mathcal{Q}_2)$:
 \begin{align*}
@@ -696,7 +541,7 @@ For $Q \in \mathcal{Q}$ and $f \in \mathcal{E}_{\mathcal{Q}\otimes H}$, $Q[x \ma
 
 
 \begin{lemma}\label{lem:numeraire_compProd_same_kernel}
-  \uses{def:numeraire}
+  \uses{def:IsNumeraire}
 $E^*_{P \otimes \kappa, \mathcal{Q} \otimes \kappa} =_{(P\otimes \kappa) a.e.} (x, y) \mapsto E^*_{P, \mathcal{Q}}(x)$ for any Markov kernel $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$.
 \end{lemma}
 
@@ -724,7 +569,7 @@ We have proved that $E^*_{P, \mathcal{Q}}$ is the numeraire for $(P \otimes \kap
 
 
 \begin{theorem}\label{thm:numeraire_compProd_le}
-  \uses{def:numeraire}
+  \uses{def:IsNumeraire}
 For any $f \in \mathcal{E}_{\mathcal{Q} \otimes H}$, we have
 \begin{align*}
   (P \otimes \kappa)\left[\frac{f}{E^*_{P, \mathcal{Q}}E^*_{P \otimes \kappa, \{P\} \otimes H}}\right]
@@ -783,7 +628,7 @@ We denote the set of conditional e-variables for $H$ by $\mathcal{E}_H$.
 
 
 \begin{definition}\label{def:condNumeraire}
-  \uses{def:condEVar, def:numeraire}
+  \uses{def:condEVar, def:IsNumeraire}
 Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be a Markov kernel and $H \subseteq (\mathcal{X} \rightsquigarrow \mathcal{Y})$ a set of Markov kernels.
 A conditional e-variable $f$ for $H$ is a conditional numeraire for $(\kappa, H)$ if for all $x \in \mathcal{X}$, the function $f(x, \cdot)$ is a numeraire for $(\kappa(x), H(x))$.
 We denote the conditional numeraire for $(\kappa, H)$ by $E^*_{\kappa, H}$ (if it exists).
@@ -872,7 +717,7 @@ TODO
 \subsection{Reverse information projection and duality.}
 
 \begin{definition}\label{def:ripr}
-  \uses{def:numeraire, thm:exists_numeraire}
+  \uses{def:IsNumeraire, thm:exists_numeraire}
 Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
 The reverse information projection (RIPr) of $P$ onto $\mathcal{Q}$ is the finite measure $P^*_{\mathcal{Q}}$ absolutely continuous with respect to $P$ such that
 \begin{align*}
@@ -974,7 +819,7 @@ Note that we don't correct the divergence if $P$ and $Q$ are not probability mea
 
 
 \begin{theorem}\label{thm:eVar_KL_duality}
-  \uses{def:numeraire, def:effectiveSet, def:ripr, def:acSet}
+  \uses{def:IsNumeraire, def:effectiveSet, def:ripr, def:acSet}
 Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
 If $P \ll \mathcal{Q}$ then
 \begin{align*}
@@ -1059,7 +904,7 @@ Conversely, if $f \le f_0$ then for all $P \in \mathcal{M}_+(\mathcal{X})$, $P[f
 
 
 \begin{lemma}[Numeraire for Bernoulli with mean constraint]\label{lem:utility_numeraire_bernoulli}
-  \uses{def:numeraire}
+  \uses{def:IsNumeraire}
 \begin{align*}
   \mathcal{E}_{\{\Ber(p) \mid p \le \delta\}}
   &= \{f : \{0,1\} \to \mathbb{R}_{+,\infty} \mid f(0) \le 1 \ \wedge \ (1 - \delta)f(0) + \delta f(1) \le 1 \}
