@@ -10,6 +10,8 @@ ProbabilityTheory.maxUtility_anti
 ProbabilityTheory.maxUtility_map_le
 ProbabilityTheory.maxUtility_comp_le
 ProbabilityTheory.IsNumeraire.maxUtility_eq_integral
+ProbabilityTheory.convexOn_maxUtility
+ProbabilityTheory.maxUtility_involutive
 ProbabilityTheory.IsEVar.comp
 ProbabilityTheory.IsRandEVar.comp
 ProbabilityTheory.maxUtility_map_le
@@ -22,6 +24,7 @@ ProbabilityTheory.echernoffDiv_anti
 ProbabilityTheory.erenyiDiv_map_le
 ProbabilityTheory.echernoffDiv_map_le
 ProbabilityTheory.maxUtility_prod
+ProbabilityTheory.erenyiDiv_of_involutive
 LinearMap.Nondegenerate
 LinearMap.realPolar
 WeakBilin.instTopologicalSpace

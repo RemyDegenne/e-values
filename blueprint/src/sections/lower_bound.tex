@@ -146,8 +146,8 @@ We thus know that we can restrict the supremum over $f \in \mathcal{E}_{B_{\le \
   &= \frac{1}{2} \log \sup_{\lambda \in [0, \frac{1}{\delta}]} \left((1 - \lambda \delta)(1 + \lambda (1 - \delta))\right)
   \: .
 \end{align*}
-
-TODO
+The function $(1 - \lambda \delta)(1 + \lambda (1 - \delta))$ reaches its maximum at $\lambda^* = \frac{1 - 2\delta}{\delta (1 - \delta)}$ which is in the interval $[0, \frac{1}{\delta}]$ since $\delta \in [0,1/2]$.
+Its value at the optimum is $\frac{1}{4 \delta (1 - \delta)}$.
 \end{proof}
 
 
@@ -191,7 +191,50 @@ Then
 
 \begin{proof}
   \uses{lem:erenyiDiv_bounded_eq_erenyiDiv_bernoulli, lem:erenyiDiv_bernoulli}
+By Lemma~\ref{lem:erenyiDiv_bounded_eq_erenyiDiv_bernoulli}, we have
+\begin{align*}
+  \eR_{1/2}(\mathcal{D}_{\le \delta}, \mathcal{D}_{\ge 1 - \delta})
+  &= \eR_{1/2}(B_{\le \delta}, B_{\ge 1 - \delta})
+  \: .
+\end{align*}
+We now use Lemma~\ref{lem:erenyiDiv_bernoulli} to conclude.
+\end{proof}
 
+
+\begin{theorem}\label{thm:erenyiDiv_lower_bound}
+  \uses{def:erenyiDiv}
+Let $\mathcal{P},\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be two sets of probability measures.
+Suppose that there exists a measurable function $f_0 : \mathcal{X} \to \mathbb{R}_{+,\infty}$ which is less than 1 and $\delta \in [0,1/2]$ such that
+\begin{align*}
+  \forall P \in \mathcal{P}, \: P[f_0] &\le \delta
+  \: , \\
+  \forall Q \in \mathcal{Q}, \: Q[f_0] &\ge 1 - \delta
+  \: .
+\end{align*}
+Then
+\begin{align*}
+  \eR_{1/2}(\mathcal{P}, \mathcal{Q})
+  &\ge \log \frac{1}{4\delta(1 - \delta)}
+  \: .
+\end{align*}
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:erenyiDiv_bounded, lem:erenyiDiv_map_le, lem:erenyiDiv_anti}
+By Lemma~\ref{lem:erenyiDiv_map_le} for the function $f_0$, we have
+\begin{align*}
+  \eR_{1/2}(\mathcal{P}, \mathcal{Q})
+  &\ge \eR_{1/2}(f_0 \circ \mathcal{P}, f_0 \circ \mathcal{Q})
+  \: .
+\end{align*}
+$f_0 \circ \mathcal{P} \subseteq \{P \in \mathcal{P}([0,1]) \mid P[\id] \le \delta\}$ and $f_0 \circ \mathcal{Q} \subseteq \{P \in \mathcal{P}([0,1]) \mid P[\id] \ge 1 - \delta\}$.
+By Lemma~\ref{lem:erenyiDiv_anti}, we thus have
+\begin{align*}
+  \eR_{1/2}(f_0 \circ \mathcal{P}, f_0 \circ \mathcal{Q})
+  &\ge \eR_{1/2}(\mathcal{D}_{\le \delta}, \mathcal{D}_{\ge 1 - \delta})
+  \: .
+\end{align*}
+We now use Lemma~\ref{lem:erenyiDiv_bounded} to conclude.
 \end{proof}
 
 

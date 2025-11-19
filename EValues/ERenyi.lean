@@ -43,7 +43,7 @@ lemma echernoffDiv_eq_sInf : echernoffDiv S T =
     y = max (maxUtility R S logUtility).toENNReal (maxUtility R T logUtility).toENNReal} :=
   iInf₂_eq_sInf (ι := ℝ≥0∞)
 
-lemma erenyiDiv_anti {α : ℝ≥0∞} {S₁ S₂ T₁ T₂ : Set (Measure 𝓧)} (hS : S₁ ⊆ S₂) (hT : T₁ ⊆ T₂) :
+lemma erenyiDiv_anti {S₁ S₂ T₁ T₂ : Set (Measure 𝓧)} (hS : S₁ ⊆ S₂) (hT : T₁ ⊆ T₂) :
     erenyiDiv α S₂ T₂ ≤ erenyiDiv α S₁ T₁ := by
   unfold erenyiDiv
   gcongr with P hP
@@ -110,6 +110,13 @@ lemma echernoffDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Me
     (hT₁ : ∀ μ ∈ T₁, IsProbabilityMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsProbabilityMeasure μ) :
     echernoffDiv (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) (Measure.prod.uncurry '' (S₂ ×ˢ T₂))
       ≤ echernoffDiv S₁ S₂ + echernoffDiv T₁ T₂ := by
+  sorry
+
+lemma erenyiDiv_of_involutive (S T : Set (Measure 𝓧)) {φ : 𝓧 → 𝓧} (hφ : Measurable φ)
+    (hφ_inv : φ ∘ φ = id) (hφST : {μ.map φ | μ ∈ S} = T) :
+    erenyiDiv α S T = (1 - α)⁻¹ *
+      ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R) (_ : R.map φ = R),
+        (maxUtility R S logUtility).toENNReal := by
   sorry
 
 -- todo: rename

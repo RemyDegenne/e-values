@@ -132,4 +132,30 @@ lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure 
     maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P :=
   (isNumeraire_numeraire P hS).maxUtility_eq_integral
 
+lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :
+    ConvexOn ℝ≥0∞ Set.univ (fun P ↦ maxUtility P S U) := by
+  refine ⟨convex_univ, fun P _ Q _ a b ha hb hab ↦ ?_⟩
+  simp only
+  rw [maxUtility]
+  simp_rw [eintegral_add_measure, eintegral_smul_measure]
+  -- sup of sums ≤ sum of sups
+  sorry
+
+lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : 𝓧 → 𝓧} (hφ : Measurable φ)
+    (hφ_inv : φ ∘ φ = id) :
+    maxUtility P {μ.map φ | μ ∈ S} U = maxUtility (P.map φ) S U := by
+  apply le_antisymm
+  · calc maxUtility P {μ.map φ | μ ∈ S} U
+    _ = maxUtility ((P.map φ).map φ) {μ.map φ | μ ∈ S} U := by
+      rw [Measure.map_map hφ hφ, hφ_inv, Measure.map_id]
+    _ ≤ maxUtility (P.map φ) S U := maxUtility_map_le _ hφ
+  · calc maxUtility (P.map φ) S U
+    _ = maxUtility (P.map φ) {(μ.map φ).map φ | μ ∈ S} U := by
+      congr with μ
+      simp_rw [Measure.map_map hφ hφ, hφ_inv, Measure.map_id]
+      grind
+    _ = maxUtility (P.map φ) {μ.map φ | μ ∈ {ν.map φ | ν ∈ S}} U := by congr with μ; simp
+    _ ≤ maxUtility P {μ | μ ∈ {ν.map φ | ν ∈ S}} U := maxUtility_map_le _ hφ
+    _ = maxUtility P {μ.map φ | μ ∈ S} U := rfl
+
 end ProbabilityTheory

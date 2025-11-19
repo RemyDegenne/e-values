@@ -295,6 +295,8 @@ If $f^*$ is a numeraire for $(P, \mathcal{Q})$ then
 
 \begin{lemma}\label{lem:convex_logUtility}
   \uses{def:logUtility}
+  \leanok
+  \lean{ProbabilityTheory.convexOn_maxUtility}
 The function $R \mapsto \mathcal{U}_{\log}(R, \mathcal{P})$ is convex.
 \end{lemma}
 
@@ -315,6 +317,9 @@ Let $R_1, R_2 \in \mathcal{P}(\mathcal{X})$ and let $\theta \in [0,1]$.
 
 
 \begin{lemma}\label{lem:logUtility_map_swap}
+  \uses{def:logUtility}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility_involutive}
 Let $R \in \mathcal{P}(\mathcal{X})$, $\mathcal{P} \subseteq \mathcal{P}(\mathcal{X})$ and let $\phi : \mathcal{X} \to \mathcal{X}$ be a measurable map such that $\phi \circ \phi = \id$.
 Then
 \begin{align*}
@@ -324,7 +329,7 @@ Then
 \end{align*}
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\leanok
   \uses{lem:logUtility_map_le}
 To prove the first inequality, we use Lemma~\ref{lem:logUtility_map_le}:
 \begin{align*}
