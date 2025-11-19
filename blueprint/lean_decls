@@ -28,3 +28,4 @@ ProbabilityTheory.erenyiDiv_of_involutive
 LinearMap.Nondegenerate
 LinearMap.realPolar
 WeakBilin.instTopologicalSpace
+ProbabilityTheory.isEVar_bernoulli_le_iff

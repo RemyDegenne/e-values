@@ -189,4 +189,95 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
     have h' := h.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
     rwa [Measure.comp_assoc] at h'
 
+lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
+    {X : ({0, 1} : Set ℝ) → ℝ≥0∞} (hX : Measurable X) :
+    IsEVar X {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} ↔
+      ∃ (u : ℝ) (hu_nonneg : 0 ≤ u) (hu : u ≤ δ⁻¹),
+        ∀ x, X x ≤ ENNReal.ofReal (1 + u * ((x : ℝ) - δ)) := by
+  refine ⟨fun h_evar ↦ ?_, ?_⟩
+  · have h_le := h_evar.lintegral_le_one
+    simp only [Set.mem_setOf_eq, lintegral_fintype, and_imp] at h_le
+    classical
+    have h_le_zero := h_le (Measure.dirac ⟨0, by simp⟩) inferInstance
+    simp only [integral_dirac, hδ_pos.le, MeasurableSet.singleton, Measure.dirac_apply',
+      Set.indicator_apply, Set.mem_singleton_iff, Pi.one_apply, mul_ite, mul_one, mul_zero,
+      Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte, forall_const] at h_le_zero
+    have h_le_delta := h_le ((ENNReal.ofReal (1 - δ)) • Measure.dirac ⟨0, by simp⟩ +
+      (ENNReal.ofReal δ) • Measure.dirac ⟨1, by simp⟩) ?_ ?_
+    rotate_left
+    · constructor
+      simp only [Measure.coe_add, Measure.coe_smul, Pi.add_apply, Pi.smul_apply, measure_univ,
+        smul_eq_mul, mul_one]
+      rw [← ENNReal.ofReal_add (by grind) (by grind)]
+      simp
+    · rw [integral_add_measure]
+      rotate_left
+      · by_cases hδ : δ = 1
+        · simp [hδ]
+        rw [integrable_smul_measure]
+        · simp
+        · simp; grind
+        · simp
+      · rw [integrable_smul_measure]
+        · simp
+        · simp; grind
+        · simp
+      simp only [integral_smul_measure, integral_dirac, smul_eq_mul, mul_zero, mul_one, zero_add]
+      rw [ENNReal.toReal_ofReal hδ_pos.le]
+    simp only [Measure.coe_add, Measure.coe_smul, Pi.add_apply, Pi.smul_apply,
+      MeasurableSet.singleton, Measure.dirac_apply', Set.indicator_apply, Set.mem_singleton_iff,
+      Pi.one_apply, smul_eq_mul, mul_ite, mul_one, mul_zero] at h_le_delta
+    simp_rw [mul_add] at h_le_delta
+    simp only [mul_ite, mul_zero, Finset.sum_add_distrib, Finset.sum_ite_eq, Finset.mem_univ,
+      ↓reduceIte] at h_le_delta
+    refine ⟨δ⁻¹ * (1 - (X ⟨0, by simp⟩).toReal), ?_, ?_, fun ω ↦ ?_⟩
+    · refine mul_nonneg (by positivity) (sub_nonneg.mpr ?_)
+      refine ENNReal.toReal_le_of_le_ofReal (by simp) ?_
+      simpa
+    · conv_rhs => rw [← mul_one δ⁻¹]
+      gcongr
+      simp
+    · by_cases hω : ω = ⟨0, by simp⟩
+      · simp only [hω, zero_sub, mul_neg]
+        by_cases hδ_zero : δ = 0
+        · simpa [hδ_zero]
+        ring_nf
+        rw [mul_inv_cancel₀ hδ_zero]
+        ring_nf
+        rw [ENNReal.ofReal_toReal]
+        exact ne_top_of_le_ne_top (by simp) h_le_zero
+      have hω' : ω = ⟨1, by simp⟩ := by grind
+      simp only [hω', ge_iff_le]
+      ring_nf
+      rw [mul_inv_cancel₀ hδ_pos.ne']
+      ring_nf
+      sorry
+  · rintro ⟨u, hu_nonneg, hu, hX_le⟩
+    refine ⟨hX, fun μ ⟨hμ, hμ'⟩ ↦ ?_⟩
+    calc ∫⁻ ω, X ω ∂μ
+    _ ≤ ∫⁻ ω, ENNReal.ofReal (1 + u * (ω - δ)) ∂μ := lintegral_mono hX_le
+    _ = ENNReal.ofReal (1 + u * (∫ ω, (ω : ℝ) ∂μ - δ)) := by
+      rw [← ofReal_integral_eq_lintegral_ofReal (by fun_prop)]
+      swap
+      · filter_upwards [] with ω
+        simp only [Pi.zero_apply]
+        by_cases hω : ω = ⟨0, by simp⟩
+        · simp only [hω, zero_sub, mul_neg, le_add_neg_iff_add_le, zero_add]
+          calc u * δ ≤ δ⁻¹ * δ := by gcongr
+          _ = 1 := by rw [inv_mul_cancel₀ hδ_pos.ne']
+        have hω' : ω = ⟨1, by simp⟩ := by grind
+        simp only [hω', ge_iff_le]
+        exact add_nonneg (by simp) (mul_nonneg hu_nonneg (sub_nonneg.mpr hδ))
+      congr
+      rw [integral_add (by fun_prop) (by fun_prop), integral_const_mul]
+      simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one, add_right_inj,
+        mul_eq_mul_left_iff]
+      rw [integral_sub (by fun_prop) (by fun_prop)]
+      simp
+    _ ≤ 1 := by
+      conv_rhs => rw [← ENNReal.ofReal_one, ← add_zero 1]
+      gcongr
+      refine mul_nonpos_of_nonneg_of_nonpos hu_nonneg ?_
+      simpa
+
 end ProbabilityTheory
