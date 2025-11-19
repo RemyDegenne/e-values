@@ -157,4 +157,11 @@ lemma eintegral_smul_measure {c : ℝ≥0∞} (f : α → EReal) :
   simp only [eintegral, lintegral_smul_measure, smul_eq_mul, EReal.coe_ennreal_mul]
   sorry
 
+@[simp]
+lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClass α]
+    {x₀ : α} {f : α → EReal} :
+    ∫ᵉ x, f x ∂(Measure.dirac x₀) = f x₀ := by
+  simp only [eintegral, lintegral_dirac]
+  rcases le_total (f x₀) 0 with (h | h) <;> simp [h]
+
 end MeasureTheory

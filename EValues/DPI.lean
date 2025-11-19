@@ -158,4 +158,23 @@ lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : �
     _ ≤ maxUtility P {μ | μ ∈ {ν.map φ | ν ∈ S}} U := maxUtility_map_le _ hφ
     _ = maxUtility P {μ.map φ | μ ∈ S} U := rfl
 
+lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
+    maxUtility ((2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
+          + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩)
+        {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} logUtility
+      = 2⁻¹ * Real.log (1 / (4 * δ * (1 - δ))) := by
+  let P := (2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
+    + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩
+  have hP_prob : IsProbabilityMeasure P := by
+    constructor
+    simpa [P] using ENNReal.add_halves 1
+  change maxUtility P _ logUtility = 2⁻¹ * Real.log (1 / (4 * δ * (1 - δ)))
+  rw [maxUtility]
+  have hδ_le_one : δ ≤ 1 := by linarith
+  simp_rw [isEVar_bernoulli_le_iff hδ_pos hδ_le_one]
+  simp only [Subtype.forall, Set.mem_insert_iff, Set.mem_singleton_iff, exists_prop,
+    logUtility, Function.comp_apply, eintegral_add_measure, eintegral_smul_measure,
+    eintegral_dirac, one_div, mul_inv_rev, P]
+  sorry
+
 end ProbabilityTheory

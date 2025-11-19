@@ -190,7 +190,7 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
     rwa [Measure.comp_assoc] at h'
 
 lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
-    {X : ({0, 1} : Set ℝ) → ℝ≥0∞} (hX : Measurable X) :
+    (X : ({0, 1} : Set ℝ) → ℝ≥0∞) :
     IsEVar X {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} ↔
       ∃ (u : ℝ) (_ : 0 ≤ u) (_ : u ≤ δ⁻¹),
         ∀ x, X x ≤ ENNReal.ofReal (1 + u * ((x : ℝ) - δ)) := by
@@ -273,7 +273,7 @@ lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
         gcongr
         simp [hδ_pos.le]
   · rintro ⟨u, hu_nonneg, hu, hX_le⟩
-    refine ⟨hX, fun μ ⟨hμ, hμ'⟩ ↦ ?_⟩
+    refine ⟨by fun_prop, fun μ ⟨hμ, hμ'⟩ ↦ ?_⟩
     calc ∫⁻ ω, X ω ∂μ
     _ ≤ ∫⁻ ω, ENNReal.ofReal (1 + u * (ω - δ)) ∂μ := lintegral_mono hX_le
     _ = ENNReal.ofReal (1 + u * (∫ ω, (ω : ℝ) ∂μ - δ)) := by
