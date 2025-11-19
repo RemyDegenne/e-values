@@ -127,5 +127,9 @@ lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure 
     simp [logUtility, hNU.eintegral_log_le hY]
   · exact le_iSup₂_of_le _ hNU.toIsEVar <| le_refl _
 
+lemma maxUtility_nonneg (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) : 0 ≤ maxUtility P S logUtility := by
+  rw [maxUtility_eq_integral_numeraire P hS]
+  exact (isNumeraire_numeraire P hS).eintegral_log_nonneg
 
 end ProbabilityTheory

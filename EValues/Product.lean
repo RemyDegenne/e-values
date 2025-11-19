@@ -109,7 +109,7 @@ lemma maxUtility_prod (P : Measure 𝓧) (Q : Measure 𝓨) [IsProbabilityMeasur
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
     (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
     maxUtility (P.prod Q) (Measure.prod.uncurry '' (S ×ˢ T)) logUtility =
-    maxUtility P S logUtility + maxUtility Q T logUtility := by
+      maxUtility P S logUtility + maxUtility Q T logUtility := by
   rw [maxUtility_eq_integral_numeraire (P.prod Q),
     maxUtility_eq_integral_numeraire _ hT, maxUtility_eq_integral_numeraire _ hS]
   · exact logUtility_numeraire_prod hS hT

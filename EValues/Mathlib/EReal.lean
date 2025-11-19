@@ -17,3 +17,7 @@ lemma EReal.le_of_toReal_le {a b : EReal} (h1 : a ≠ ⊤) (h2 : b ≠ ⊤) (h3 
 lemma EReal.toReal_log {x : ℝ≥0∞} (hx₀ : x ≠ 0) (hxₜ : x ≠ ⊤) :
     (log x).toReal = Real.log x.toReal := by
   simp_all [log]
+
+lemma EReal.mul_add_ENNReal {a : ℝ≥0∞} {b c : EReal} (hb₀ : 0 ≤ b) (hc₀ : 0 ≤ c) :
+    a * (b + c).toENNReal = a * b.toENNReal + a * c.toENNReal := by
+ sorry

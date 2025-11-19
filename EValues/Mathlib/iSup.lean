@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré
 -/
 
+import Mathlib.Algebra.Group.Pointwise.Set.Basic
+import Mathlib.Algebra.Order.Sub.Defs
 import Mathlib.Order.CompletePartialOrder
 import Mathlib.Order.ConditionallyCompleteLattice.Basic
 
@@ -54,3 +56,14 @@ lemma iInf₃_eq_sInf {α ι : Type*} [CompleteLattice ι] {P₁ P₂ : α → P
   rw [iInf_comm]
   refine iInf_congr fun i => ?_
   rw [iInf_comm]
+
+open Pointwise
+
+lemma sInf_add' {α : Type*} [AddCommMagma α] [Sub α] [CompleteLattice α] [OrderedSub α]
+    {s t : Set α} : sInf (s + t) = sInf s + sInf t := by
+  let u := fun (p q : α) ↦ p + q
+  let l := fun (a b : α) ↦ b - a
+  apply sInf_image2_eq_sInf_sInf (u := u) (l₁ := l) (l₂ := l) ?_ ?_
+  all_goals simp only [GaloisConnection, tsub_le_iff_right, Function.swap, implies_true, l, u]
+  simp_rw [add_comm]
+  simp
