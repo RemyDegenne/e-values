@@ -24,6 +24,7 @@ ProbabilityTheory.echernoffDiv_anti
 ProbabilityTheory.erenyiDiv_map_le
 ProbabilityTheory.echernoffDiv_map_le
 ProbabilityTheory.maxUtility_prod
+ProbabilityTheory.erenyiDiv_of_involutive
 LinearMap.Nondegenerate
 LinearMap.realPolar
 WeakBilin.instTopologicalSpace
