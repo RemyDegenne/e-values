@@ -80,6 +80,22 @@ Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
 \end{proof}
 
 
+\begin{lemma}\label{lem:erenyiDiv_comp_le}
+  \uses{def:erenyiDiv}
+Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
+\begin{align*}
+  \eR_\alpha(\kappa \circ \mathcal{P}, \kappa \circ \mathcal{Q})
+  &\le \eR_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:logUtility_comp_le}
+
+\end{proof}
+
+
 \begin{lemma}\label{lem:echernoffDiv_map_le}
   \uses{def:echernoffDiv}
   \leanok
@@ -94,6 +110,22 @@ Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
 
 \begin{proof}\leanok
   \uses{lem:logUtility_map_le}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:echernoffDiv_comp_le}
+  \uses{def:echernoffDiv}
+Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
+\begin{align*}
+  \eC_\alpha(\kappa \circ \mathcal{P}, \kappa \circ \mathcal{Q})
+  &\le \eC_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:logUtility_comp_le}
 
 \end{proof}
 

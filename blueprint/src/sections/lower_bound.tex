@@ -56,6 +56,227 @@ which is equal to $\frac{1}{2} \log \frac{1}{1 - u^2}$ by Lemma~\ref{lem:sup_qua
 \end{proof}
 
 
+\begin{lemma}\label{lem:erenyiDiv_bounded_eq_erenyiDiv_bernoulli}
+  \uses{def:erenyiDiv}
+Let $a \le b \in [0,1]$.
+Let $\mathcal{D}_{\le a} = \{P \in \mathcal{P}([0,1]) \mid P[\id] \le a\}$ and $\mathcal{D}_{\ge b} = \{P \in \mathcal{P}([0,1]) \mid P[\id] \ge b\}$ be sets of distributions on $[0,1]$ with mean constraints.
+Let $B_{\le a} = \{\Ber(p) \mid p \le a\}$ and $B_{\ge a} = \{\Ber(p) \mid p \ge a\}$ be sets of Bernoulli distributions with the same constraints.
+Then
+\begin{align*}
+  \eR_{1/2}(\mathcal{D}_{\le a}, \mathcal{D}_{\ge b})
+  &= \eR_{1/2}(B_{\le a}, B_{\ge b})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:erenyiDiv_anti, lem:erenyiDiv_comp_le}
+First, by Lemma~\ref{lem:erenyiDiv_anti}, since $B_{\le a} \subseteq \mathcal{D}_{\le a}$ and $B_{\ge b} \subseteq \mathcal{D}_{\ge b}$, we have
+\begin{align*}
+  \eR_{1/2}(\mathcal{D}_{\le a}, \mathcal{D}_{\ge b})
+  &\le \eR_{1/2}(B_{\le a}, B_{\ge b})
+  \: .
+\end{align*}
+For the reverse inequality, we use the data processing inequality for e-Rényi divergence (Lemma~\ref{lem:erenyiDiv_comp_le}).
+Let $\kappa : [0,1] \rightsquigarrow \{0,1\}$ be the Markov kernel defined by $\kappa(x) = \Ber(x)$ (the Bernoulli distribution with parameter $x$).
+Then for $P \in \mathcal{P}([0, 1])$, $\kappa \circ P$ is a Bernoulli distribution with parameter $P[\id]$, and thus $\kappa \circ \mathcal{D}_{\le a} = B_{\le a}$ and $\kappa \circ \mathcal{D}_{\ge b} = B_{\ge b}$.
+By Lemma~\ref{lem:erenyiDiv_comp_le},
+\begin{align*}
+  \eR_{1/2}(B_{\le a}, B_{\ge b})
+  &\le \eR_{1/2}(\mathcal{D}_{\le a}, \mathcal{D}_{\ge b})
+  \: .
+\end{align*}
+\end{proof}
+
+
+\begin{lemma}\label{lem:convex_logUtility}
+  \uses{def:logUtility}
+The function $\mathcal{U}_{\log}(\cdot, \mathcal{P})$ is convex in its first argument.
+\end{lemma}
+
+\begin{proof}
+Let $R_1, R_2 \in \mathcal{P}(\mathcal{X})$ and let $\theta \in [0,1]$.
+\begin{align*}
+  \mathcal{U}_{\log}(\theta R_1 + (1 - \theta) R_2, \mathcal{P})
+  &= \sup_{f \in \mathcal{E}_{\mathcal{P}}} (\theta R_1 + (1 - \theta) R_2)\left[\log f\right]
+  \\
+  &= \sup_{f \in \mathcal{E}_{\mathcal{P}}} \left\{\theta R_1[\log f] + (1 - \theta) R_2[\log f]\right\}
+  \\
+  &\le \theta \sup_{f \in \mathcal{E}_{\mathcal{P}}} R_1[\log f] + (1 - \theta) \sup_{f \in \mathcal{E}_{\mathcal{P}}} R_2[\log f]
+  \\
+  &= \theta \mathcal{U}_{\log}(R_1, \mathcal{P}) + (1 - \theta) \mathcal{U}_{\log}(R_2, \mathcal{P})
+  \: .
+\end{align*}
+\end{proof}
+
+
+\begin{lemma}\label{lem:logUtility_map_swap}
+Let $R \in \mathcal{P}(\mathcal{X})$, $\mathcal{P} \subseteq \mathcal{P}(\mathcal{X})$ and let $\phi : \mathcal{X} \to \mathcal{X}$ be a measurable map such that $\phi \circ \phi = \id$.
+Then
+\begin{align*}
+  \mathcal{U}_{\log}(R, \phi_* \mathcal{P})
+  &= \mathcal{U}_{\log}(\phi_* R, \mathcal{P})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:logUtility_map_le}
+To prove the first inequality, we use Lemma~\ref{lem:logUtility_map_le}:
+\begin{align*}
+  \mathcal{U}_{\log}(R, \phi_* \mathcal{P})
+  &= \mathcal{U}_{\log}(\phi_* (\phi_* R), \phi_* \mathcal{P})
+  \\
+  &\le \mathcal{U}_{\log}(\phi_* R, \mathcal{P})
+  \: .
+\end{align*}
+For the reverse inequality,
+\begin{align*}
+  \mathcal{U}_{\log}(\phi_* R, \mathcal{P})
+  &= \mathcal{U}_{\log}(\phi_* R, \phi_* (\phi_* \mathcal{P}))
+  \\
+  &\le \mathcal{U}_{\log}(R, \phi_* \mathcal{P})
+  \: .
+\end{align*}
+\end{proof}
+
+
+\begin{lemma}\label{lem:erenyiDiv_map_swap}
+  \uses{def:erenyiDiv}
+Let $\mathcal{P},\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be two sets of probability measures.
+Suppose that there exists a measurable map $\phi : \mathcal{X} \to \mathcal{X}$ such that $\phi \circ \phi = \id$ and $\phi_* \mathcal{P} = \mathcal{Q}$.
+Then
+\begin{align*}
+  \eR_\alpha(\mathcal{P}, \mathcal{Q})
+  &= \frac{1}{1 - \alpha} \inf_{R \in \mathcal{P}(\mathcal{X}), \: \phi_* R = R} \mathcal{U}_{\log}(R, \mathcal{P})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:logUtility_map_le, lem:convex_logUtility, lem:logUtility_map_swap}
+First consider an arbitrary $R \in \mathcal{P}(\mathcal{X})$.
+Then $R' = \frac{1}{2}(R + \phi_* R)$ satisfies $\phi_* R' = R'$ and by convexity (Lemma~\ref{lem:convex_logUtility}) and Lemma~\ref{lem:logUtility_map_swap},
+\begin{align*}
+  \alpha \mathcal{U}_{\log}(R', \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(R', \mathcal{Q})
+  &\le \frac{1}{2} \left( \alpha \mathcal{U}_{\log}(R, \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(R, \mathcal{Q}) \right)
+  \\
+  &\quad + \frac{1}{2} \left( \alpha \mathcal{U}_{\log}(\phi_* R, \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(\phi_* R, \mathcal{Q}) \right)
+  \\
+  &= \alpha \mathcal{U}_{\log}(R, \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(R, \mathcal{Q})
+  \: .
+\end{align*}
+Hence we can restrict the infimum defining $\eR_\alpha(\mathcal{P}, \mathcal{Q})$ to measures $R$ such that $\phi_* R = R$.
+For such measures, by Lemma~\ref{lem:logUtility_map_swap}, $\mathcal{U}_{\log}(R, \mathcal{Q}) = \mathcal{U}_{\log}(\phi_* R, \mathcal{P}) = \mathcal{U}_{\log}(R, \mathcal{P})$ and we get the result.
+\end{proof}
+
+
+\begin{lemma}\label{lem:eVarSet_bernoulli_le}
+  \uses{def:eVar}
+Let $\delta \in [0,1/2]$ and let $B_{\le \delta} = \{\Ber(p) \mid p \le \delta\}$.
+Then
+\begin{align*}
+  \mathcal{E}_{B_{\le \delta}}
+  &= \left\{f : \{0,1\} \to \mathbb{R}_{+, \infty} \text{ measurable} \mid \exists \lambda \in \left[0, \frac{1}{\delta}\right], \: \forall x \in \{0, 1\}, \: f(x) \le 1 + \lambda (x - \delta)\right\}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+It is easy to check that the set on the right is included in $\mathcal{E}_{B_{\le \delta}}$.
+
+The constraint on an e-variable $f$ for $B_{\le \delta}$ is that for all $p \le \delta$,
+\begin{align*}
+  (1 - p) f(0) + p f(1)
+  &\le 1
+  \: .
+\end{align*}
+For $p=0$ and $p=\delta$ we thus get the two constraints
+\begin{align*}
+  f(0)
+  &\le 1
+  \: , \\
+  f(1)
+  &\le 1 + \frac{1 - f(0)}{\delta}(1 - \delta)
+  \: .
+\end{align*}
+Let $\lambda = \frac{1 - f(0)}{\delta}$.
+Then $\lambda \in [0, \frac{1}{\delta}]$ and the second constraint can be rewritten as $f(1) \le 1 + \lambda (1 - \delta)$.
+We need to check that we also have $f(0) \le 1 + \lambda (0 - \delta)$, but the expression on the right is equal to $f(0)$ by definition of $\lambda$.
+\end{proof}
+
+
+\begin{lemma}\label{lem:logUtility_bernoulli_half_le}
+  \uses{def:logUtility}
+Let $\delta \in [0,1/2]$ and let $B_{\le \delta} = \{\Ber(p) \mid p \le \delta\}$.
+Then
+\begin{align*}
+  \mathcal{U}_{\log}(\Ber(1/2), B_{\le \delta})
+  &= \frac{1}{2} \log \frac{1}{4 \delta (1 - \delta)}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:eVarSet_bernoulli_le}
+We first compute $\mathcal{E}_{B_{\le \delta}}$ with Lemma~\ref{lem:eVarSet_bernoulli_le}.
+We thus know that we can restrict the supremum over $f \in \mathcal{E}_{B_{\le \delta}}$ to functions of the form $f(x) = 1 + \lambda (x - \delta)$ for some $\lambda \in [0, \frac{1}{\delta}]$.
+\begin{align*}
+  \mathcal{U}_{\log}(\Ber(1/2), B_{\le \delta})
+  &= \sup_{\lambda \in [0, \frac{1}{\delta}]} \frac{1}{2} \log (1 + \lambda (0 - \delta)) + \frac{1}{2} \log (1 + \lambda (1 - \delta))
+  \\
+  &= \frac{1}{2} \log \sup_{\lambda \in [0, \frac{1}{\delta}]} \left((1 - \lambda \delta)(1 + \lambda (1 - \delta))\right)
+  \: .
+\end{align*}
+
+TODO
+\end{proof}
+
+
+\begin{lemma}\label{lem:erenyiDiv_bernoulli}
+  \uses{def:erenyiDiv}
+Let $\delta \in [0,1/2]$.
+Let $B_{\le \delta} = \{\Ber(p) \mid p \le \delta\}$ and $B_{\ge 1 - \delta} = \{\Ber(p) \mid p \ge 1 - \delta\}$ be sets of Bernoulli distributions with mean constraints.
+Then
+\begin{align*}
+  \eR_{1/2}(B_{\le \delta}, B_{\ge 1 - \delta})
+  &= \log \frac{1}{4 \delta (1 - \delta)}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:erenyiDiv_map_swap, lem:logUtility_bernoulli_half_le}
+By Lemma \ref{lem:erenyiDiv_map_swap} for the map $\phi : \{0,1\} \to \{0,1\}$ defined by $\phi(0) = 1$ and $\phi(1) = 0$, we have
+\begin{align*}
+  \eR_{1/2}(B_{\le \delta}, B_{\ge 1 - \delta})
+  &= 2 \inf_{R \in \mathcal{P}(\{0,1\}), \: \phi_* R = R} \mathcal{U}_{\log}(R, B_{\le \delta})
+  \\
+  &= 2 \mathcal{U}_{\log}\left(\Ber(1/2), B_{\le \delta}\right)
+  \: .
+\end{align*}
+We now use Lemma~\ref{lem:logUtility_bernoulli_half_le} to conclude.
+\end{proof}
+
+
+\begin{lemma}\label{lem:erenyiDiv_bounded}
+  \uses{def:erenyiDiv}
+Let $\delta \in [0,1/2]$.
+Let $\mathcal{D}_{\le \delta} = \{P \in \mathcal{P}([0,1]) \mid P[\id] \le \delta\}$ and $\mathcal{D}_{\ge 1 - \delta} = \{P \in \mathcal{P}([0,1]) \mid P[\id] \ge 1 - \delta\}$ be sets of distributions on $[0,1]$ with mean constraints.
+Then
+\begin{align*}
+  \eR_{1/2}(\mathcal{D}_{\le \delta}, \mathcal{D}_{\ge 1 - \delta})
+  &= \log \frac{1}{4 \delta (1 - \delta)}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:erenyiDiv_bounded_eq_erenyiDiv_bernoulli, lem:erenyiDiv_bernoulli}
+
+\end{proof}
+
+
 \begin{lemma}\label{lem:inf_bounded_renyi_sparation}
   \uses{def:eVar}
 Let $\mathcal{D}_{\le -\varepsilon} = \{P \in \mathcal{P}([-1,1]) \mid P[\id] \le -\varepsilon\}$ and $\mathcal{D}_{\ge \varepsilon} = \{P \in \mathcal{P}([-1,1]) \mid P[\id] \ge \varepsilon\}$.
