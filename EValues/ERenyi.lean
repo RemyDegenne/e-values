@@ -127,11 +127,40 @@ lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
   have hφ_inv : φ ∘ φ = id := by ext; simp [φ]
   rw [erenyiDiv_of_involutive _ _ (by fun_prop) hφ_inv]
   swap
-  · sorry
+  · ext μ
+    simp only [Set.mem_setOf_eq, tsub_le_iff_right]
+    constructor
+    · rintro ⟨ν, ⟨⟨hν, h_int⟩, rfl⟩⟩
+      refine ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩
+      rw [integral_map (by fun_prop) (by fun_prop)]
+      simp only [φ]
+      rw [integral_sub (by fun_prop) (by fun_prop)]
+      simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+      linarith
+    · rintro ⟨hμ, h_int⟩
+      refine ⟨μ.map φ, ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩, ?_⟩
+      · rw [integral_map (by fun_prop) (by fun_prop)]
+        simp only [φ]
+        rw [integral_sub (by fun_prop) (by fun_prop)]
+        simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+        linarith
+      · rw [Measure.map_map (by fun_prop) (by fun_prop), hφ_inv, Measure.map_id]
   have h_iff R (hR : IsProbabilityMeasure R) :
       R.map φ = R ↔ R =
         (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨0, by simp⟩ + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩ := by
-    sorry
+    constructor
+    · intro hRφ
+      sorry
+    · rintro rfl
+      refine Measure.ext_iff_singleton.mpr fun x ↦ ?_
+      simp only [Measure.coe_add, Measure.coe_smul, Pi.add_apply, Pi.smul_apply,
+        MeasurableSet.singleton, Measure.dirac_apply', smul_eq_mul, φ]
+      rw [Measure.map_apply (by fun_prop) (by measurability)]
+      classical
+      simp only [Measure.coe_add, Measure.coe_smul, Pi.add_apply, Pi.smul_apply,
+        Measure.dirac_apply, Set.indicator_apply, Set.mem_preimage, sub_zero, Set.mem_singleton_iff,
+        Pi.one_apply, smul_eq_mul, mul_ite, mul_one, mul_zero, sub_self]
+      split_ifs <;> simp
   simp only [ENNReal.one_sub_inv_two, inv_inv]
   calc 2 * ⨅ (R : Measure _) (_ : IsProbabilityMeasure R) (_ : Measure.map φ R = R),
       (maxUtility R {μ | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} logUtility).toENNReal
