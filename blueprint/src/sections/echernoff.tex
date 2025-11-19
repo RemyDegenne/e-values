@@ -1,22 +1,24 @@
 \chapter{e-Rényi and e-Chernoff divergences}
 
 \begin{definition}\label{def:erenyiDiv}
+  \uses{def:logUtility}
   \leanok
   \lean{ProbabilityTheory.erenyiDiv}
 \begin{align*}
   \eR_\alpha(\mathcal{P}, \mathcal{Q})
-  &= \frac{1}{1 - \alpha} \inf_{R \in \mathcal{P}(\mathcal{X})} \left( \alpha \sup_{f \in \mathcal{E}_{\mathcal{P}}} R[\log f] + (1 - \alpha) \sup_{g \in \mathcal{E}_{\mathcal{Q}}} R[\log g] \right)
+  &= \frac{1}{1 - \alpha} \inf_{R \in \mathcal{P}(\mathcal{X})} \left( \alpha \mathcal{U}_{\log}(R, \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(R, \mathcal{Q}) \right)
   \: .
 \end{align*}
 \end{definition}
 
 
 \begin{definition}\label{def:echernoffDiv}
+  \uses{def:logUtility}
   \leanok
   \lean{ProbabilityTheory.echernoffDiv}
 \begin{align*}
   \eC_\alpha(\mathcal{P}, \mathcal{Q})
-  &= \inf_{R \in \mathcal{P}(\mathcal{X})} \max\left\{\sup_{f \in \mathcal{E}_{\mathcal{P}}} R[\log f], \sup_{g \in \mathcal{E}_{\mathcal{Q}}} R[\log g] \right\}
+  &= \inf_{R \in \mathcal{P}(\mathcal{X})} \max\left\{\mathcal{U}_{\log}(R, \mathcal{P}), \mathcal{U}_{\log}(R, \mathcal{Q}) \right\}
   \: .
 \end{align*}
 \end{definition}
@@ -36,6 +38,7 @@ Then, for all $\alpha \in (0, 1)$,
 \end{lemma}
 
 \begin{proof}\leanok
+  \uses{lem:logUtility_anti}
 
 \end{proof}
 
@@ -54,6 +57,7 @@ Then
 \end{lemma}
 
 \begin{proof}\leanok
+  \uses{lem:logUtility_anti}
 
 \end{proof}
 
@@ -71,6 +75,7 @@ Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
 \end{lemma}
 
 \begin{proof}\leanok
+  \uses{lem:logUtility_map_le}
 
 \end{proof}
 
@@ -83,6 +88,23 @@ Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
 \begin{align*}
   \eC_\alpha(f_*\mathcal{P}, f_*\mathcal{Q})
   &\le \eC_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:logUtility_map_le}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:logUtility_prod}
+  \uses{def:logUtility, thm:numeraire_prod}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility_prod}
+\begin{align*}
+  \mathcal{U}_{\log}(P_1 \otimes P_2, \mathcal{Q}_1 \otimes \mathcal{Q}_2)
+  &= \mathcal{U}_{\log}(P_1, \mathcal{Q}_1) + \mathcal{U}_{\log}(P_2, \mathcal{Q}_2)
   \: .
 \end{align*}
 \end{lemma}
@@ -102,6 +124,7 @@ Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
 \end{lemma}
 
 \begin{proof}
+  \uses{lem:logUtility_prod}
 
 \end{proof}
 
@@ -116,5 +139,6 @@ Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
 \end{lemma}
 
 \begin{proof}
+  \uses{lem:logUtility_prod}
 
 \end{proof}

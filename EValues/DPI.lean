@@ -117,15 +117,20 @@ lemma maxUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kerne
   rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _]
   exact maxRandUtility_comp_le P S κ
 
-lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
-    maxUtility P S logUtility = ∫ᵉ x, (ENNReal.log ∘ (numeraire P S)) x ∂P := by
-  have hNU := isNumeraire_numeraire P hS
+lemma IsNumeraire.maxUtility_eq_integral [IsProbabilityMeasure P] {X : 𝓧 → ℝ≥0∞}
+    (hX : IsNumeraire X S P) :
+    maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (X x) ∂P := by
   refine le_antisymm ?_ ?_
   · simp only [maxUtility]
     refine iSup₂_le_iff.mpr fun Y hY ↦ ?_
-    simp [logUtility, hNU.eintegral_log_le hY]
-  · exact le_iSup₂_of_le _ hNU.toIsEVar <| le_refl _
+    simp [logUtility, hX.eintegral_log_le hY]
+  · rw [maxUtility_eq_sSup]
+    refine le_sSup ?_
+    exact ⟨X, hX.toIsEVar, rfl⟩
 
+lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P :=
+  (isNumeraire_numeraire P hS).maxUtility_eq_integral
 
 end ProbabilityTheory

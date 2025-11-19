@@ -22,61 +22,76 @@ variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableS
 
 /-- The numeraire of a product measure with respect to a product of sets is the product
 of the numeraires. -/
-theorem isNumeraire_mul_numeraire
+theorem isNumeraire_mul
     (P : Measure 𝓧) [IsProbabilityMeasure P] (Q : Measure 𝓨) [IsProbabilityMeasure Q]
-    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
-    IsNumeraire (fun (x : 𝓧 × 𝓨) ↦ numeraire P S x.1 * numeraire Q T x.2)
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
+    {X : 𝓧 → ℝ≥0∞} {Y : 𝓨 → ℝ≥0∞} (hX : IsNumeraire X S P) (hY : IsNumeraire Y T Q) :
+    IsNumeraire (fun (x : 𝓧 × 𝓨) ↦ X x.1 * Y x.2)
       {ρ | ∃ μ ∈ S, ∃ ν ∈ T, μ.prod ν = ρ} (P.prod Q) where
-  measurable := by fun_prop
+  measurable := by
+    have hX_meas := hX.measurable
+    have hY_meas := hY.measurable
+    fun_prop
   lintegral_le_one := by
+    have hX_meas := hX.measurable
+    have hY_meas := hY.measurable
     rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
     specialize hS μ hμS
     specialize hT ν hνT
     rw [lintegral_prod_mul (by fun_prop) (by fun_prop)]
-    have h1 := (isEVar_numeraire P S).lintegral_le_one
-    have h2 := (isEVar_numeraire Q T).lintegral_le_one
-    exact mul_le_one' (h1 μ hμS) (h2 ν hνT)
+    exact mul_le_one' (hX.toIsEVar.lintegral_le_one μ hμS) (hY.toIsEVar.lintegral_le_one ν hνT)
   isProbabilityMeasure_set := by
     rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
     specialize hS μ hμS
     specialize hT ν hνT
     infer_instance
-  lintegral_div_le_one Y hY_evar := by
-    have hY_meas := hY_evar.measurable
+  lintegral_div_le_one Z hZ_evar := by
+    have hX_meas := hX.measurable
+    have hY_meas := hY.measurable
+    have hZ_meas := hZ_evar.measurable
     rw [lintegral_prod _ (by fun_prop)]
     simp only [ge_iff_le]
-    simp_rw [mul_comm (numeraire P S _)]
-    have h_eq : ∫⁻ x, ∫⁻ y, Y (x, y) / (numeraire Q T y * numeraire P S x) ∂Q ∂P
-        = ∫⁻ x, (∫⁻ y, Y (x, y) / numeraire Q T y ∂Q) / numeraire P S x ∂P := by
+    simp_rw [mul_comm (X _)]
+    have h_eq : ∫⁻ x, ∫⁻ y, Z (x, y) / (Y y * X x) ∂Q ∂P
+        = ∫⁻ x, (∫⁻ y, Z (x, y) / Y y ∂Q) / X x ∂P := by
       refine lintegral_congr_ae ?_
-      filter_upwards [(isNumeraire_numeraire P hS).ae_ne_zero] with x hx
+      filter_upwards [hX.ae_ne_zero] with x hx
       simp_rw [div_eq_mul_inv]
       rw [← lintegral_mul_const _ (by fun_prop)]
       refine lintegral_congr_ae ?_
-      filter_upwards [(isNumeraire_numeraire Q hT).ae_ne_zero] with y hy
+      filter_upwards [hY.ae_ne_zero] with y hy
       rw [ENNReal.mul_inv (.inl hy) (.inr hx), mul_assoc]
-    suffices IsEVar (fun x ↦ ∫⁻ y, Y (x, y) / numeraire Q T y ∂Q) S by
+    suffices IsEVar (fun x ↦ ∫⁻ y, Z (x, y) / Y y ∂Q) S by
       rw [h_eq]
-      exact (isNumeraire_numeraire P hS).lintegral_div_le_one this
+      exact hX.lintegral_div_le_one this
     constructor
     · fun_prop
     intro μ hμS
-    have := (isNumeraire_numeraire P hS).isProbabilityMeasure_set μ hμS
+    have := hX.isProbabilityMeasure_set μ hμS
     rw [lintegral_lintegral_swap (by fun_prop)]
-    have h_eq' : ∫⁻ y, ∫⁻ x, Y (x, y) / numeraire Q T y ∂μ ∂Q
-        = ∫⁻ y, (∫⁻ x, Y (x, y) ∂μ) / numeraire Q T y ∂Q := by
+    have h_eq' : ∫⁻ y, ∫⁻ x, Z (x, y) / Y y ∂μ ∂Q
+        = ∫⁻ y, (∫⁻ x, Z (x, y) ∂μ) / Y y ∂Q := by
       congr with y
       simp_rw [div_eq_mul_inv]
       rw [lintegral_mul_const _ (by fun_prop)]
-    suffices IsEVar (fun y ↦ ∫⁻ x, Y (x, y) ∂μ) T by
+    suffices IsEVar (fun y ↦ ∫⁻ x, Z (x, y) ∂μ) T by
       rw [h_eq']
-      exact (isNumeraire_numeraire Q hT).lintegral_div_le_one this
+      exact hY.lintegral_div_le_one this
     constructor
     · fun_prop
     intro ν hνT
-    have := (isNumeraire_numeraire Q hT).isProbabilityMeasure_set ν hνT
+    have := hY.isProbabilityMeasure_set ν hνT
     rw [lintegral_lintegral_symm (by fun_prop)]
-    exact hY_evar.lintegral_le_one (μ.prod ν) ⟨μ, hμS, ν, hνT, rfl⟩
+    exact hZ_evar.lintegral_le_one (μ.prod ν) ⟨μ, hμS, ν, hνT, rfl⟩
+
+/-- The numeraire of a product measure with respect to a product of sets is the product
+of the numeraires. -/
+theorem isNumeraire_mul_numeraire
+    (P : Measure 𝓧) [IsProbabilityMeasure P] (Q : Measure 𝓨) [IsProbabilityMeasure Q]
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
+    IsNumeraire (fun (x : 𝓧 × 𝓨) ↦ numeraire P S x.1 * numeraire Q T x.2)
+      {ρ | ∃ μ ∈ S, ∃ ν ∈ T, μ.prod ν = ρ} (P.prod Q) :=
+  isNumeraire_mul P Q hS hT (isNumeraire_numeraire P hS) (isNumeraire_numeraire Q hT)
 
 /-- The logarithmic utility of the numeraire on a product is the sum of the two logarithmic
 utilities. -/
