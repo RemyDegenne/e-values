@@ -49,84 +49,71 @@ lemma echernoffDiv_eq_sInf : echernoffDiv S T =
     y = max (maxUtility R S logUtility).toENNReal (maxUtility R T logUtility).toENNReal} :=
   iInf₂_eq_sInf (ι := ℝ≥0∞)
 
+lemma erenyiDiv_le (m : Measure 𝓧 → Measure 𝓨)
+    (hm : ∀ ⦃μ⦄, IsProbabilityMeasure μ → IsProbabilityMeasure (m μ))
+    {S T : Set (Measure 𝓧)}
+    (hUtility : ∀ μ E, maxUtility (m μ) {m μ | μ ∈ E} logUtility ≤ maxUtility μ E logUtility) :
+    erenyiDiv α {m μ | μ ∈ S} {m μ | μ ∈ T} ≤ erenyiDiv α S T := by
+  unfold erenyiDiv
+  gcongr 1
+  calc
+  _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
+      α * (maxUtility (m R) {m μ | μ ∈ S} logUtility).toENNReal +
+        (1 - α) * (maxUtility (m R) {m μ | μ ∈ T} logUtility).toENNReal := by
+    rw [iInf₂_eq_sInf (ι := ℝ≥0∞), iInf₂_eq_sInf (ι := ℝ≥0∞)]
+    refine sInf_le_sInf fun y ↦ ?_
+    rintro ⟨R, hR, rfl⟩
+    exact ⟨m R, hm hR, rfl⟩
+  _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
+      α * (maxUtility R S logUtility).toENNReal +
+        (1 - α) * (maxUtility R T logUtility).toENNReal := by
+    refine iInf₂_mono fun R _ ↦ add_le_add ?_ ?_
+    all_goals
+      gcongr 1
+      exact EReal.toENNReal_le_toENNReal <| hUtility R _
+
 /-- Data processing inequality for the e-Rényi divergence. -/
 lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
     erenyiDiv α {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} ≤ erenyiDiv α S T := by
-  unfold erenyiDiv
-  gcongr 1
-  set S' := {μ.map f | μ ∈ S}
-  set T' := {μ.map f | μ ∈ T}
-  calc
-  _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
-      α * (maxUtility (R.map f) S' logUtility).toENNReal +
-        (1 - α) * (maxUtility (R.map f) T' logUtility).toENNReal := by
-    rw [iInf₂_eq_sInf (ι := ℝ≥0∞), iInf₂_eq_sInf (ι := ℝ≥0∞)]
-    refine sInf_le_sInf fun y ↦ ?_
-    rintro ⟨R, hR, rfl⟩
-    exact ⟨R.map f, R.isProbabilityMeasure_map hf.aemeasurable, rfl⟩
-  _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
-      α * (maxUtility R S logUtility).toENNReal +
-        (1 - α) * (maxUtility R T logUtility).toENNReal := by
-    refine iInf₂_mono fun R _ ↦ add_le_add ?_ ?_
-    all_goals
-      gcongr 1
-      exact EReal.toENNReal_le_toENNReal <| maxUtility_map_le R hf
+  refine erenyiDiv_le (fun μ ↦ μ.map f) (fun μ hμ ↦ ?_) (fun μ E ↦ ?_)
+  · exact μ.isProbabilityMeasure_map hf.aemeasurable
+  · exact maxUtility_map_le μ hf
 
 lemma erenyiDiv_comp_le (κ : Kernel 𝓧 𝓨) [IsMarkovKernel κ] :
     erenyiDiv α {κ ∘ₘ μ | μ ∈ S} {κ ∘ₘ μ | μ ∈ T} ≤ erenyiDiv α S T := by
-  unfold erenyiDiv
-  gcongr 1
-  set S' := {κ ∘ₘ μ | μ ∈ S}
-  set T' := {κ ∘ₘ μ | μ ∈ T}
-  calc
-  _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
-      α * (maxUtility (κ ∘ₘ R) S' logUtility).toENNReal +
-        (1 - α) * (maxUtility (κ ∘ₘ R) T' logUtility).toENNReal := by
-    rw [iInf₂_eq_sInf (ι := ℝ≥0∞), iInf₂_eq_sInf (ι := ℝ≥0∞)]
+  refine erenyiDiv_le (fun μ ↦ κ ∘ₘ μ) (fun μ hμ ↦ ?_) (fun μ E ↦ ?_)
+  · infer_instance
+  · exact maxUtility_comp_le μ κ
+
+lemma echernoffDiv_le (m : Measure 𝓧 → Measure 𝓨)
+    (hm : ∀ ⦃μ⦄, IsProbabilityMeasure μ → IsProbabilityMeasure (m μ))
+    {S T : Set (Measure 𝓧)}
+    (hUtility : ∀ μ E, maxUtility (m μ) {m μ | μ ∈ E} logUtility ≤ maxUtility μ E logUtility) :
+    echernoffDiv {m μ | μ ∈ S} {m μ | μ ∈ T} ≤ echernoffDiv S T := by
+  calc echernoffDiv {m μ | μ ∈ S} {m μ | μ ∈ T}
+  _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R), max
+      (maxUtility (m R) {m μ | μ ∈ S} logUtility).toENNReal
+      (maxUtility (m R) {m μ | μ ∈ T} logUtility).toENNReal := by
+    rw [iInf₂_eq_sInf (ι := ℝ≥0∞), echernoffDiv_eq_sInf]
     refine sInf_le_sInf fun y ↦ ?_
     rintro ⟨R, hR, rfl⟩
-    exact ⟨κ ∘ₘ R, inferInstance, rfl⟩
-  _ ≤ ⨅ R,
-    ⨅ (_ : IsProbabilityMeasure R),
-      α * (maxUtility R S logUtility).toENNReal +
-        (1 - α) * (maxUtility R T logUtility).toENNReal := by
-    refine iInf₂_mono fun R _ ↦ add_le_add ?_ ?_
-    all_goals
-      gcongr 1
-      exact EReal.toENNReal_le_toENNReal <| maxUtility_comp_le R κ
+    exact ⟨m R, hm hR, rfl⟩
+  _ ≤ echernoffDiv S T := by
+    refine iInf₂_mono fun R _ ↦ max_le_max ?_ ?_
+    all_goals exact EReal.toENNReal_le_toENNReal <| hUtility R _
 
 /-- Data processing inequality for the e-Chernoff divergence. -/
 lemma echernoffDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
     echernoffDiv {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} ≤ echernoffDiv S T := by
-  set S' := {μ.map f | μ ∈ S}
-  set T' := {μ.map f | μ ∈ T}
-  calc echernoffDiv S' T'
-  _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R), max
-      (maxUtility (R.map f) S' logUtility).toENNReal
-      (maxUtility (R.map f) T' logUtility).toENNReal := by
-    rw [iInf₂_eq_sInf (ι := ℝ≥0∞), echernoffDiv_eq_sInf]
-    refine sInf_le_sInf fun y ↦ ?_
-    rintro ⟨R, hR, rfl⟩
-    exact ⟨R.map f, R.isProbabilityMeasure_map hf.aemeasurable, rfl⟩
-  _ ≤ echernoffDiv S T := by
-    refine iInf₂_mono fun R _ ↦ max_le_max ?_ ?_
-    all_goals exact EReal.toENNReal_le_toENNReal <| maxUtility_map_le R hf
+  refine echernoffDiv_le (fun μ ↦ μ.map f) (fun μ hμ ↦ ?_) (fun μ E ↦ ?_)
+  · exact μ.isProbabilityMeasure_map hf.aemeasurable
+  · exact maxUtility_map_le μ hf
 
 lemma echernoffDiv_comp_le (κ : Kernel 𝓧 𝓨) [IsMarkovKernel κ] :
     echernoffDiv {κ ∘ₘ μ | μ ∈ S} {κ ∘ₘ μ | μ ∈ T} ≤ echernoffDiv S T := by
-  set S' := {κ ∘ₘ μ | μ ∈ S}
-  set T' := {κ ∘ₘ μ | μ ∈ T}
-  calc echernoffDiv S' T'
-  _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R), max
-      (maxUtility (κ ∘ₘ R) S' logUtility).toENNReal
-      (maxUtility (κ ∘ₘ R) T' logUtility).toENNReal := by
-    rw [iInf₂_eq_sInf (ι := ℝ≥0∞), echernoffDiv_eq_sInf]
-    refine sInf_le_sInf fun y ↦ ?_
-    rintro ⟨R, hR, rfl⟩
-    exact ⟨κ ∘ₘ R, inferInstance, rfl⟩
-  _ ≤ echernoffDiv S T := by
-    refine iInf₂_mono fun R _ ↦ max_le_max ?_ ?_
-    all_goals exact EReal.toENNReal_le_toENNReal <| maxUtility_comp_le R κ
+  refine echernoffDiv_le (fun μ ↦ κ ∘ₘ μ) (fun μ hμ ↦ ?_) (fun μ E ↦ ?_)
+  · infer_instance
+  · exact maxUtility_comp_le μ κ
 
 lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
     (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
