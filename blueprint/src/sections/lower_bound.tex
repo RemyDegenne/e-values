@@ -128,6 +128,8 @@ We need to check that we also have $f(0) \le 1 + \lambda (0 - \delta)$, but the 
 
 \begin{lemma}\label{lem:logUtility_bernoulli_half_le}
   \uses{def:logUtility}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility_bernoulli_half_le}
 Let $\delta \in [0,1/2]$ and let $B_{\le \delta} = \{\Ber(p) \mid p \le \delta\}$.
 Then
 \begin{align*}
@@ -155,6 +157,8 @@ Its value at the optimum is $\frac{1}{4 \delta (1 - \delta)}$.
 
 \begin{lemma}\label{lem:erenyiDiv_bernoulli}
   \uses{def:erenyiDiv}
+  \leanok
+  \lean{ProbabilityTheory.erenyiDiv_bernoulli}
 Let $\delta \in [0,1/2]$.
 Let $B_{\le \delta} = \{\Ber(p) \mid p \le \delta\}$ and $B_{\ge 1 - \delta} = \{\Ber(p) \mid p \ge 1 - \delta\}$ be sets of Bernoulli distributions with mean constraints.
 Then

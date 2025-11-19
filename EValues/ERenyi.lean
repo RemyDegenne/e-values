@@ -119,6 +119,42 @@ lemma erenyiDiv_of_involutive (S T : Set (Measure 𝓧)) {φ : 𝓧 → 𝓧} (h
         (maxUtility R S logUtility).toENNReal := by
   sorry
 
+lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
+    erenyiDiv 2⁻¹ {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ}
+        {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ 1 - δ ≤ ∫ x, (x : ℝ) ∂μ}
+      = ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ)))) := by
+  let φ : ({0, 1} : Set ℝ) → ({0, 1} : Set ℝ) := fun x ↦ ⟨1 - x.1, by grind⟩
+  have hφ_inv : φ ∘ φ = id := by ext; simp [φ]
+  rw [erenyiDiv_of_involutive _ _ (by fun_prop) hφ_inv]
+  swap
+  · sorry
+  have h_iff R (hR : IsProbabilityMeasure R) :
+      R.map φ = R ↔ R =
+        (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨0, by simp⟩ + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩ := by
+    sorry
+  simp only [ENNReal.one_sub_inv_two, inv_inv]
+  calc 2 * ⨅ (R : Measure _) (_ : IsProbabilityMeasure R) (_ : Measure.map φ R = R),
+      (maxUtility R {μ | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} logUtility).toENNReal
+  _ = 2 * ⨅ (R : Measure _) (_ : IsProbabilityMeasure R) (_ : Measure.map φ R = R),
+      (maxUtility ((2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
+        + (2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨1, by simp⟩ : ({0, 1} : Set ℝ)))
+        {μ | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} logUtility).toENNReal := by
+    congr with R
+    congr with hR
+    congr with hRφ
+    rw [h_iff R hR] at hRφ
+    rw [hRφ]
+  _ = 2 * (maxUtility ((2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
+        + (2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨1, by simp⟩ : ({0, 1} : Set ℝ)))
+        {μ | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} logUtility).toENNReal := by
+    sorry
+  _ = ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ)))) := by
+    rw [maxUtility_bernoulli_half_le hδ_pos hδ, EReal.toENNReal_mul (by positivity),
+      EReal.real_coe_toENNReal, ← mul_assoc]
+    conv_rhs => rw [← one_mul (ENNReal.ofReal _)]
+    congr
+    sorry
+
 -- todo: rename
 theorem main_result_one_sample {f : 𝓧 → ℝ≥0∞} (hf : Measurable f) (hf_le : ∀ x, f x ≤ 1)
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)

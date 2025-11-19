@@ -29,3 +29,5 @@ LinearMap.Nondegenerate
 LinearMap.realPolar
 WeakBilin.instTopologicalSpace
 ProbabilityTheory.isEVar_bernoulli_le_iff
+ProbabilityTheory.maxUtility_bernoulli_half_le
+ProbabilityTheory.erenyiDiv_bernoulli
