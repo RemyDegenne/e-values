@@ -293,6 +293,57 @@ If $f^*$ is a numeraire for $(P, \mathcal{Q})$ then
 \end{proof}
 
 
+\begin{lemma}\label{lem:convex_logUtility}
+  \uses{def:logUtility}
+The function $R \mapsto \mathcal{U}_{\log}(R, \mathcal{P})$ is convex.
+\end{lemma}
+
+\begin{proof}
+Let $R_1, R_2 \in \mathcal{P}(\mathcal{X})$ and let $\theta \in [0,1]$.
+\begin{align*}
+  \mathcal{U}_{\log}(\theta R_1 + (1 - \theta) R_2, \mathcal{P})
+  &= \sup_{f \in \mathcal{E}_{\mathcal{P}}} (\theta R_1 + (1 - \theta) R_2)\left[\log f\right]
+  \\
+  &= \sup_{f \in \mathcal{E}_{\mathcal{P}}} \left\{\theta R_1[\log f] + (1 - \theta) R_2[\log f]\right\}
+  \\
+  &\le \theta \sup_{f \in \mathcal{E}_{\mathcal{P}}} R_1[\log f] + (1 - \theta) \sup_{f \in \mathcal{E}_{\mathcal{P}}} R_2[\log f]
+  \\
+  &= \theta \mathcal{U}_{\log}(R_1, \mathcal{P}) + (1 - \theta) \mathcal{U}_{\log}(R_2, \mathcal{P})
+  \: .
+\end{align*}
+\end{proof}
+
+
+\begin{lemma}\label{lem:logUtility_map_swap}
+Let $R \in \mathcal{P}(\mathcal{X})$, $\mathcal{P} \subseteq \mathcal{P}(\mathcal{X})$ and let $\phi : \mathcal{X} \to \mathcal{X}$ be a measurable map such that $\phi \circ \phi = \id$.
+Then
+\begin{align*}
+  \mathcal{U}_{\log}(R, \phi_* \mathcal{P})
+  &= \mathcal{U}_{\log}(\phi_* R, \mathcal{P})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:logUtility_map_le}
+To prove the first inequality, we use Lemma~\ref{lem:logUtility_map_le}:
+\begin{align*}
+  \mathcal{U}_{\log}(R, \phi_* \mathcal{P})
+  &= \mathcal{U}_{\log}(\phi_* (\phi_* R), \phi_* \mathcal{P})
+  \\
+  &\le \mathcal{U}_{\log}(\phi_* R, \mathcal{P})
+  \: .
+\end{align*}
+For the reverse inequality,
+\begin{align*}
+  \mathcal{U}_{\log}(\phi_* R, \mathcal{P})
+  &= \mathcal{U}_{\log}(\phi_* R, \phi_* (\phi_* \mathcal{P}))
+  \\
+  &\le \mathcal{U}_{\log}(R, \phi_* \mathcal{P})
+  \: .
+\end{align*}
+\end{proof}
+
 
 \subsection{Existence of a numeraire}
 
