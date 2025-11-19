@@ -141,4 +141,21 @@ lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :
   -- sup of sums ≤ sum of sups
   sorry
 
+lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : 𝓧 → 𝓧} (hφ : Measurable φ)
+    (hφ_inv : φ ∘ φ = id) :
+    maxUtility P {μ.map φ | μ ∈ S} U = maxUtility (P.map φ) S U := by
+  apply le_antisymm
+  · calc maxUtility P {μ.map φ | μ ∈ S} U
+    _ = maxUtility ((P.map φ).map φ) {μ.map φ | μ ∈ S} U := by
+      rw [Measure.map_map hφ hφ, hφ_inv, Measure.map_id]
+    _ ≤ maxUtility (P.map φ) S U := maxUtility_map_le _ hφ
+  · calc maxUtility (P.map φ) S U
+    _ = maxUtility (P.map φ) {(μ.map φ).map φ | μ ∈ S} U := by
+      congr with μ
+      simp_rw [Measure.map_map hφ hφ, hφ_inv, Measure.map_id]
+      grind
+    _ = maxUtility (P.map φ) {μ.map φ | μ ∈ {ν.map φ | ν ∈ S}} U := by congr with μ; simp
+    _ ≤ maxUtility P {μ | μ ∈ {ν.map φ | ν ∈ S}} U := maxUtility_map_le _ hφ
+    _ = maxUtility P {μ.map φ | μ ∈ S} U := rfl
+
 end ProbabilityTheory
