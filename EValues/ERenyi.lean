@@ -49,71 +49,51 @@ lemma echernoffDiv_eq_sInf : echernoffDiv S T =
     y = max (maxUtility R S logUtility).toENNReal (maxUtility R T logUtility).toENNReal} :=
   iInf₂_eq_sInf (ι := ℝ≥0∞)
 
-lemma erenyiDiv_le (m : Measure 𝓧 → Measure 𝓨)
-    (hm : ∀ ⦃μ⦄, IsProbabilityMeasure μ → IsProbabilityMeasure (m μ))
-    {S T : Set (Measure 𝓧)}
-    (hUtility : ∀ μ E, maxUtility (m μ) {m μ | μ ∈ E} logUtility ≤ maxUtility μ E logUtility) :
-    erenyiDiv α {m μ | μ ∈ S} {m μ | μ ∈ T} ≤ erenyiDiv α S T := by
+lemma erenyiDiv_comp_le (κ : Kernel 𝓧 𝓨) [IsMarkovKernel κ] :
+    erenyiDiv α {κ ∘ₘ μ | μ ∈ S} {κ ∘ₘ μ | μ ∈ T} ≤ erenyiDiv α S T := by
   unfold erenyiDiv
   gcongr 1
   calc
   _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
-      α * (maxUtility (m R) {m μ | μ ∈ S} logUtility).toENNReal +
-        (1 - α) * (maxUtility (m R) {m μ | μ ∈ T} logUtility).toENNReal := by
+      α * (maxUtility (κ ∘ₘ R) {κ ∘ₘ μ | μ ∈ S} logUtility).toENNReal +
+        (1 - α) * (maxUtility (κ ∘ₘ R) {κ ∘ₘ μ | μ ∈ T} logUtility).toENNReal := by
     rw [iInf₂_eq_sInf (ι := ℝ≥0∞), iInf₂_eq_sInf (ι := ℝ≥0∞)]
     refine sInf_le_sInf fun y ↦ ?_
     rintro ⟨R, hR, rfl⟩
-    exact ⟨m R, hm hR, rfl⟩
+    exact ⟨κ ∘ₘ R, inferInstance, rfl⟩
   _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
       α * (maxUtility R S logUtility).toENNReal +
         (1 - α) * (maxUtility R T logUtility).toENNReal := by
     refine iInf₂_mono fun R _ ↦ add_le_add ?_ ?_
     all_goals
       gcongr 1
-      exact EReal.toENNReal_le_toENNReal <| hUtility R _
+      exact EReal.toENNReal_le_toENNReal <| maxUtility_comp_le R κ
 
 /-- Data processing inequality for the e-Rényi divergence. -/
 lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
     erenyiDiv α {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} ≤ erenyiDiv α S T := by
-  refine erenyiDiv_le (fun μ ↦ μ.map f) (fun μ hμ ↦ ?_) (fun μ E ↦ ?_)
-  · exact μ.isProbabilityMeasure_map hf.aemeasurable
-  · exact maxUtility_map_le μ hf
+  simp_rw [← Measure.deterministic_comp_eq_map hf]
+  exact erenyiDiv_comp_le <| Kernel.deterministic f hf
 
-lemma erenyiDiv_comp_le (κ : Kernel 𝓧 𝓨) [IsMarkovKernel κ] :
-    erenyiDiv α {κ ∘ₘ μ | μ ∈ S} {κ ∘ₘ μ | μ ∈ T} ≤ erenyiDiv α S T := by
-  refine erenyiDiv_le (fun μ ↦ κ ∘ₘ μ) (fun μ hμ ↦ ?_) (fun μ E ↦ ?_)
-  · infer_instance
-  · exact maxUtility_comp_le μ κ
-
-lemma echernoffDiv_le (m : Measure 𝓧 → Measure 𝓨)
-    (hm : ∀ ⦃μ⦄, IsProbabilityMeasure μ → IsProbabilityMeasure (m μ))
-    {S T : Set (Measure 𝓧)}
-    (hUtility : ∀ μ E, maxUtility (m μ) {m μ | μ ∈ E} logUtility ≤ maxUtility μ E logUtility) :
-    echernoffDiv {m μ | μ ∈ S} {m μ | μ ∈ T} ≤ echernoffDiv S T := by
-  calc echernoffDiv {m μ | μ ∈ S} {m μ | μ ∈ T}
+lemma echernoffDiv_comp_le (κ : Kernel 𝓧 𝓨) [IsMarkovKernel κ] :
+    echernoffDiv {κ ∘ₘ μ | μ ∈ S} {κ ∘ₘ μ | μ ∈ T} ≤ echernoffDiv S T := by
+  calc echernoffDiv {κ ∘ₘ μ | μ ∈ S} {κ ∘ₘ μ | μ ∈ T}
   _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R), max
-      (maxUtility (m R) {m μ | μ ∈ S} logUtility).toENNReal
-      (maxUtility (m R) {m μ | μ ∈ T} logUtility).toENNReal := by
+      (maxUtility (κ ∘ₘ R) {κ ∘ₘ μ | μ ∈ S} logUtility).toENNReal
+      (maxUtility (κ ∘ₘ R) {κ ∘ₘ μ | μ ∈ T} logUtility).toENNReal := by
     rw [iInf₂_eq_sInf (ι := ℝ≥0∞), echernoffDiv_eq_sInf]
     refine sInf_le_sInf fun y ↦ ?_
     rintro ⟨R, hR, rfl⟩
-    exact ⟨m R, hm hR, rfl⟩
+    exact ⟨κ ∘ₘ R, inferInstance, rfl⟩
   _ ≤ echernoffDiv S T := by
     refine iInf₂_mono fun R _ ↦ max_le_max ?_ ?_
-    all_goals exact EReal.toENNReal_le_toENNReal <| hUtility R _
+    all_goals exact EReal.toENNReal_le_toENNReal <| maxUtility_comp_le R κ
 
 /-- Data processing inequality for the e-Chernoff divergence. -/
 lemma echernoffDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
     echernoffDiv {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} ≤ echernoffDiv S T := by
-  refine echernoffDiv_le (fun μ ↦ μ.map f) (fun μ hμ ↦ ?_) (fun μ E ↦ ?_)
-  · exact μ.isProbabilityMeasure_map hf.aemeasurable
-  · exact maxUtility_map_le μ hf
-
-lemma echernoffDiv_comp_le (κ : Kernel 𝓧 𝓨) [IsMarkovKernel κ] :
-    echernoffDiv {κ ∘ₘ μ | μ ∈ S} {κ ∘ₘ μ | μ ∈ T} ≤ echernoffDiv S T := by
-  refine echernoffDiv_le (fun μ ↦ κ ∘ₘ μ) (fun μ hμ ↦ ?_) (fun μ E ↦ ?_)
-  · infer_instance
-  · exact maxUtility_comp_le μ κ
+  simp_rw [← Measure.deterministic_comp_eq_map hf]
+  exact echernoffDiv_comp_le <| Kernel.deterministic f hf
 
 lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
     (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
