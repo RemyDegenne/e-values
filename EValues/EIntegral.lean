@@ -147,10 +147,35 @@ theorem eintegral_bind {β : Type*} {mβ : MeasurableSpace β} {m : α → Measu
   rw [μ.lintegral_bind hμ (by fun_prop)]
   sorry
 
+lemma todo' (a b : EReal) {c d : EReal} (hc : c ≠ ⊥) (hd : d ≠ ⊥) :
+    a + b - (c + d) = (a - c) + (b - d) := by
+  cases a <;> cases b <;> cases c <;> cases d
+  any_goals simp [hc, hd]
+  · simp at hc
+  · simp at hc
+  · simp at hd
+  · norm_cast
+    ring
+  · simp at hd
+  · simp at hc
+  · simp at hd
+  · norm_cast
+  · simp at hd
+  · norm_cast
+  · simp at hc
+  · norm_cast
+  · simp at hd
+  · simp at hc
+  · norm_cast
+  · simp at hd
+
+lemma todo (a b c d : ℝ≥0∞) : (a : EReal) + b - (c + d) = (a - c) + (b - d) := by
+  rw [todo' _ _ (by simp) (by simp)]
+
 lemma eintegral_add_measure {ν : Measure α} (f : α → EReal) :
     ∫ᵉ x, f x ∂(μ + ν) = ∫ᵉ x, f x ∂μ + ∫ᵉ x, f x ∂ν := by
   simp only [eintegral, lintegral_add_measure, EReal.coe_ennreal_add]
-  sorry
+  rw [todo]
 
 lemma eintegral_smul_measure {c : ℝ≥0∞} (f : α → EReal) :
     ∫ᵉ x, f x ∂(c • μ) = c * ∫ᵉ x, f x ∂μ := by
