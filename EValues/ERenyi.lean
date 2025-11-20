@@ -117,7 +117,46 @@ lemma erenyiDiv_of_involutive (S T : Set (Measure 𝓧)) {φ : 𝓧 → 𝓧} (h
     erenyiDiv α S T = (1 - α)⁻¹ *
       ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R) (_ : R.map φ = R),
         (maxUtility R S logUtility).toENNReal := by
+  rw [erenyiDiv, iInf₃_eq_sInf, iInf₂_eq_sInf]
+  congr 1
   sorry
+
+lemma eq_bernoulli_half_of_map_eq {R : Measure ({0, 1} : Set ℝ)} [IsProbabilityMeasure R]
+    (hRφ : Measure.map (fun x ↦ ⟨1 - x.1, by grind⟩) R = R) :
+    R = (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨0, by simp⟩ + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩ := by
+  have hR_eq : R = R {⟨0, by simp⟩} • Measure.dirac ⟨0, by simp⟩ +
+      R {⟨1, by simp⟩} • Measure.dirac ⟨1, by simp⟩ := by
+    refine Measure.ext_of_singleton fun x ↦ ?_
+    by_cases hx : x = ⟨0, by simp⟩
+    · simp [hx]
+    · have hx' : x = ⟨1, by simp⟩ := by grind
+      simp [hx']
+  rw [hR_eq]
+  suffices R {⟨0, by simp⟩} = R {⟨1, by simp⟩} by
+    have h_one : R {⟨1, by simp⟩} = (2 : ℝ≥0∞)⁻¹ := by
+      rw [Measure.ext_iff] at hR_eq
+      specialize hR_eq Set.univ
+      simp only [MeasurableSet.univ, measure_univ, this, Measure.coe_add, Measure.coe_smul,
+        Pi.add_apply, Pi.smul_apply, smul_eq_mul, mul_one, forall_const, ← two_mul] at hR_eq
+      calc R {⟨1, by simp⟩}
+      _ = 2⁻¹ * (2 * R {⟨1, by simp⟩}) := by
+        rw [← mul_assoc, ENNReal.inv_mul_cancel (by simp) (by simp), one_mul]
+      _ = 2⁻¹ := by rw [← hR_eq, mul_one]
+    rw [this, h_one]
+  rw [hR_eq, Measure.map_add _ _ (by fun_prop), Measure.map_smul, Measure.map_smul,
+    Measure.map_dirac (by fun_prop), Measure.map_dirac (by fun_prop)] at hRφ
+  simp only [sub_zero, sub_self, Measure.ext_iff_singleton] at hRφ
+  simpa using hRφ ⟨1, by simp⟩
+
+lemma map_bernoulli_half_eq :
+    Measure.map (fun (x : ({0, 1} : Set ℝ)) ↦ (⟨1 - x.1, by grind⟩ : ({0, 1} : Set ℝ)))
+        ((2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨0, by simp⟩ + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩) =
+      (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨0, by simp⟩ + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩ := by
+  rw [Measure.map_add _ _ (by fun_prop), Measure.map_smul, Measure.map_smul, add_comm]
+  congr
+  all_goals
+    rw [Measure.map_dirac (by fun_prop)]
+    simp
 
 lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
     erenyiDiv 2⁻¹ {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ}
@@ -149,18 +188,9 @@ lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
       R.map φ = R ↔ R =
         (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨0, by simp⟩ + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩ := by
     constructor
-    · intro hRφ
-      sorry
+    · exact eq_bernoulli_half_of_map_eq
     · rintro rfl
-      refine Measure.ext_iff_singleton.mpr fun x ↦ ?_
-      simp only [Measure.coe_add, Measure.coe_smul, Pi.add_apply, Pi.smul_apply,
-        MeasurableSet.singleton, Measure.dirac_apply', smul_eq_mul, φ]
-      rw [Measure.map_apply (by fun_prop) (by measurability)]
-      classical
-      simp only [Measure.coe_add, Measure.coe_smul, Pi.add_apply, Pi.smul_apply,
-        Measure.dirac_apply, Set.indicator_apply, Set.mem_preimage, sub_zero, Set.mem_singleton_iff,
-        Pi.one_apply, smul_eq_mul, mul_ite, mul_one, mul_zero, sub_self]
-      split_ifs <;> simp
+      exact map_bernoulli_half_eq
   simp only [ENNReal.one_sub_inv_two, inv_inv]
   calc 2 * ⨅ (R : Measure _) (_ : IsProbabilityMeasure R) (_ : Measure.map φ R = R),
       (maxUtility R {μ | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} logUtility).toENNReal
@@ -176,13 +206,34 @@ lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
   _ = 2 * (maxUtility ((2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
         + (2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨1, by simp⟩ : ({0, 1} : Set ℝ)))
         {μ | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} logUtility).toENNReal := by
-    sorry
+    rw [iInf₃_eq_sInf]
+    congr 1
+    suffices {y | ∃ x, IsProbabilityMeasure x ∧ x.map φ = x ∧
+              y = (maxUtility ((2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
+                  + (2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨1, by simp⟩ : ({0, 1} : Set ℝ)))
+                  {μ | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} logUtility).toENNReal}
+        = { (maxUtility ((2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
+                  + (2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨1, by simp⟩ : ({0, 1} : Set ℝ)))
+                  {μ | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} logUtility).toENNReal } by
+      rw [this, sInf_singleton]
+    ext y
+    simp only [Set.mem_setOf_eq, Set.mem_singleton_iff]
+    refine ⟨fun ⟨μ, hμ, hμ_eq, hy_eq⟩ ↦ by rw [hy_eq], fun h ↦ ?_⟩
+    refine ⟨((2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
+              + (2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨1, by simp⟩ : ({0, 1} : Set ℝ))), ?_, ?_, h⟩
+    · constructor
+      simpa using ENNReal.add_halves 1
+    · exact map_bernoulli_half_eq
   _ = ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ)))) := by
     rw [maxUtility_bernoulli_half_le hδ_pos hδ, EReal.toENNReal_mul (by positivity),
       EReal.real_coe_toENNReal, ← mul_assoc]
     conv_rhs => rw [← one_mul (ENNReal.ofReal _)]
     congr
-    sorry
+    have : (2 : EReal)⁻¹.toENNReal = 2⁻¹ := by
+      have : (2 : EReal) = (2 : ℝ≥0∞) := rfl
+      rw [this, EReal.toENNReal_inv (by simp)]
+      simp
+    rw [this, ENNReal.mul_inv_cancel (by simp) (by simp)]
 
 -- todo: rename
 theorem main_result_one_sample {f : 𝓧 → ℝ≥0∞} (hf : Measurable f) (hf_le : ∀ x, f x ≤ 1)
