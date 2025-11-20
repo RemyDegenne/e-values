@@ -57,6 +57,22 @@ lemma iInf₃_eq_sInf {α ι : Type*} [CompleteLattice ι] {P₁ P₂ : α → P
   refine iInf_congr fun i => ?_
   rw [iInf_comm]
 
+lemma iInf₃_eq_sInf' {α β ι : Type*} [CompleteLattice ι] {P₁ : α → Prop} {P₂ : β → Prop}
+    {g : α → β → ι} :
+    ⨅ (x : α) (y : β) (_ : P₁ x) (_ : P₂ y), g x y = sInf {z | ∃ x y, P₁ x ∧ P₂ y ∧ z = g x y} := by
+  rw [sInf_eq_iInf]
+  simp_rw [Set.mem_setOf_eq, iInf_exists, iInf_and]
+  suffices ⨅ a, ⨅ x, ⨅ y, ⨅ (_ : P₁ x), ⨅ (_ : P₂ y), ⨅ (_ : a = g x y), a =
+      ⨅ x, ⨅ y, ⨅ (_ : P₁ x), ⨅ (_ : P₂ y), ⨅ a, ⨅ (_ : a = g x y), a by
+    simp_rw [this, iInf_iInf_eq_left]
+  rw [iInf_comm]
+  refine iInf_congr fun i => ?_
+  rw [iInf_comm]
+  refine iInf_congr fun i => ?_
+  rw [iInf_comm]
+  refine iInf_congr fun i => ?_
+  rw [iInf_comm]
+
 open Pointwise
 
 lemma sInf_add' {α : Type*} [AddCommMagma α] [Sub α] [CompleteLattice α] [OrderedSub α]
@@ -67,3 +83,17 @@ lemma sInf_add' {α : Type*} [AddCommMagma α] [Sub α] [CompleteLattice α] [Or
   all_goals simp only [GaloisConnection, tsub_le_iff_right, Function.swap, implies_true, l, u]
   simp_rw [add_comm]
   simp
+
+lemma iInf₂_add {α β ι : Type*} [AddCommMagma ι] [Sub ι] [CompleteLattice ι] [OrderedSub ι]
+    {P₁ : α → Prop} {P₂ : β → Prop} {f : α → ι} {g : β → ι} :
+    (⨅ (x : α) (_ : P₁ x), f x) + (⨅ (y : β) (_ : P₂ y), g y) =
+    ⨅ (x : α) (y : β) (_ : P₁ x) (_ : P₂ y), f x + g y := by
+  rw [iInf₂_eq_sInf, iInf₂_eq_sInf, iInf₃_eq_sInf', ← sInf_add']
+  congr
+  ext y
+  rw [Set.mem_add]
+  constructor
+  · rintro ⟨_, ⟨a, ha, rfl⟩, _, ⟨b, hb, rfl⟩, rfl⟩
+    exact ⟨a, b, ha, hb, rfl⟩
+  · rintro ⟨a, b, ha, hb, rfl⟩
+    exact ⟨f a, ⟨a, ha, rfl⟩, g b, ⟨b, hb, rfl⟩, rfl⟩

@@ -31,11 +31,11 @@ def maxRandUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) (U : Utility) : E
 variable {P : Measure 𝓧} {S T : Set (Measure 𝓧)} {U : Utility} {φ : 𝓧 → 𝓨}
 
 lemma maxUtility_eq_sSup : maxUtility P S U =
-    sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := iSup₂_eq_sSup (ι := EReal)
+    sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := iSup₂_eq_sSup
 
 lemma maxRandUtility_eq_sSup : maxRandUtility P S U =
       sSup {y | ∃ η, IsMarkovKernel η ∧ IsRandEVar η S ∧ y = ∫ᵉ x, U x ∂(η ∘ₘ P)} :=
-  iSup₃_eq_sSup (ι := EReal)
+  iSup₃_eq_sSup
 
 lemma maxUtility_anti (hS : S ⊆ T) : maxUtility P T U ≤ maxUtility P S U := by
   rw [maxUtility_eq_sSup, maxUtility_eq_sSup]

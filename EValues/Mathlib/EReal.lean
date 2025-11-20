@@ -55,6 +55,7 @@ lemma EReal.mul_add_ENNReal {a : ℝ≥0∞} {b c : EReal} (hb₀ : 0 ≤ b) (hc
     · exact hb_bot
     · exact hcₜ
     · exact hc_bot
+
 lemma EReal.toReal_inv (r : EReal) : (r⁻¹).toReal = (r.toReal)⁻¹ := by
     cases r with
     | bot => simp
