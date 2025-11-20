@@ -178,7 +178,21 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
     _ = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
       rw [erenyiDiv_eq_sInf, erenyiDiv_eq_sInf]
       ring
-  · sorry
+  · calc
+    _ ≥ (1 - α)⁻¹ * ⨅ (R : Measure (𝓧 × 𝓨)) (_ : IsProbabilityMeasure R),
+        α * (⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞) (_ : IsEVar X S₁) (_ : IsEVar Y T₁),
+              ∫ᵉ x, (logUtility ∘ (fun x ↦ X x.1 * Y x.2)) x ∂R).toENNReal +
+          (1 - α) * (⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞) (_ : IsEVar X S₂) (_ : IsEVar Y T₂),
+              ∫ᵉ x, (logUtility ∘ (fun x ↦ X x.1 * Y x.2)) x ∂R).toENNReal := by
+      unfold erenyiDiv
+      gcongr 1
+      refine iInf₂_mono fun R _ ↦ add_le_add ?_ ?_
+      · gcongr 1
+        exact EReal.toENNReal_le_toENNReal <| iSup_prod_le_maxUtility _ hT₁
+      · gcongr 1
+        exact EReal.toENNReal_le_toENNReal <| iSup_prod_le_maxUtility _ hT₂
+    _ ≥ erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
+      sorry
 
 lemma echernoffDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
     (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
@@ -201,7 +215,7 @@ lemma echernoffDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Me
       refine ⟨R₁, R₂, hR₁, hR₂, ?_⟩
       rw [maxUtility_prod _ _ hS₁ hT₁, maxUtility_prod _ _ hS₂ hT₂]
   _ ≤ echernoffDiv S₁ S₂ + echernoffDiv T₁ T₂ := by
-    rw [← iInf₃_eq_sInf', echernoffDiv, echernoffDiv, iInf₂_add]
+    rw [← iInf₄_eq_sInf, echernoffDiv, echernoffDiv, iInf₂_add]
     refine iInf₂_mono fun R₁ R₂ ↦ iInf₂_mono fun hR₁ hR₂ ↦ ?_
     rw [EReal.toENNReal_add, EReal.toENNReal_add]
     · exact max_add_add_le_max_add_max

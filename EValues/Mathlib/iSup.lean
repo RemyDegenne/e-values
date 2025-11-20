@@ -57,7 +57,7 @@ lemma iInf₃_eq_sInf {α ι : Type*} [CompleteLattice ι] {P₁ P₂ : α → P
   refine iInf_congr fun i => ?_
   rw [iInf_comm]
 
-lemma iInf₃_eq_sInf' {α β ι : Type*} [CompleteLattice ι] {P₁ : α → Prop} {P₂ : β → Prop}
+lemma iInf₄_eq_sInf {α β ι : Type*} [CompleteLattice ι] {P₁ : α → Prop} {P₂ : β → Prop}
     {g : α → β → ι} :
     ⨅ (x : α) (y : β) (_ : P₁ x) (_ : P₂ y), g x y = sInf {z | ∃ x y, P₁ x ∧ P₂ y ∧ z = g x y} := by
   rw [sInf_eq_iInf]
@@ -72,6 +72,22 @@ lemma iInf₃_eq_sInf' {α β ι : Type*} [CompleteLattice ι] {P₁ : α → Pr
   rw [iInf_comm]
   refine iInf_congr fun i => ?_
   rw [iInf_comm]
+
+lemma iSup₄_eq_sSup {α β ι : Type*} [CompleteLattice ι] {P₁ : α → Prop} {P₂ : β → Prop}
+    {g : α → β → ι} :
+    ⨆ (x : α) (y : β) (_ : P₁ x) (_ : P₂ y), g x y = sSup {z | ∃ x y, P₁ x ∧ P₂ y ∧ z = g x y} := by
+  rw [sSup_eq_iSup]
+  simp_rw [Set.mem_setOf_eq, iSup_exists, iSup_and]
+  suffices ⨆ a, ⨆ x, ⨆ y, ⨆ (_ : P₁ x), ⨆ (_ : P₂ y), ⨆ (_ : a = g x y), a =
+      ⨆ x, ⨆ y, ⨆ (_ : P₁ x), ⨆ (_ : P₂ y), ⨆ a, ⨆ (_ : a = g x y), a by
+    simp_rw [this, iSup_iSup_eq_left]
+  rw [iSup_comm]
+  refine iSup_congr fun i => ?_
+  rw [iSup_comm]
+  refine iSup_congr fun i => ?_
+  rw [iSup_comm]
+  refine iSup_congr fun i => ?_
+  rw [iSup_comm]
 
 open Pointwise
 
@@ -88,7 +104,7 @@ lemma iInf₂_add {α β ι : Type*} [AddCommMagma ι] [Sub ι] [CompleteLattice
     {P₁ : α → Prop} {P₂ : β → Prop} {f : α → ι} {g : β → ι} :
     (⨅ (x : α) (_ : P₁ x), f x) + (⨅ (y : β) (_ : P₂ y), g y) =
     ⨅ (x : α) (y : β) (_ : P₁ x) (_ : P₂ y), f x + g y := by
-  rw [iInf₂_eq_sInf, iInf₂_eq_sInf, iInf₃_eq_sInf', ← sInf_add']
+  rw [iInf₂_eq_sInf, iInf₂_eq_sInf, iInf₄_eq_sInf, ← sInf_add']
   congr
   ext y
   rw [Set.mem_add]
