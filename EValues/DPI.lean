@@ -210,7 +210,7 @@ lemma quadratic_inequality {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt_one : δ < 1) (
     ring
   rwa [this]
 
-lemma todo {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt : δ < 1) :
+lemma four_le_mul_inv {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt : δ < 1) :
     4 ≤ (1 - δ)⁻¹ * δ⁻¹ := by
   have : 0 < 1 - δ := by linarith
   have : (1 - δ) * δ ≤ 1 / 4 := by linarith [sq_nonneg (1 / 2 - δ)]
@@ -282,7 +282,7 @@ lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2
       · simp only [hu_zero, zero_mul, neg_zero, add_zero, mul_one, Real.log_one]
         refine Real.log_nonneg ?_
         rw [← mul_assoc, le_mul_inv_iff₀ (by positivity), one_mul]
-        exact todo hδ_pos hδ_lt_one
+        exact four_le_mul_inv hδ_pos hδ_lt_one
       gcongr 1
       exact quadratic_inequality hδ_pos hδ_lt_one u
   · let u : ℝ := 2⁻¹ * (δ⁻¹ - (1 - δ)⁻¹)
