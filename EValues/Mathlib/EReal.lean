@@ -39,3 +39,46 @@ lemma EReal.toENNReal_inv {r : EReal} (hr : 0 < r) :
       rw [if_neg EReal.inv_ne_top, EReal.toReal_inv, ENNReal.ofReal_inv_of_pos, EReal.toReal_coe]
       simpa using hr
     | top => simp
+
+lemma EReal.iSup_coe_mul_of_nonneg {α : Type*} [Nonempty α] {f : α → EReal} {a : ℝ} (ha : 0 ≤ a) :
+    a * (⨆ x, f x) = ⨆ x, a * f x := by
+  by_cases ha' : a = 0
+  · simp [ha']
+  refine le_antisymm ?_ ?_
+  · calc a * ⨆ x, f x
+    _ ≤ a * (a⁻¹ * ⨆ x, a * f x) := by
+      gcongr
+      simp only [iSup_le_iff]
+      intro x
+      suffices a * f x ≤ ⨆ x, a * f x by
+        calc f x
+        _ = a⁻¹ * (a * f x) := by rw [← mul_assoc]; norm_cast; rw [inv_mul_cancel₀ ha']; simp
+        _ ≤ a⁻¹ * ⨆ x, a * f x := by gcongr
+      exact le_iSup (fun x ↦ a * f x) x
+    _ = ⨆ x, a * f x := by rw [← mul_assoc]; norm_cast; rw [mul_inv_cancel₀ ha']; simp
+  · simp only [iSup_le_iff]
+    intro x
+    gcongr
+    exact le_iSup f x
+
+lemma EReal.iSup_ennreal_mul {α : Type*} [Nonempty α] {f : α → EReal} {a : ℝ≥0∞} (ha : a ≠ ∞) :
+    a * (⨆ x, f x) = ⨆ x, a * f x := by
+  by_cases ha' : a = 0
+  · simp [ha']
+  refine le_antisymm ?_ ?_
+  · calc a * ⨆ x, f x
+    _ ≤ a * (a⁻¹ * ⨆ x, a * f x) := by
+      gcongr
+      simp only [iSup_le_iff]
+      intro x
+      suffices a * f x ≤ ⨆ x, a * f x by
+        calc f x
+        _ = a⁻¹ * (a * f x) := by
+          rw [← mul_assoc]; norm_cast; rw [ENNReal.inv_mul_cancel ha' ha]; simp
+        _ ≤ a⁻¹ * ⨆ x, a * f x := by gcongr
+      exact le_iSup (fun x ↦ a * f x) x
+    _ = ⨆ x, a * f x := by rw [← mul_assoc]; norm_cast; rw [ENNReal.mul_inv_cancel ha' ha]; simp
+  · simp only [iSup_le_iff]
+    intro x
+    gcongr
+    exact le_iSup f x

@@ -141,49 +141,6 @@ lemma maxUtility_nonneg (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsProbabilityMeas
     refine le_iSup₂ (f := fun X _ ↦ ∫ᵉ (x : 𝓧), (logUtility.toFun ∘ X) x ∂P) (fun _ ↦ 1) ?_
     exact isEVar_fun_one S hS
 
-lemma EReal.iSup_coe_mul_of_nonneg {α : Type*} [Nonempty α] {f : α → EReal} {a : ℝ} (ha : 0 ≤ a) :
-    a * (⨆ x, f x) = ⨆ x, a * f x := by
-  by_cases ha' : a = 0
-  · simp [ha']
-  refine le_antisymm ?_ ?_
-  · calc a * ⨆ x, f x
-    _ ≤ a * (a⁻¹ * ⨆ x, a * f x) := by
-      gcongr
-      simp only [iSup_le_iff]
-      intro x
-      suffices a * f x ≤ ⨆ x, a * f x by
-        calc f x
-        _ = a⁻¹ * (a * f x) := by rw [← mul_assoc]; norm_cast; rw [inv_mul_cancel₀ ha']; simp
-        _ ≤ a⁻¹ * ⨆ x, a * f x := by gcongr
-      exact le_iSup (fun x ↦ a * f x) x
-    _ = ⨆ x, a * f x := by rw [← mul_assoc]; norm_cast; rw [mul_inv_cancel₀ ha']; simp
-  · simp only [iSup_le_iff]
-    intro x
-    gcongr
-    exact le_iSup f x
-
-lemma EReal.iSup_ennreal_mul {α : Type*} [Nonempty α] {f : α → EReal} {a : ℝ≥0∞} (ha : a ≠ ∞) :
-    a * (⨆ x, f x) = ⨆ x, a * f x := by
-  by_cases ha' : a = 0
-  · simp [ha']
-  refine le_antisymm ?_ ?_
-  · calc a * ⨆ x, f x
-    _ ≤ a * (a⁻¹ * ⨆ x, a * f x) := by
-      gcongr
-      simp only [iSup_le_iff]
-      intro x
-      suffices a * f x ≤ ⨆ x, a * f x by
-        calc f x
-        _ = a⁻¹ * (a * f x) := by
-          rw [← mul_assoc]; norm_cast; rw [ENNReal.inv_mul_cancel ha' ha]; simp
-        _ ≤ a⁻¹ * ⨆ x, a * f x := by gcongr
-      exact le_iSup (fun x ↦ a * f x) x
-    _ = ⨆ x, a * f x := by rw [← mul_assoc]; norm_cast; rw [ENNReal.mul_inv_cancel ha' ha]; simp
-  · simp only [iSup_le_iff]
-    intro x
-    gcongr
-    exact le_iSup f x
-
 lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :
     ConvexOn ℝ≥0∞ Set.univ (fun P ↦ maxUtility P S U) := by
   refine ⟨convex_univ, fun P _ Q _ a b ha hb hab ↦ ?_⟩
