@@ -1,0 +1,208 @@
+\chapter{e-Rényi and e-Chernoff divergences}
+
+\begin{definition}\label{def:erenyiDiv}
+  \uses{def:logUtility}
+  \leanok
+  \lean{ProbabilityTheory.erenyiDiv}
+\begin{align*}
+  \eR_\alpha(\mathcal{P}, \mathcal{Q})
+  &= \frac{1}{1 - \alpha} \inf_{R \in \mathcal{P}(\mathcal{X})} \left( \alpha \mathcal{U}_{\log}(R, \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(R, \mathcal{Q}) \right)
+  \: .
+\end{align*}
+\end{definition}
+
+
+\begin{definition}\label{def:echernoffDiv}
+  \uses{def:logUtility}
+  \leanok
+  \lean{ProbabilityTheory.echernoffDiv}
+\begin{align*}
+  \eC_\alpha(\mathcal{P}, \mathcal{Q})
+  &= \inf_{R \in \mathcal{P}(\mathcal{X})} \max\left\{\mathcal{U}_{\log}(R, \mathcal{P}), \mathcal{U}_{\log}(R, \mathcal{Q}) \right\}
+  \: .
+\end{align*}
+\end{definition}
+
+
+\begin{lemma}\label{lem:erenyiDiv_anti}
+  \uses{def:erenyiDiv}
+  \leanok
+  \lean{ProbabilityTheory.erenyiDiv_anti}
+Let $\mathcal{P}' \subseteq \mathcal{P}$ and $\mathcal{Q}' \subseteq \mathcal{Q}$.
+Then, for all $\alpha \in (0, 1)$,
+\begin{align*}
+  \eR_\alpha(\mathcal{P}', \mathcal{Q}')
+  &\ge \eR_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:logUtility_anti}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:echernoffDiv_anti}
+  \uses{def:echernoffDiv}
+  \leanok
+  \lean{ProbabilityTheory.echernoffDiv_anti}
+Let $\mathcal{P}' \subseteq \mathcal{P}$ and $\mathcal{Q}' \subseteq \mathcal{Q}$.
+Then
+\begin{align*}
+  \eC_\alpha(\mathcal{P}', \mathcal{Q}')
+  &\ge \eC_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:logUtility_anti}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:erenyiDiv_map_le}
+  \uses{def:erenyiDiv}
+  \leanok
+  \lean{ProbabilityTheory.erenyiDiv_map_le}
+Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
+\begin{align*}
+  \eR_\alpha(f_*\mathcal{P}, f_*\mathcal{Q})
+  &\le \eR_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:logUtility_map_le}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:erenyiDiv_comp_le}
+  \uses{def:erenyiDiv}
+Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
+\begin{align*}
+  \eR_\alpha(\kappa \circ \mathcal{P}, \kappa \circ \mathcal{Q})
+  &\le \eR_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:logUtility_comp_le}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:echernoffDiv_map_le}
+  \uses{def:echernoffDiv}
+  \leanok
+  \lean{ProbabilityTheory.echernoffDiv_map_le}
+Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
+\begin{align*}
+  \eC_\alpha(f_*\mathcal{P}, f_*\mathcal{Q})
+  &\le \eC_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:logUtility_map_le}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:echernoffDiv_comp_le}
+  \uses{def:echernoffDiv}
+Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
+\begin{align*}
+  \eC_\alpha(\kappa \circ \mathcal{P}, \kappa \circ \mathcal{Q})
+  &\le \eC_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:logUtility_comp_le}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:logUtility_prod}
+  \uses{def:logUtility, thm:numeraire_prod}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility_prod}
+\begin{align*}
+  \mathcal{U}_{\log}(P_1 \otimes P_2, \mathcal{Q}_1 \otimes \mathcal{Q}_2)
+  &= \mathcal{U}_{\log}(P_1, \mathcal{Q}_1) + \mathcal{U}_{\log}(P_2, \mathcal{Q}_2)
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:erenyiDiv_prod}
+  \uses{def:erenyiDiv}
+\begin{align*}
+  \eR_\alpha(\mathcal{P}_1 \otimes \mathcal{P}_2, \mathcal{Q}_1 \otimes \mathcal{Q}_2)
+  &= \eR_\alpha(\mathcal{P}_1, \mathcal{Q}_1) + \eR_\alpha(\mathcal{P}_2, \mathcal{Q}_2)
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:logUtility_prod}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:echernoffDiv_prod_le}
+  \uses{def:echernoffDiv}
+\begin{align*}
+  \eC_\alpha(\mathcal{P}_1 \otimes \mathcal{P}_2, \mathcal{Q}_1 \otimes \mathcal{Q}_2)
+  &\le \eC_\alpha(\mathcal{P}_1, \mathcal{Q}_1) + \eC_\alpha(\mathcal{P}_2, \mathcal{Q}_2)
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:logUtility_prod}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:erenyiDiv_map_swap}
+  \uses{def:erenyiDiv}
+  \leanok
+  \lean{ProbabilityTheory.erenyiDiv_of_involutive}
+Let $\mathcal{P},\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be two sets of probability measures.
+Suppose that there exists a measurable map $\phi : \mathcal{X} \to \mathcal{X}$ such that $\phi \circ \phi = \id$ and $\phi_* \mathcal{P} = \mathcal{Q}$.
+Then
+\begin{align*}
+  \eR_{1/2}(\mathcal{P}, \mathcal{Q})
+  &= 2 \inf_{R \in \mathcal{P}(\mathcal{X}), \: \phi_* R = R} \mathcal{U}_{\log}(R, \mathcal{P})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:logUtility_map_le, lem:convex_logUtility, lem:logUtility_map_swap}
+First consider an arbitrary $R \in \mathcal{P}(\mathcal{X})$.
+Then $R' = \frac{1}{2}(R + \phi_* R)$ satisfies $\phi_* R' = R'$ and by convexity (Lemma~\ref{lem:convex_logUtility}) and Lemma~\ref{lem:logUtility_map_swap},
+\begin{align*}
+  \frac{1}{2} \mathcal{U}_{\log}(R', \mathcal{P}) + \frac{1}{2} \mathcal{U}_{\log}(R', \mathcal{Q})
+  &\le \frac{1}{2} \left( \frac{1}{2} \mathcal{U}_{\log}(R, \mathcal{P}) + \frac{1}{2} \mathcal{U}_{\log}(R, \mathcal{Q}) \right)
+  \\
+  &\quad + \frac{1}{2} \left( \frac{1}{2} \mathcal{U}_{\log}(\phi_* R, \mathcal{P}) + \frac{1}{2} \mathcal{U}_{\log}(\phi_* R, \mathcal{Q}) \right)
+  \\
+  &= \frac{1}{2} \mathcal{U}_{\log}(R, \mathcal{P}) + \frac{1}{2} \mathcal{U}_{\log}(R, \mathcal{Q})
+  \: .
+\end{align*}
+Hence we can restrict the infimum defining $\eR_{1/2}(\mathcal{P}, \mathcal{Q})$ to measures $R$ such that $\phi_* R = R$.
+For such measures, by Lemma~\ref{lem:logUtility_map_swap}, $\mathcal{U}_{\log}(R, \mathcal{Q}) = \mathcal{U}_{\log}(\phi_* R, \mathcal{P}) = \mathcal{U}_{\log}(R, \mathcal{P})$ and we get the result.
+\end{proof}

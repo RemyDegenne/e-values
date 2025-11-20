@@ -102,6 +102,9 @@ lemma convexOn_inv : ConvexOn ℝ≥0∞ univ <| Inv.inv (α := ℝ≥0∞) := s
 noncomputable instance : SMul ℝ≥0 EReal where smul c x := c * x
 noncomputable instance : SMul ℝ≥0∞ EReal where smul c x := c * x
 
+@[simp] lemma EReal.smul_nnreal_eq_mul (c : ℝ≥0∞) (x : EReal) : c • x = c * x := rfl
+@[simp] lemma EReal.smul_ennreal_eq_mul (c : ℝ≥0∞) (x : EReal) : c • x = c * x := rfl
+
 lemma ConcaveOn_log' : ConcaveOn ℝ≥0∞ univ log := by
   refine ⟨convex_univ, ?_⟩
   intro x _ y _ a b a₀ b₀ hab

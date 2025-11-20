@@ -117,19 +117,210 @@ lemma maxUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kerne
   rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _]
   exact maxRandUtility_comp_le P κ
 
-lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
-    maxUtility P S logUtility = ∫ᵉ x, (ENNReal.log ∘ (numeraire P S)) x ∂P := by
-  have hNU := isNumeraire_numeraire P hS
+lemma IsNumeraire.maxUtility_eq_integral {X : 𝓧 → ℝ≥0∞} (hX : IsNumeraire X S P) :
+    maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (X x) ∂P := by
   refine le_antisymm ?_ ?_
   · simp only [maxUtility]
     refine iSup₂_le_iff.mpr fun Y hY ↦ ?_
-    simp [logUtility, hNU.eintegral_log_le hY]
-  · exact le_iSup₂_of_le _ hNU.toIsEVar <| le_refl _
+    simp [logUtility, hX.eintegral_log_le hY]
+  · rw [maxUtility_eq_sSup]
+    refine le_sSup ?_
+    exact ⟨X, hX.toIsEVar, rfl⟩
 
-lemma maxUtility_nonneg (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) : 0 ≤ maxUtility P S logUtility := by
-  rw [maxUtility_eq_integral_numeraire P hS]
-  exact (isNumeraire_numeraire P hS).eintegral_log_nonneg
+lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P :=
+  (isNumeraire_numeraire P hS).maxUtility_eq_integral
+
+lemma maxUtility_nonneg (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    0 ≤ maxUtility P S logUtility := by
+  calc 0
+  _ ≤ ∫ᵉ (x : 𝓧), (logUtility.toFun ∘ (fun _ ↦ 1)) x ∂P := by simp [logUtility]
+  _ ≤ maxUtility P S logUtility := by
+    rw [maxUtility]
+    refine le_iSup₂ (f := fun X _ ↦ ∫ᵉ (x : 𝓧), (logUtility.toFun ∘ X) x ∂P) (fun _ ↦ 1) ?_
+    exact isEVar_fun_one S hS
+
+lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :
+    ConvexOn ℝ≥0∞ Set.univ (fun P ↦ maxUtility P S U) := by
+  refine ⟨convex_univ, fun P _ Q _ a b ha hb hab ↦ ?_⟩
+  simp only
+  rw [maxUtility]
+  simp_rw [eintegral_add_measure, eintegral_smul_measure]
+  calc ⨆ X, ⨆ (_ : IsEVar X S), a * ∫ᵉ x, (U.toFun ∘ X) x ∂P + b * ∫ᵉ x, (U.toFun ∘ X) x ∂Q
+  _ = ⨆ X, (a * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂P)
+      + b * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂Q := by
+    congr with X
+    by_cases hX : IsEVar X S
+    · simp [hX]
+    · simp only [hX, Function.comp_apply, not_false_eq_true, iSup_neg]
+      by_cases ha : a = 0
+      · have hb : 0 < (b : EReal) := by
+          simp only [EReal.coe_ennreal_pos]
+          by_contra!
+          have : b = 0 := by grind
+          simp [ha, this] at hab
+        rw [EReal.mul_bot_of_pos hb]
+        simp
+      · have ha' : 0 < (a : EReal) := by simp; grind
+        rw [EReal.mul_bot_of_pos ha']
+        simp
+  _ ≤ (⨆ X, a * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂P)
+      + ⨆ X, b * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂Q := EReal.iSup_add_le_add_iSup
+  _ = a • maxUtility P S U + b • maxUtility Q S U := by
+    simp_rw [maxUtility]
+    simp only [EReal.smul_nnreal_eq_mul]
+    rw [EReal.iSup_ennreal_mul, EReal.iSup_ennreal_mul]
+    · exact ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
+    · exact ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
+
+lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : 𝓧 → 𝓧} (hφ : Measurable φ)
+    (hφ_inv : φ ∘ φ = id) :
+    maxUtility P {μ.map φ | μ ∈ S} U = maxUtility (P.map φ) S U := by
+  apply le_antisymm
+  · calc maxUtility P {μ.map φ | μ ∈ S} U
+    _ = maxUtility ((P.map φ).map φ) {μ.map φ | μ ∈ S} U := by
+      rw [Measure.map_map hφ hφ, hφ_inv, Measure.map_id]
+    _ ≤ maxUtility (P.map φ) S U := maxUtility_map_le _ hφ
+  · calc maxUtility (P.map φ) S U
+    _ = maxUtility (P.map φ) {(μ.map φ).map φ | μ ∈ S} U := by
+      congr with μ
+      simp_rw [Measure.map_map hφ hφ, hφ_inv, Measure.map_id]
+      grind
+    _ = maxUtility (P.map φ) {μ.map φ | μ ∈ {ν.map φ | ν ∈ S}} U := by congr with μ; simp
+    _ ≤ maxUtility P {μ | μ ∈ {ν.map φ | ν ∈ S}} U := maxUtility_map_le _ hφ
+    _ = maxUtility P {μ.map φ | μ ∈ S} U := rfl
+
+lemma quadratic_inequality {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt_one : δ < 1) (u : ℝ) :
+    (1 - u * δ) * (1 + u * (1 - δ)) ≤ (1 - δ)⁻¹ * (δ⁻¹ * 4⁻¹) := by
+  have : 0 < 1 - δ := by linarith
+  have h_nonneg : 0 ≤ (u - ((δ⁻¹ - (1 - δ)⁻¹) / 2)) ^ 2 := sq_nonneg _
+  have : (1 - u * δ) * (1 + u * (1 - δ)) = - δ * (1 - δ) * (δ⁻¹ - u) * (- (1 - δ)⁻¹ - u) := by
+    field_simp
+    ring
+  rw [this]
+  have h_eq_sq (a b : ℝ) : (a - u) * (b - u) = (u - (a + b) / 2) ^ 2 - ((a - b) / 2) ^ 2 := by
+    ring
+  specialize h_eq_sq (δ⁻¹) (-(1 - δ)⁻¹)
+  simp_rw [mul_assoc, h_eq_sq, ← mul_assoc, neg_mul]
+  rw [neg_le, ← inv_mul_le_iff₀ (by positivity), le_sub_iff_add_le]
+  simp_rw [sub_neg_eq_add]
+  have : (δ * (1 - δ))⁻¹ * -((1 - δ)⁻¹ * δ⁻¹ * 4⁻¹) + ((δ⁻¹ + (1 - δ)⁻¹) / 2) ^ 2 = 0 := by
+    field_simp
+    ring
+  rwa [this]
+
+lemma four_le_mul_inv {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt : δ < 1) :
+    4 ≤ (1 - δ)⁻¹ * δ⁻¹ := by
+  have : 0 < 1 - δ := by linarith
+  have : (1 - δ) * δ ≤ 1 / 4 := by linarith [sq_nonneg (1 / 2 - δ)]
+  rwa [← mul_inv, le_inv_comm₀ (by simp) (by positivity), ← one_div]
+
+lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
+    maxUtility ((2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
+          + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩)
+        {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} logUtility
+      = 2⁻¹ * Real.log (1 / (4 * δ * (1 - δ))) := by
+  have hδ_lt_one : δ < 1 := by grind
+  have h_one_sub_δ_pos : 0 < 1 - δ := by grind
+  let P := (2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
+    + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩
+  have hP_prob : IsProbabilityMeasure P := by
+    constructor
+    simpa [P] using ENNReal.add_halves 1
+  change maxUtility P _ logUtility = 2⁻¹ * Real.log (1 / (4 * δ * (1 - δ)))
+  rw [maxUtility]
+  have hδ_le_one : δ ≤ 1 := by linarith
+  simp_rw [isEVar_bernoulli_le_iff hδ_pos hδ_le_one]
+  simp only [Subtype.forall, Set.mem_insert_iff, Set.mem_singleton_iff, exists_prop,
+    logUtility, Function.comp_apply, eintegral_add_measure, eintegral_smul_measure,
+    eintegral_dirac, one_div, mul_inv_rev, P]
+  refine le_antisymm ?_ ?_
+  · simp only [iSup_exists, iSup_le_iff, and_imp]
+    intro X u hu_nonneg hu_le hX
+    have hX0 := hX 0 (by simp)
+    have hX1 := hX 1 (by simp)
+    simp only [zero_sub, mul_neg] at hX0 hX1
+    have h1 : (2 : ℝ≥0∞)⁻¹ * ENNReal.log (X ⟨0, by simp⟩)
+          + (2 : ℝ≥0∞)⁻¹ * ENNReal.log (X ⟨1, by simp⟩)
+        ≤ (2 : ℝ≥0∞)⁻¹ * ENNReal.log (ENNReal.ofReal (1 + -(u * δ)))
+          + (2 : ℝ≥0∞)⁻¹ * ENNReal.log (ENNReal.ofReal (1 + u * (1 - δ))) := by gcongr
+    refine h1.trans ?_
+    have h_pos : 0 < (2 : EReal)⁻¹ :=
+      EReal.inv_pos_of_pos_ne_top (by simp) (Ne.symm (not_eq_of_beq_eq_false rfl))
+    by_cases huδ : u = δ⁻¹
+    · simp only [huδ, inv_mul_cancel₀ hδ_pos.ne', add_neg_cancel, ENNReal.ofReal_zero,
+        ENNReal.log_zero, ENNReal.log_ofReal, mul_ite]
+      rw [EReal.mul_bot_of_pos (by simp)]
+      simp
+    have hu_lt : u < δ⁻¹ := lt_of_le_of_ne hu_le huδ
+    have h_u_mul_lt : u * δ < 1 := by
+      calc u * δ < δ⁻¹ * δ := by gcongr
+      _ = 1 := inv_mul_cancel₀ hδ_pos.ne'
+    have : 0 < 1 + -(u * δ) := by grind
+    have h_one_add_pos : 0 < 1 + u * (1 - δ) := by positivity
+    calc (2 : ℝ≥0∞)⁻¹ * ENNReal.log (ENNReal.ofReal (1 + -(u * δ)))
+        + (2 : ℝ≥0∞)⁻¹ * ENNReal.log (ENNReal.ofReal (1 + u * (1 - δ)))
+    _ = 2⁻¹ * ENNReal.log (ENNReal.ofReal (1 + -(u * δ)))
+        + 2⁻¹ * ENNReal.log (ENNReal.ofReal (1 + u * (1 - δ))) := by
+      have : (2 : EReal) = (2 : ℝ≥0∞) := rfl
+      rw [this, EReal.inv_coe_ennreal (by positivity)]
+    _ ≤ 2⁻¹ * Real.log (1 + -(u * δ)) + 2⁻¹ * Real.log (1 + u * (1 - δ)) := by
+      simp [not_le.mpr h_u_mul_lt, not_le.mpr h_one_add_pos]
+    _ = 2⁻¹ * Real.log ((1 + -(u * δ)) * (1 + u * (1 - δ))) := by
+      rw [Real.log_mul]
+      rotate_left
+      · positivity
+      · positivity
+      have : (2 : EReal)⁻¹ = (2⁻¹ : ℝ) := rfl
+      rw [this]
+      norm_cast
+      rw [← mul_add]
+    _ ≤ 2⁻¹ * Real.log ((1 - δ)⁻¹ * (δ⁻¹ * 4⁻¹)) := by
+      gcongr 2
+      by_cases hu_zero : u = 0
+      · simp only [hu_zero, zero_mul, neg_zero, add_zero, mul_one, Real.log_one]
+        refine Real.log_nonneg ?_
+        rw [← mul_assoc, le_mul_inv_iff₀ (by positivity), one_mul]
+        exact four_le_mul_inv hδ_pos hδ_lt_one
+      gcongr 1
+      exact quadratic_inequality hδ_pos hδ_lt_one u
+  · let u : ℝ := 2⁻¹ * (δ⁻¹ - (1 - δ)⁻¹)
+    have hu_nonneg : 0 ≤ u := by
+      simp only [inv_pos, Nat.ofNat_pos, mul_nonneg_iff_of_pos_left, sub_nonneg, u]
+      rcases lt_or_eq_of_le' hδ_le_one with hδ_lt | rfl
+      · rw [inv_le_inv₀ (sub_pos.mpr hδ_lt) (by positivity)]
+        grind
+      · simp
+    have hu_lt : u < δ⁻¹ := by
+      suffices u < 2⁻¹ * δ⁻¹ by
+        refine this.trans_le ?_
+        rw [mul_comm, ← div_eq_mul_inv]
+        exact half_le_self (by positivity)
+      simp only [mul_sub, sub_lt_self_iff, inv_pos, Nat.ofNat_pos, mul_pos_iff_of_pos_left, sub_pos,
+        u, hδ_lt_one]
+    let X : ({0, 1} : Set ℝ) → ℝ≥0∞ := fun x ↦ ENNReal.ofReal (1 + u * (x.1 - δ))
+    refine le_trans (le_of_eq ?_) (le_iSup _ X)
+    rw [iSup_pos ⟨u, hu_nonneg, hu_lt.le, by simp [X]⟩]
+    have h_u_mul_lt : u * δ < 1 := by
+      calc u * δ < δ⁻¹ * δ := by gcongr
+      _ = 1 := inv_mul_cancel₀ hδ_pos.ne'
+    have h_one_add_u_mul_pos : 0 < 1 + u * (1 - δ) := by positivity
+    have : 0 < 1 + -(u * δ) := by grind
+    simp only [zero_sub, mul_neg, ENNReal.log_ofReal, add_neg_le_iff_le_add, zero_add,
+      not_le.mpr h_u_mul_lt, ↓reduceIte, not_le.mpr h_one_add_u_mul_pos, X]
+    have h1 : (2 : EReal) = (2 : ℝ) := rfl
+    have h2 : (2 : ℝ≥0∞) = ENNReal.ofReal 2 := by simp
+    rw [h1, h2, ← ENNReal.ofReal_inv_of_pos (by simp), ← EReal.coe_inv, EReal.coe_ennreal_ofReal]
+    simp only [inv_nonneg, Nat.ofNat_nonneg, sup_of_le_left]
+    norm_cast
+    rw [← mul_add, ← Real.log_mul]
+    rotate_left
+    · positivity
+    · positivity
+    congr 2
+    simp only [u]
+    field_simp
+    ring
 
 end ProbabilityTheory

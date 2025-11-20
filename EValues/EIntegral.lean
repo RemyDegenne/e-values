@@ -5,6 +5,8 @@ Authors: Gaëtan Serré, Rémy Degenne
 -/
 import Mathlib.MeasureTheory.Measure.Prod
 
+open scoped ENNReal
+
 namespace MeasureTheory
 
 variable {α : Type*} {mα : MeasurableSpace α} {μ : Measure α}
@@ -126,7 +128,6 @@ theorem eintegral_map {β : Type*} {mβ : MeasurableSpace β} {f : β → EReal}
   simp only [eintegral]
   repeat rw [lintegral_map (by fun_prop) hg]
 
-
 lemma eintegral_lintegral_toEReal {β : Type*} {mβ : MeasurableSpace β} {m : α → Measure β}
     {f : β → EReal} : ∫ᵉ a, (∫⁻ x, (f x).toENNReal ∂m a).toEReal ∂μ =
     ∫⁻ a, ∫⁻ x, (f x).toENNReal ∂m a ∂μ := by
@@ -145,5 +146,22 @@ theorem eintegral_bind {β : Type*} {mβ : MeasurableSpace β} {m : α → Measu
   rw [μ.lintegral_bind hμ (by fun_prop)]
   rw [μ.lintegral_bind hμ (by fun_prop)]
   sorry
+
+lemma eintegral_add_measure {ν : Measure α} (f : α → EReal) :
+    ∫ᵉ x, f x ∂(μ + ν) = ∫ᵉ x, f x ∂μ + ∫ᵉ x, f x ∂ν := by
+  simp only [eintegral, lintegral_add_measure, EReal.coe_ennreal_add]
+  sorry
+
+lemma eintegral_smul_measure {c : ℝ≥0∞} (f : α → EReal) :
+    ∫ᵉ x, f x ∂(c • μ) = c * ∫ᵉ x, f x ∂μ := by
+  simp only [eintegral, lintegral_smul_measure, smul_eq_mul, EReal.coe_ennreal_mul]
+  sorry
+
+@[simp]
+lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClass α]
+    {x₀ : α} {f : α → EReal} :
+    ∫ᵉ x, f x ∂(Measure.dirac x₀) = f x₀ := by
+  simp only [eintegral, lintegral_dirac]
+  rcases le_total (f x₀) 0 with (h | h) <;> simp [h]
 
 end MeasureTheory

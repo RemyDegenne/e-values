@@ -1,0 +1,452 @@
+\chapter{Lower bounds on e-Rényi and e-Chernoff divergences}
+
+
+\section{Separation lower bound}
+\label{sec:separation_lower_bound}
+
+
+\begin{lemma}\label{lem:sup_quadratic}
+For all $u \in (0,1)$,
+\begin{align*}
+  \sup_{\lambda \ge 0} \frac{1}{2}\log (1 + \lambda (u - 1)) + \frac{1}{2}\log (1 + \lambda (u + 1))
+  = \frac{1}{2} \log \frac{1}{1 - u^2}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+It suffices to compute the supremum of $(1 + \lambda (u - 1))(1 + \lambda (u + 1))$ over $\lambda \ge 0$, which is simply finding the maximum of a quadratic function.
+\end{proof}
+
+
+\begin{lemma}\label{lem:inf_symm_sup_utility}
+For all $u \in (0,1)$,
+\begin{align*}
+  \inf_{R \in \mathcal{P}([-1,1]), \ -\id \circ R = R} \sup_{\lambda \ge 0} R[\log (1 + \lambda (X + u)]]
+  = \frac{1}{2} \log \frac{1}{1 - u^2}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\uses{lem:sup_quadratic}
+For the first inequality, we use that the infimum is less than the value at $R = \frac{1}{2}\delta_{-1} + \frac{1}{2}\delta_{1}$.
+Then by Lemma~\ref{lem:sup_quadratic}, the supremum over $\lambda \ge 0$ for that distribution is $\frac{1}{2} \log \frac{1}{1 - u^2}$.
+
+For the second inequality, we use first the inequality $\inf\sup \ge \sup\inf$.
+\begin{align*}
+  &\inf_{R \in \mathcal{P}([-1,1]), \ -\id \circ R = R} \sup_{\lambda \ge 0} R[\log (1 + \lambda (X + u))]
+  \\
+  &\ge \sup_{\lambda \ge 0} \inf_{R \in \mathcal{P}([-1,1]), \ -\id \circ R = R} R[\log (1 + \lambda (X + u))]
+  \\
+  &= \sup_{\lambda \ge 0} \inf_{R \in \mathcal{P}([0,1])} \frac{1}{2} R[\log (1 + \lambda (X + u))] + \frac{1}{2}R[\log(1 + \lambda (-X + u))]
+  \: .
+\end{align*}
+For any $\lambda \ge 0$, the infimum is achieved by a Dirac distribution $\delta_{x}$ for some $x \in [0,1]$.
+We get a lower bound
+\begin{align*}
+  \sup_{\lambda \ge 0} \inf_{x \in [0,1]} \frac{1}{2} \log (1 + \lambda (u + x)) + \frac{1}{2} \log (1 + \lambda (u - x))
+  \: .
+\end{align*}
+The minimizer for $x$ is at $x=1$ for all values of $\lambda$.
+We get to the value
+\begin{align*}
+  \sup_{\lambda \ge 0} \frac{1}{2} \log (1 + \lambda (u + 1)) + \frac{1}{2} \log(1 + \lambda (u - 1))
+\end{align*}
+which is equal to $\frac{1}{2} \log \frac{1}{1 - u^2}$ by Lemma~\ref{lem:sup_quadratic}.
+\end{proof}
+
+
+\begin{lemma}\label{lem:erenyiDiv_bounded_eq_erenyiDiv_bernoulli}
+  \uses{def:erenyiDiv}
+Let $a \le b \in [0,1]$.
+Let $\mathcal{D}_{\le a} = \{P \in \mathcal{P}([0,1]) \mid P[\id] \le a\}$ and $\mathcal{D}_{\ge b} = \{P \in \mathcal{P}([0,1]) \mid P[\id] \ge b\}$ be sets of distributions on $[0,1]$ with mean constraints.
+Let $B_{\le a} = \{\Ber(p) \mid p \le a\}$ and $B_{\ge a} = \{\Ber(p) \mid p \ge a\}$ be sets of Bernoulli distributions with the same constraints.
+Then
+\begin{align*}
+  \eR_{1/2}(\mathcal{D}_{\le a}, \mathcal{D}_{\ge b})
+  &= \eR_{1/2}(B_{\le a}, B_{\ge b})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:erenyiDiv_anti, lem:erenyiDiv_comp_le}
+First, by Lemma~\ref{lem:erenyiDiv_anti}, since $B_{\le a} \subseteq \mathcal{D}_{\le a}$ and $B_{\ge b} \subseteq \mathcal{D}_{\ge b}$, we have
+\begin{align*}
+  \eR_{1/2}(\mathcal{D}_{\le a}, \mathcal{D}_{\ge b})
+  &\le \eR_{1/2}(B_{\le a}, B_{\ge b})
+  \: .
+\end{align*}
+For the reverse inequality, we use the data processing inequality for e-Rényi divergence (Lemma~\ref{lem:erenyiDiv_comp_le}).
+Let $\kappa : [0,1] \rightsquigarrow \{0,1\}$ be the Markov kernel defined by $\kappa(x) = \Ber(x)$ (the Bernoulli distribution with parameter $x$).
+Then for $P \in \mathcal{P}([0, 1])$, $\kappa \circ P$ is a Bernoulli distribution with parameter $P[\id]$, and thus $\kappa \circ \mathcal{D}_{\le a} = B_{\le a}$ and $\kappa \circ \mathcal{D}_{\ge b} = B_{\ge b}$.
+By Lemma~\ref{lem:erenyiDiv_comp_le},
+\begin{align*}
+  \eR_{1/2}(B_{\le a}, B_{\ge b})
+  &\le \eR_{1/2}(\mathcal{D}_{\le a}, \mathcal{D}_{\ge b})
+  \: .
+\end{align*}
+\end{proof}
+
+
+\begin{lemma}\label{lem:eVarSet_bernoulli_le}
+  \uses{def:eVar}
+  \leanok
+  \lean{ProbabilityTheory.isEVar_bernoulli_le_iff}
+Let $\delta \in [0,1/2]$ and let $B_{\le \delta} = \{\Ber(p) \mid p \le \delta\}$.
+Then
+\begin{align*}
+  \mathcal{E}_{B_{\le \delta}}
+  &= \left\{f : \{0,1\} \to \mathbb{R}_{+, \infty} \text{ measurable} \mid \exists \lambda \in \left[0, \frac{1}{\delta}\right], \: \forall x \in \{0, 1\}, \: f(x) \le 1 + \lambda (x - \delta)\right\}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+It is easy to check that the set on the right is included in $\mathcal{E}_{B_{\le \delta}}$.
+
+The constraint on an e-variable $f$ for $B_{\le \delta}$ is that for all $p \le \delta$,
+\begin{align*}
+  (1 - p) f(0) + p f(1)
+  &\le 1
+  \: .
+\end{align*}
+For $p=0$ and $p=\delta$ we thus get the two constraints
+\begin{align*}
+  f(0)
+  &\le 1
+  \: , \\
+  f(1)
+  &\le 1 + \frac{1 - f(0)}{\delta}(1 - \delta)
+  \: .
+\end{align*}
+Let $\lambda = \frac{1 - f(0)}{\delta}$.
+Then $\lambda \in [0, \frac{1}{\delta}]$ and the second constraint can be rewritten as $f(1) \le 1 + \lambda (1 - \delta)$.
+We need to check that we also have $f(0) \le 1 + \lambda (0 - \delta)$, but the expression on the right is equal to $f(0)$ by definition of $\lambda$.
+\end{proof}
+
+
+\begin{lemma}\label{lem:logUtility_bernoulli_half_le}
+  \uses{def:logUtility}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility_bernoulli_half_le}
+Let $\delta \in [0,1/2]$ and let $B_{\le \delta} = \{\Ber(p) \mid p \le \delta\}$.
+Then
+\begin{align*}
+  \mathcal{U}_{\log}(\Ber(1/2), B_{\le \delta})
+  &= \frac{1}{2} \log \frac{1}{4 \delta (1 - \delta)}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:eVarSet_bernoulli_le}
+We first compute $\mathcal{E}_{B_{\le \delta}}$ with Lemma~\ref{lem:eVarSet_bernoulli_le}.
+We thus know that we can restrict the supremum over $f \in \mathcal{E}_{B_{\le \delta}}$ to functions of the form $f(x) = 1 + \lambda (x - \delta)$ for some $\lambda \in [0, \frac{1}{\delta}]$.
+\begin{align*}
+  \mathcal{U}_{\log}(\Ber(1/2), B_{\le \delta})
+  &= \sup_{\lambda \in [0, \frac{1}{\delta}]} \frac{1}{2} \log (1 + \lambda (0 - \delta)) + \frac{1}{2} \log (1 + \lambda (1 - \delta))
+  \\
+  &= \frac{1}{2} \log \sup_{\lambda \in [0, \frac{1}{\delta}]} \left((1 - \lambda \delta)(1 + \lambda (1 - \delta))\right)
+  \: .
+\end{align*}
+The function $(1 - \lambda \delta)(1 + \lambda (1 - \delta))$ reaches its maximum at $\lambda^* = \frac{1 - 2\delta}{2\delta (1 - \delta)}$ which is in the interval $[0, \frac{1}{\delta}]$ since $\delta \in [0,1/2]$.
+Its value at the optimum is $\frac{1}{4 \delta (1 - \delta)}$.
+\end{proof}
+
+
+\begin{lemma}\label{lem:erenyiDiv_bernoulli}
+  \uses{def:erenyiDiv}
+  \leanok
+  \lean{ProbabilityTheory.erenyiDiv_bernoulli}
+Let $\delta \in [0,1/2]$.
+Let $B_{\le \delta} = \{\Ber(p) \mid p \le \delta\}$ and $B_{\ge 1 - \delta} = \{\Ber(p) \mid p \ge 1 - \delta\}$ be sets of Bernoulli distributions with mean constraints.
+Then
+\begin{align*}
+  \eR_{1/2}(B_{\le \delta}, B_{\ge 1 - \delta})
+  &= \log \frac{1}{4 \delta (1 - \delta)}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:erenyiDiv_map_swap, lem:logUtility_bernoulli_half_le}
+By Lemma \ref{lem:erenyiDiv_map_swap} for the map $\phi : \{0,1\} \to \{0,1\}$ defined by $\phi(0) = 1$ and $\phi(1) = 0$, we have
+\begin{align*}
+  \eR_{1/2}(B_{\le \delta}, B_{\ge 1 - \delta})
+  &= 2 \inf_{R \in \mathcal{P}(\{0,1\}), \: \phi_* R = R} \mathcal{U}_{\log}(R, B_{\le \delta})
+  \\
+  &= 2 \mathcal{U}_{\log}\left(\Ber(1/2), B_{\le \delta}\right)
+  \: .
+\end{align*}
+We now use Lemma~\ref{lem:logUtility_bernoulli_half_le} to conclude.
+\end{proof}
+
+
+\begin{lemma}\label{lem:erenyiDiv_bounded}
+  \uses{def:erenyiDiv}
+Let $\delta \in [0,1/2]$.
+Let $\mathcal{D}_{\le \delta} = \{P \in \mathcal{P}([0,1]) \mid P[\id] \le \delta\}$ and $\mathcal{D}_{\ge 1 - \delta} = \{P \in \mathcal{P}([0,1]) \mid P[\id] \ge 1 - \delta\}$ be sets of distributions on $[0,1]$ with mean constraints.
+Then
+\begin{align*}
+  \eR_{1/2}(\mathcal{D}_{\le \delta}, \mathcal{D}_{\ge 1 - \delta})
+  &= \log \frac{1}{4 \delta (1 - \delta)}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:erenyiDiv_bounded_eq_erenyiDiv_bernoulli, lem:erenyiDiv_bernoulli}
+By Lemma~\ref{lem:erenyiDiv_bounded_eq_erenyiDiv_bernoulli}, we have
+\begin{align*}
+  \eR_{1/2}(\mathcal{D}_{\le \delta}, \mathcal{D}_{\ge 1 - \delta})
+  &= \eR_{1/2}(B_{\le \delta}, B_{\ge 1 - \delta})
+  \: .
+\end{align*}
+We now use Lemma~\ref{lem:erenyiDiv_bernoulli} to conclude.
+\end{proof}
+
+
+\begin{theorem}\label{thm:erenyiDiv_lower_bound}
+  \uses{def:erenyiDiv}
+Let $\mathcal{P},\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be two sets of probability measures.
+Suppose that there exists a measurable function $f_0 : \mathcal{X} \to \mathbb{R}_{+,\infty}$ which is less than 1 and $\delta \in [0,1/2]$ such that
+\begin{align*}
+  \forall P \in \mathcal{P}, \: P[f_0] &\le \delta
+  \: , \\
+  \forall Q \in \mathcal{Q}, \: Q[f_0] &\ge 1 - \delta
+  \: .
+\end{align*}
+Then
+\begin{align*}
+  \eR_{1/2}(\mathcal{P}, \mathcal{Q})
+  &\ge \log \frac{1}{4\delta(1 - \delta)}
+  \: .
+\end{align*}
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:erenyiDiv_bounded, lem:erenyiDiv_map_le, lem:erenyiDiv_anti}
+By Lemma~\ref{lem:erenyiDiv_map_le} for the function $f_0$, we have
+\begin{align*}
+  \eR_{1/2}(\mathcal{P}, \mathcal{Q})
+  &\ge \eR_{1/2}(f_0 \circ \mathcal{P}, f_0 \circ \mathcal{Q})
+  \: .
+\end{align*}
+$f_0 \circ \mathcal{P} \subseteq \{P \in \mathcal{P}([0,1]) \mid P[\id] \le \delta\}$ and $f_0 \circ \mathcal{Q} \subseteq \{P \in \mathcal{P}([0,1]) \mid P[\id] \ge 1 - \delta\}$.
+By Lemma~\ref{lem:erenyiDiv_anti}, we thus have
+\begin{align*}
+  \eR_{1/2}(f_0 \circ \mathcal{P}, f_0 \circ \mathcal{Q})
+  &\ge \eR_{1/2}(\mathcal{D}_{\le \delta}, \mathcal{D}_{\ge 1 - \delta})
+  \: .
+\end{align*}
+We now use Lemma~\ref{lem:erenyiDiv_bounded} to conclude.
+\end{proof}
+
+
+\begin{lemma}\label{lem:inf_bounded_renyi_sparation}
+  \uses{def:eVar}
+Let $\mathcal{D}_{\le -\varepsilon} = \{P \in \mathcal{P}([-1,1]) \mid P[\id] \le -\varepsilon\}$ and $\mathcal{D}_{\ge \varepsilon} = \{P \in \mathcal{P}([-1,1]) \mid P[\id] \ge \varepsilon\}$.
+Then
+\begin{align*}
+  \inf_{R \in \mathcal{P}([-1,1])}\left\{\sup_{f \in \mathcal{E}_{\mathcal{D}_{\le -\varepsilon}}} R[\log f]
+    + \sup_{g \in \mathcal{E}_{\mathcal{D}_{\ge \varepsilon}}} R[\log g] \right\}
+  &= \log \frac{1}{1 - u^2}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:inf_symm_sup_utility}
+The infimum can be restricted to the set of probability measures with $-id \circ R = R$ (symmetric around 0).
+TODO: explain why this is the case.
+\begin{align*}
+  \inf_{R \in \mathcal{P}([-1,1])}\left\{\sup_{f \in \mathcal{E}_{\mathcal{D}_{\le -\varepsilon}}} R[\log f]
+    + \sup_{g \in \mathcal{E}_{\mathcal{D}_{\ge \varepsilon}}} R[\log g] \right\}
+  &= 2\inf_{R \in \mathcal{P}([-1,1]), \ -\id \circ R = R} \sup_{f \in \mathcal{E}_{\{P \mid P[\id] \le -\varepsilon\}}} R[\log f]
+  \\
+  &= 2\inf_{R \in \mathcal{P}([-1,1]), \ -\id \circ R = R} \sup_{\lambda \ge 0} R[\log (1 + \lambda (X + u)]]
+  \: .
+\end{align*}
+TODO: add result that explains the last line.
+
+Then use Lemma~\ref{lem:inf_symm_sup_utility}.
+\end{proof}
+
+
+\begin{lemma}\label{lem:utility_fin_gen_ge}
+  \uses{def:eVar}
+Let $\Phi = \{\phi_1, \ldots, \phi_d\}$ be a set of measurable functions from $\mathcal{X}$ to $\mathbb{R}$.
+Let $\mathcal{P}^\Phi = \{P \in \mathcal{P}(\mathcal{X}) \mid \forall \phi \in \Phi, \ P[\vert \phi \vert] < \infty \text{ and } P[\phi] \le 0\}$.
+Denote by $\phi : \mathcal{X} \to \mathbb{R}^d$ the vector-valued function $\phi(x) = (\phi_1(x), \ldots, \phi_d(x))$.
+Then
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\mathcal{P}^\Phi}}R[\log f]
+  \ge \sup_{f \in \mathcal{E}_{\{P \in \mathcal{P}(\mathbb{R}^d) \mid \forall i, P[X_i] \le 0\}}}(\phi \circ R)[\log f]
+  \; .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{thm:dataprocessing, lem:eVarSet_anti}
+By Theorem~\ref{thm:dataprocessing} for the function $\phi$, we have
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\mathcal{P}^{\Phi}}} R[\log f]
+  &\ge \sup_{f \in \mathcal{E}_{\phi \circ \mathcal{P}^\Phi}} (\phi \circ R)[\log f]
+  \: .
+\end{align*}
+$\phi \circ \mathcal{P}^\Phi \subseteq \{P \in \mathcal{P}(\mathbb{R}^d) \mid \forall i, P[X_i] \le 0\}$ and their e-variable sets are in the reversed order (Lemma~\ref{lem:eVarSet_anti}).
+We get the result of the lemma.
+\end{proof}
+
+
+\begin{lemma}\label{lem:todo2}
+Let $\mathcal{P},\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be two sets of probability measures.
+Suppose that there exists a measurable function $f_0 : \mathcal{X} \to [-1, 1]$ and $\varepsilon \in (0,1]$ such that
+\begin{align*}
+  \forall P \in \mathcal{P}, \: P[f_0] &\le - \varepsilon
+  \: , \\
+  \forall Q \in \mathcal{Q}, \: Q[f_0] &\ge \varepsilon
+  \: .
+\end{align*}
+Then
+\begin{align*}
+  \inf_{R \in \mathcal{P}(\mathcal{X})}\left\{\sup_{f \in \mathcal{E}_{\mathcal{P}}} R[\log f]
+    + \sup_{g \in \mathcal{E}_{\mathcal{Q}}} R[\log g] \right\}
+  \ge \inf_{R \in \mathcal{P}([-1,1])}\left\{\sup_{f \in \mathcal{E}_{\{P \mid P[\id] \le -\varepsilon\}}} R[\log f]
+  + \sup_{g \in \mathcal{E}_{\{Q \mid Q[\id] \ge \varepsilon\}}} R[\log g] \right\}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{thm:dataprocessing, lem:eVarSet_anti}
+By Theorem~\ref{thm:dataprocessing} for the function $f_0$, we have
+\begin{align*}
+  \inf_{R \in \mathcal{P}(\mathcal{X})}\left\{\sup_{f \in \mathcal{E}_{\mathcal{P}}} R[\log f]
+    + \sup_{g \in \mathcal{E}_{\mathcal{Q}}} R[\log g] \right\}
+  &\ge \inf_{R \in \mathcal{P}(\mathcal{X})}\left\{\sup_{f \in \mathcal{E}_{f_0 \circ \mathcal{P}}} (f_0 \circ R)[\log f]
+    + \sup_{g \in \mathcal{E}_{f_0 \circ \mathcal{Q}}} (f_0 \circ R)[\log g] \right\}
+  \\
+  &\ge \inf_{R \in \mathcal{P}([-1,1])}\left\{\sup_{f \in \mathcal{E}_{f_0 \circ \mathcal{P}}} R[\log f]
+    + \sup_{g \in \mathcal{E}_{f_0 \circ \mathcal{Q}}} R[\log g] \right\}
+  \: .
+\end{align*}
+$f_0 \circ \mathcal{P} \subseteq \{P \in \mathcal{P}([0,1]) \mid P[\id] \le -\varepsilon\}$ and their e-variable sets are in the reversed order (Lemma~\ref{lem:eVarSet_anti}).
+A similar inclusion holds for $f_0 \circ \mathcal{Q}$.
+We get the result of the lemma.
+\end{proof}
+
+
+\begin{lemma}\label{lem:todo}
+Let $\mathcal{P},\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be two sets of probability measures.
+Suppose that there exists a measurable function $f_0 : \mathcal{X} \to [-1, 1]$ and $\varepsilon \in (0,1]$ such that
+\begin{align*}
+  \forall P \in \mathcal{P}, \: P[f_0] &\le - \varepsilon
+  \: , \\
+  \forall Q \in \mathcal{Q}, \: Q[f_0] &\ge \varepsilon
+  \: .
+\end{align*}
+Then
+\begin{align*}
+  \inf_{R \in \mathcal{P}(\mathcal{X})}\left\{\sup_{f \in \mathcal{E}_{\mathcal{P}}} R[\log f]
+    + \sup_{g \in \mathcal{E}_{\mathcal{Q}}} R[\log g] \right\}
+  &\ge \log \frac{1}{1 - \varepsilon^2}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:inf_bounded_renyi_sparation, lem:todo2}
+Apply Lemma~\ref{lem:todo2}, followed by Lemma~\ref{lem:inf_bounded_renyi_sparation}.
+\end{proof}
+
+\begin{theorem}\label{thm:separation_lower_bound}
+  \uses{def:eVar}
+Let $\mathcal{P},\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be two sets of probability measures.
+Suppose that there exists a measurable function $f_0 : \mathcal{X} \to [0, 1]$ and $\delta \in (0,1/2)$ such that
+\begin{align*}
+  \forall P \in \mathcal{P}, \: P[f_0] &\le \delta
+  \: , \\
+  \forall Q \in \mathcal{Q}, \: Q[f_0] &\ge 1 - \delta
+  \: .
+\end{align*}
+Then
+\begin{align*}
+  \inf_{R \in \mathcal{P}(\mathcal{X})}\left\{\sup_{f \in \mathcal{E}_{\mathcal{P}}} R[\log f]
+    + \sup_{g \in \mathcal{E}_{\mathcal{Q}}} R[\log g] \right\}
+  &\ge \log \frac{1}{4\delta(1 - \delta)}
+  \: .
+\end{align*}
+\end{theorem}
+
+This is analogous to a lower bound on the Rényi divergence with parameter $\alpha = 1/2$.
+
+\begin{proof}
+  \uses{lem:todo}
+The function $\tilde{f}_0 : \mathcal{X} \to [-1, 1]$ defined by $\tilde{f}_0(x) = 2f_0(x) - 1$ satisfies the assumptions of Lemma~\ref{lem:todo} with $\varepsilon = 1 - 2 \delta$.
+We get
+\begin{align*}
+  \inf_{R \in \mathcal{P}(\mathcal{X})}\left\{\sup_{f \in \mathcal{E}_{\mathcal{P}}} R[\log f]
+    + \sup_{g \in \mathcal{E}_{\mathcal{Q}}} R[\log g] \right\}
+  &\ge \log \frac{1}{1 - (1 - 2\delta)^2}
+  = \log \frac{1}{4\delta(1 - \delta)}
+  \: .
+\end{align*}
+\end{proof}
+
+
+\begin{lemma}\label{lem:}
+DRAFT. $g\circ g = \id$. $g \circ \mathcal{P} = \mathcal{Q}$.
+\begin{align*}
+  \inf_{R : g \circ R = R} \sup_{f \in \mathcal{E}_{\mathcal{Q}}} R[\log f]
+  &\ge \sup_{f \in \mathcal{E}_{\mathcal{Q}}} \inf_{R : g \circ R = R} R[\log f]
+  \\
+  &= \sup_{f \in \mathcal{E}_{\mathcal{Q}}} \inf_{R}
+    \left(\frac{1}{2}R[\log f] + \frac{1}{2} R[\log(f \circ g)]\right)
+  \\
+  &= \sup_{f \in \mathcal{E}_{\mathcal{Q}}} \inf_{x}
+    \left(\frac{1}{2}\log(f(x)) + \frac{1}{2} \log(f(g(x)))\right)
+\end{align*}
+For any $x$,
+\begin{align*}
+  \inf_{R : g \circ R = R} \sup_{f \in \mathcal{E}_{\mathcal{Q}}} R[\log f]
+  &\le \sup_{f \in \mathcal{E}_{\mathcal{Q}}} \frac{1}{2}\log f(x) + \frac{1}{2} \log f(g(x))
+\end{align*}
+\begin{align*}
+  \inf_{R : g \circ R = R} \sup_{f \in \mathcal{P}^{\Phi}} R[\log f]
+  &= \inf_{R : g \circ R = R} \sup_{\lambda_1, \ldots, \lambda_d \ge 0} R[\log(1 + \sum_i \lambda_i \phi_i)]
+  \\
+  &\ge \sup_{\lambda_1, \ldots, \lambda_d \ge 0} \inf_{R : g \circ R = R} R[\log(1 + \sum_i \lambda_i \phi_i)]
+  \\
+  &= \sup_{\lambda_1, \ldots, \lambda_d \ge 0} \inf_{R}
+    \left(\frac{1}{2}R[\log(1 + \sum_i \lambda_i \phi_i)] + \frac{1}{2} R[\log(1 + \sum_i \lambda_i \phi_i \circ g)]\right)
+  \\
+  &= \sup_{\lambda_1, \ldots, \lambda_d \ge 0} \inf_{x}
+    \left(\frac{1}{2}\log(1 + \sum_i \lambda_i \phi_i(x)) + \frac{1}{2} \log(1 + \sum_i \lambda_i \phi_i(g(x)))\right)
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+
+\end{proof}
+
+
+\section{Data processing inequality through KL duality}
+
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[\log f]
+  &= \inf_{Q \in \mathcal{Q}_{\eff}} \KL(P, Q)
+  \\
+  &\ge \inf_{Q \in \mathcal{Q}_{\eff}} \KL(\kappa \circ P, \kappa \circ Q)
+  \\
+  &= \inf_{Q' \in \kappa \circ \mathcal{Q}_{\eff}} \KL(\kappa \circ P, Q')
+  \\
+  &\ge \inf_{Q' \in (\kappa \circ \mathcal{Q})_{\eff}} \KL(\kappa \circ P, Q')
+  \\
+  &= \sup_{g \in \mathcal{E}_{\kappa \circ \mathcal{Q}}} (\kappa \circ P)[\log g]
+  \: .
+\end{align*}
+
+The first inequality is the data processing inequality for KL divergence.
+The second inequality comes from $\kappa \circ \mathcal{Q}_{\eff} \subseteq (\kappa \circ \mathcal{Q})_{\eff}$, which we proved in Lemma~\ref{lem:effectiveSet_comp_subset}.
