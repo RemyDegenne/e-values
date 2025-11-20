@@ -132,14 +132,47 @@ lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure 
     maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P :=
   (isNumeraire_numeraire P hS).maxUtility_eq_integral
 
+lemma maxUtility_nonneg (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    0 ≤ maxUtility P S logUtility := by
+  calc 0
+  _ ≤ ∫ᵉ (x : 𝓧), (logUtility.toFun ∘ (fun _ ↦ 1)) x ∂P := by simp [logUtility]
+  _ ≤ maxUtility P S logUtility := by
+    rw [maxUtility]
+    refine le_iSup₂ (f := fun X _ ↦ ∫ᵉ (x : 𝓧), (logUtility.toFun ∘ X) x ∂P) (fun _ ↦ 1) ?_
+    exact isEVar_fun_one S hS
+
 lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :
     ConvexOn ℝ≥0∞ Set.univ (fun P ↦ maxUtility P S U) := by
   refine ⟨convex_univ, fun P _ Q _ a b ha hb hab ↦ ?_⟩
   simp only
   rw [maxUtility]
   simp_rw [eintegral_add_measure, eintegral_smul_measure]
-  -- sup of sums ≤ sum of sups
-  sorry
+  calc ⨆ X, ⨆ (_ : IsEVar X S), a * ∫ᵉ x, (U.toFun ∘ X) x ∂P + b * ∫ᵉ x, (U.toFun ∘ X) x ∂Q
+  _ = ⨆ X, (a * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂P)
+      + b * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂Q := by
+    congr with X
+    by_cases hX : IsEVar X S
+    · simp [hX]
+    · simp only [hX, Function.comp_apply, not_false_eq_true, iSup_neg]
+      by_cases ha : a = 0
+      · have hb : 0 < (b : EReal) := by
+          simp only [EReal.coe_ennreal_pos]
+          by_contra!
+          have : b = 0 := by grind
+          simp [ha, this] at hab
+        rw [EReal.mul_bot_of_pos hb]
+        simp
+      · have ha' : 0 < (a : EReal) := by simp; grind
+        rw [EReal.mul_bot_of_pos ha']
+        simp
+  _ ≤ (⨆ X, a * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂P)
+      + ⨆ X, b * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂Q := EReal.iSup_add_le_add_iSup
+  _ = a • maxUtility P S U + b • maxUtility Q S U := by
+    simp_rw [maxUtility]
+    simp only [EReal.smul_nnreal_eq_mul]
+    rw [EReal.iSup_ennreal_mul, EReal.iSup_ennreal_mul]
+    · exact ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
+    · exact ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
 
 lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : 𝓧 → 𝓧} (hφ : Measurable φ)
     (hφ_inv : φ ∘ φ = id) :
@@ -157,5 +190,24 @@ lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : �
     _ = maxUtility (P.map φ) {μ.map φ | μ ∈ {ν.map φ | ν ∈ S}} U := by congr with μ; simp
     _ ≤ maxUtility P {μ | μ ∈ {ν.map φ | ν ∈ S}} U := maxUtility_map_le _ hφ
     _ = maxUtility P {μ.map φ | μ ∈ S} U := rfl
+
+lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
+    maxUtility ((2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
+          + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩)
+        {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} logUtility
+      = 2⁻¹ * Real.log (1 / (4 * δ * (1 - δ))) := by
+  let P := (2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
+    + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩
+  have hP_prob : IsProbabilityMeasure P := by
+    constructor
+    simpa [P] using ENNReal.add_halves 1
+  change maxUtility P _ logUtility = 2⁻¹ * Real.log (1 / (4 * δ * (1 - δ)))
+  rw [maxUtility]
+  have hδ_le_one : δ ≤ 1 := by linarith
+  simp_rw [isEVar_bernoulli_le_iff hδ_pos hδ_le_one]
+  simp only [Subtype.forall, Set.mem_insert_iff, Set.mem_singleton_iff, exists_prop,
+    logUtility, Function.comp_apply, eintegral_add_measure, eintegral_smul_measure,
+    eintegral_dirac, one_div, mul_inv_rev, P]
+  sorry
 
 end ProbabilityTheory

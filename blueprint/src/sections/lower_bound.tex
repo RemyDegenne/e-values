@@ -91,6 +91,8 @@ By Lemma~\ref{lem:erenyiDiv_comp_le},
 
 \begin{lemma}\label{lem:eVarSet_bernoulli_le}
   \uses{def:eVar}
+  \leanok
+  \lean{ProbabilityTheory.isEVar_bernoulli_le_iff}
 Let $\delta \in [0,1/2]$ and let $B_{\le \delta} = \{\Ber(p) \mid p \le \delta\}$.
 Then
 \begin{align*}
@@ -100,7 +102,7 @@ Then
 \end{align*}
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\leanok
 It is easy to check that the set on the right is included in $\mathcal{E}_{B_{\le \delta}}$.
 
 The constraint on an e-variable $f$ for $B_{\le \delta}$ is that for all $p \le \delta$,
@@ -126,6 +128,8 @@ We need to check that we also have $f(0) \le 1 + \lambda (0 - \delta)$, but the 
 
 \begin{lemma}\label{lem:logUtility_bernoulli_half_le}
   \uses{def:logUtility}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility_bernoulli_half_le}
 Let $\delta \in [0,1/2]$ and let $B_{\le \delta} = \{\Ber(p) \mid p \le \delta\}$.
 Then
 \begin{align*}
@@ -153,6 +157,8 @@ Its value at the optimum is $\frac{1}{4 \delta (1 - \delta)}$.
 
 \begin{lemma}\label{lem:erenyiDiv_bernoulli}
   \uses{def:erenyiDiv}
+  \leanok
+  \lean{ProbabilityTheory.erenyiDiv_bernoulli}
 Let $\delta \in [0,1/2]$.
 Let $B_{\le \delta} = \{\Ber(p) \mid p \le \delta\}$ and $B_{\ge 1 - \delta} = \{\Ber(p) \mid p \ge 1 - \delta\}$ be sets of Bernoulli distributions with mean constraints.
 Then
@@ -163,7 +169,7 @@ Then
 \end{align*}
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\leanok
   \uses{lem:erenyiDiv_map_swap, lem:logUtility_bernoulli_half_le}
 By Lemma \ref{lem:erenyiDiv_map_swap} for the map $\phi : \{0,1\} \to \{0,1\}$ defined by $\phi(0) = 1$ and $\phi(1) = 0$, we have
 \begin{align*}
