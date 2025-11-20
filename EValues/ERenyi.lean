@@ -7,7 +7,6 @@ import EValues.DPI
 import EValues.Product
 import EValues.Mathlib.iSup
 
-
 /-!
 # E-Rényi divergence
 
@@ -110,6 +109,7 @@ lemma echernoffDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
   simp_rw [← Measure.deterministic_comp_eq_map hf]
   exact echernoffDiv_comp_le <| Kernel.deterministic f hf
 
+/- WIP. Need factorization -/
 lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
     (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
     (hT₁ : ∀ μ ∈ T₁, IsProbabilityMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsProbabilityMeasure μ) :
@@ -191,8 +191,72 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
         exact EReal.toENNReal_le_toENNReal <| iSup_prod_le_maxUtility _ hT₁
       · gcongr 1
         exact EReal.toENNReal_le_toENNReal <| iSup_prod_le_maxUtility _ hT₂
-    _ ≥ erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
+    _ = (1 - α)⁻¹ * ⨅ (R : Measure (𝓧 × 𝓨)) (_ : IsProbabilityMeasure R),
+        α * (maxUtility (R.map Prod.fst) S₁ logUtility
+            + maxUtility (R.map Prod.snd) T₁ logUtility).toENNReal +
+          (1 - α) * (maxUtility (R.map Prod.fst) S₂ logUtility
+            + maxUtility (R.map Prod.snd) T₂ logUtility).toENNReal := by
+      congr with R
+      congr with hR
+      congr
+      all_goals sorry
+    /- _ = (1 - α)⁻¹ * ⨅ (R : Measure (𝓧 × 𝓨)) (_ : IsProbabilityMeasure R),
+        α * ((maxUtility (R.map Prod.fst) S₁ logUtility).toENNReal
+            + (maxUtility (R.map Prod.snd) T₁ logUtility).toENNReal) +
+          (1 - α) * ((maxUtility (R.map Prod.fst) S₂ logUtility).toENNReal
+            + (maxUtility (R.map Prod.snd) T₂ logUtility).toENNReal) := by
+      congr with R
+      congr with hR
+      congr
+      · rw [EReal.toENNReal_add]
+        · exact maxUtility_nonneg _ hS₁
+        · exact maxUtility_nonneg _ hT₁
+      · rw [EReal.toENNReal_add]
+        · exact maxUtility_nonneg _ hS₂
+        · exact maxUtility_nonneg _ hT₂ -/
+    _ = (1 - α)⁻¹ * sInf {y | ∃ R₁ R₂,
+        IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
+        y = α * (maxUtility R₁ S₁ logUtility + maxUtility R₂ T₁ logUtility).toENNReal +
+            (1 - α) * (maxUtility R₁ S₂ logUtility + maxUtility R₂ T₂ logUtility).toENNReal} := by
       sorry
+    _ = (1 - α)⁻¹ * (sInf {y | ∃ R₁,
+                      IsProbabilityMeasure R₁ ∧
+                      y = α * (maxUtility R₁ S₁ logUtility).toENNReal +
+                          (1 - α) * (maxUtility R₁ S₂ logUtility).toENNReal}
+                    +
+                     sInf {y | ∃ R₂,
+                      IsProbabilityMeasure R₂ ∧
+                      y = α * (maxUtility R₂ T₁ logUtility).toENNReal +
+                          (1 - α) * (maxUtility R₂ T₂ logUtility).toENNReal}) := by
+      congr 1
+      rw [← sInf_add']
+      congr 1 with y
+      constructor
+      · rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+        rw [Set.mem_add]
+        let x := α * (maxUtility R₁ S₁ logUtility).toENNReal +
+          (1 - α) * (maxUtility R₁ S₂ logUtility).toENNReal
+        let z := α * (maxUtility R₂ T₁ logUtility).toENNReal +
+          (1 - α) * (maxUtility R₂ T₂ logUtility).toENNReal
+        refine ⟨x, ⟨R₁, hR₁, rfl⟩, z, ⟨R₂, hR₂, rfl⟩, ?_⟩
+        rw [EReal.mul_add_ENNReal, EReal.mul_add_ENNReal]
+        · ring
+        · exact maxUtility_nonneg _ hS₂
+        · exact maxUtility_nonneg _ hT₂
+        · exact maxUtility_nonneg _ hS₁
+        · exact maxUtility_nonneg _ hT₁
+      · rw [Set.mem_add]
+        rintro ⟨_, ⟨R₁, hR₁, rfl⟩, _, ⟨R₂, hR₂, rfl⟩, rfl⟩
+        refine ⟨R₁, R₂, hR₁, hR₂, ?_⟩
+        rw [EReal.mul_add_ENNReal, EReal.mul_add_ENNReal]
+        · ring
+        · exact maxUtility_nonneg _ hS₂
+        · exact maxUtility_nonneg _ hT₂
+        · exact maxUtility_nonneg _ hS₁
+        · exact maxUtility_nonneg _ hT₁
+    _ = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
+      rw [erenyiDiv_eq_sInf, erenyiDiv_eq_sInf]
+      ring
 
 lemma echernoffDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
     (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
