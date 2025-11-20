@@ -191,11 +191,27 @@ lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : �
     _ ≤ maxUtility P {μ | μ ∈ {ν.map φ | ν ∈ S}} U := maxUtility_map_le _ hφ
     _ = maxUtility P {μ.map φ | μ ∈ S} U := rfl
 
+lemma quadratic_inequality {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt_one : δ < 1) (u : ℝ) :
+    (1 + -(u * δ)) * (1 + u * (1 - δ)) ≤ (1 - δ)⁻¹ * (δ⁻¹ * 4⁻¹) := by
+  sorry
+
+lemma todo {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt : δ < 1) :
+    4 ≤ (1 - δ)⁻¹ * δ⁻¹ := by
+  have : (1 - δ) * δ ≤ 1 / 4 := by
+    sorry
+  sorry
+
+lemma EReal.inv_coe_ennreal {x : ℝ≥0∞} (hx : x ≠ 0) :
+    (x : EReal)⁻¹ = (x⁻¹ : ℝ≥0∞) := by
+  sorry
+
 lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
     maxUtility ((2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
           + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩)
         {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} logUtility
       = 2⁻¹ * Real.log (1 / (4 * δ * (1 - δ))) := by
+  have hδ_lt_one : δ < 1 := by grind
+  have h_one_sub_δ_pos : 0 < 1 - δ := by grind
   let P := (2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
     + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩
   have hP_prob : IsProbabilityMeasure P := by
@@ -208,6 +224,92 @@ lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2
   simp only [Subtype.forall, Set.mem_insert_iff, Set.mem_singleton_iff, exists_prop,
     logUtility, Function.comp_apply, eintegral_add_measure, eintegral_smul_measure,
     eintegral_dirac, one_div, mul_inv_rev, P]
-  sorry
+  refine le_antisymm ?_ ?_
+  · simp only [iSup_exists, iSup_le_iff, and_imp]
+    intro X u hu_nonneg hu_le hX
+    have hX0 := hX 0 (by simp)
+    have hX1 := hX 1 (by simp)
+    simp only [zero_sub, mul_neg] at hX0 hX1
+    have h1 : (2 : ℝ≥0∞)⁻¹ * ENNReal.log (X ⟨0, by simp⟩)
+          + (2 : ℝ≥0∞)⁻¹ * ENNReal.log (X ⟨1, by simp⟩)
+        ≤ (2 : ℝ≥0∞)⁻¹ * ENNReal.log (ENNReal.ofReal (1 + -(u * δ)))
+          + (2 : ℝ≥0∞)⁻¹ * ENNReal.log (ENNReal.ofReal (1 + u * (1 - δ))) := by gcongr
+    refine h1.trans ?_
+    have h_pos : 0 < (2 : EReal)⁻¹ :=
+      EReal.inv_pos_of_pos_ne_top (by simp) (Ne.symm (not_eq_of_beq_eq_false rfl))
+    by_cases huδ : u = δ⁻¹
+    · simp only [huδ, inv_mul_cancel₀ hδ_pos.ne', add_neg_cancel, ENNReal.ofReal_zero,
+        ENNReal.log_zero, ENNReal.log_ofReal, mul_ite]
+      rw [EReal.mul_bot_of_pos (by simp)]
+      simp
+    have hu_lt : u < δ⁻¹ := lt_of_le_of_ne hu_le huδ
+    have h_u_mul_lt : u * δ < 1 := by
+      calc u * δ < δ⁻¹ * δ := by gcongr
+      _ = 1 := inv_mul_cancel₀ hδ_pos.ne'
+    have : 0 < 1 + -(u * δ) := by grind
+    have h_one_add_pos : 0 < 1 + u * (1 - δ) := by positivity
+    calc (2 : ℝ≥0∞)⁻¹ * ENNReal.log (ENNReal.ofReal (1 + -(u * δ)))
+        + (2 : ℝ≥0∞)⁻¹ * ENNReal.log (ENNReal.ofReal (1 + u * (1 - δ)))
+    _ = 2⁻¹ * ENNReal.log (ENNReal.ofReal (1 + -(u * δ)))
+        + 2⁻¹ * ENNReal.log (ENNReal.ofReal (1 + u * (1 - δ))) := by
+      have : (2 : EReal) = (2 : ℝ≥0∞) := rfl
+      rw [this, EReal.inv_coe_ennreal (by positivity)]
+    _ ≤ 2⁻¹ * Real.log (1 + -(u * δ)) + 2⁻¹ * Real.log (1 + u * (1 - δ)) := by
+      simp [not_le.mpr h_u_mul_lt, not_le.mpr h_one_add_pos]
+    _ = 2⁻¹ * Real.log ((1 + -(u * δ)) * (1 + u * (1 - δ))) := by
+      rw [Real.log_mul]
+      rotate_left
+      · positivity
+      · positivity
+      have : (2 : EReal)⁻¹ = (2⁻¹ : ℝ) := rfl
+      rw [this]
+      norm_cast
+      rw [← mul_add]
+    _ ≤ 2⁻¹ * Real.log ((1 - δ)⁻¹ * (δ⁻¹ * 4⁻¹)) := by
+      gcongr 2
+      by_cases hu_zero : u = 0
+      · simp only [hu_zero, zero_mul, neg_zero, add_zero, mul_one, Real.log_one]
+        refine Real.log_nonneg ?_
+        rw [← mul_assoc, le_mul_inv_iff₀ (by positivity), one_mul]
+        exact todo hδ_pos hδ_lt_one
+      gcongr 1
+      exact quadratic_inequality hδ_pos hδ_lt_one u
+  · let u : ℝ := 2⁻¹ * (δ⁻¹ - (1 - δ)⁻¹)
+    have hu_nonneg : 0 ≤ u := by
+      simp only [inv_pos, Nat.ofNat_pos, mul_nonneg_iff_of_pos_left, sub_nonneg, u]
+      rcases lt_or_eq_of_le' hδ_le_one with hδ_lt | rfl
+      · rw [inv_le_inv₀ (sub_pos.mpr hδ_lt) (by positivity)]
+        grind
+      · simp
+    have hu_lt : u < δ⁻¹ := by
+      suffices u < 2⁻¹ * δ⁻¹ by
+        refine this.trans_le ?_
+        rw [mul_comm, ← div_eq_mul_inv]
+        exact half_le_self (by positivity)
+      simp only [mul_sub, sub_lt_self_iff, inv_pos, Nat.ofNat_pos, mul_pos_iff_of_pos_left, sub_pos,
+        u, hδ_lt_one]
+    let X : ({0, 1} : Set ℝ) → ℝ≥0∞ := fun x ↦ ENNReal.ofReal (1 + u * (x.1 - δ))
+    refine le_trans (le_of_eq ?_) (le_iSup _ X)
+    rw [iSup_pos ⟨u, hu_nonneg, hu_lt.le, by simp [X]⟩]
+    have h_u_mul_lt : u * δ < 1 := by
+      calc u * δ < δ⁻¹ * δ := by gcongr
+      _ = 1 := inv_mul_cancel₀ hδ_pos.ne'
+    have h_one_add_u_mul_pos : 0 < 1 + u * (1 - δ) := by positivity
+    have : 0 < 1 + -(u * δ) := by grind
+    simp only [zero_sub, mul_neg, ENNReal.log_ofReal, add_neg_le_iff_le_add, zero_add,
+      not_le.mpr h_u_mul_lt, ↓reduceIte, not_le.mpr h_one_add_u_mul_pos, X]
+    have h1 : (2 : EReal) = (2 : ℝ) := rfl
+    have h2 : (2 : ℝ≥0∞) = ENNReal.ofReal 2 := by simp
+    rw [h1, h2, ← ENNReal.ofReal_inv_of_pos (by simp), ← EReal.coe_inv, EReal.coe_ennreal_ofReal]
+    simp only [inv_nonneg, Nat.ofNat_nonneg, sup_of_le_left]
+    norm_cast
+    rw [← mul_add, ← Real.log_mul]
+    rotate_left
+    · positivity
+    · positivity
+    congr 2
+    simp only [u]
+    field_simp
+    ring
 
 end ProbabilityTheory
