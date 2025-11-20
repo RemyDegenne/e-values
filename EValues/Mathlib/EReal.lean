@@ -82,3 +82,14 @@ lemma EReal.iSup_ennreal_mul {α : Type*} [Nonempty α] {f : α → EReal} {a : 
     intro x
     gcongr
     exact le_iSup f x
+
+lemma EReal.inv_coe_ennreal {x : ℝ≥0∞} (hx : x ≠ 0) :
+    (x : EReal)⁻¹ = (x⁻¹ : ℝ≥0∞) := by
+  by_cases hx_top : x = ⊤
+  · simp [hx_top]
+  have hx_eq : x = ENNReal.ofReal x.toReal := by rw [ENNReal.ofReal_toReal hx_top]
+  rw [hx_eq]
+  simp only [EReal.coe_ennreal_ofReal, ENNReal.toReal_nonneg, sup_of_le_left]
+  rw [← ENNReal.ofReal_inv_of_pos (ENNReal.toReal_pos hx hx_top)]
+  simp only [EReal.coe_ennreal_ofReal, inv_nonneg, ENNReal.toReal_nonneg, sup_of_le_left]
+  rw [EReal.coe_inv]

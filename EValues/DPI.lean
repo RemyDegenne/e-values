@@ -192,18 +192,29 @@ lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : �
     _ = maxUtility P {μ.map φ | μ ∈ S} U := rfl
 
 lemma quadratic_inequality {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt_one : δ < 1) (u : ℝ) :
-    (1 + -(u * δ)) * (1 + u * (1 - δ)) ≤ (1 - δ)⁻¹ * (δ⁻¹ * 4⁻¹) := by
-  sorry
+    (1 - u * δ) * (1 + u * (1 - δ)) ≤ (1 - δ)⁻¹ * (δ⁻¹ * 4⁻¹) := by
+  have : 0 < 1 - δ := by linarith
+  have h_nonneg : 0 ≤ (u - ((δ⁻¹ - (1 - δ)⁻¹) / 2)) ^ 2 := sq_nonneg _
+  have : (1 - u * δ) * (1 + u * (1 - δ)) = - δ * (1 - δ) * (δ⁻¹ - u) * (- (1 - δ)⁻¹ - u) := by
+    field_simp
+    ring
+  rw [this]
+  have h_eq_sq (a b : ℝ) : (a - u) * (b - u) = (u - (a + b) / 2) ^ 2 - ((a - b) / 2) ^ 2 := by
+    ring
+  specialize h_eq_sq (δ⁻¹) (-(1 - δ)⁻¹)
+  simp_rw [mul_assoc, h_eq_sq, ← mul_assoc, neg_mul]
+  rw [neg_le, ← inv_mul_le_iff₀ (by positivity), le_sub_iff_add_le]
+  simp_rw [sub_neg_eq_add]
+  have : (δ * (1 - δ))⁻¹ * -((1 - δ)⁻¹ * δ⁻¹ * 4⁻¹) + ((δ⁻¹ + (1 - δ)⁻¹) / 2) ^ 2 = 0 := by
+    field_simp
+    ring
+  rwa [this]
 
 lemma todo {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt : δ < 1) :
     4 ≤ (1 - δ)⁻¹ * δ⁻¹ := by
-  have : (1 - δ) * δ ≤ 1 / 4 := by
-    sorry
-  sorry
-
-lemma EReal.inv_coe_ennreal {x : ℝ≥0∞} (hx : x ≠ 0) :
-    (x : EReal)⁻¹ = (x⁻¹ : ℝ≥0∞) := by
-  sorry
+  have : 0 < 1 - δ := by linarith
+  have : (1 - δ) * δ ≤ 1 / 4 := by linarith [sq_nonneg (1 / 2 - δ)]
+  rwa [← mul_inv, le_inv_comm₀ (by simp) (by positivity), ← one_div]
 
 lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
     maxUtility ((2 : ℝ≥0∞)⁻¹ • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ))
