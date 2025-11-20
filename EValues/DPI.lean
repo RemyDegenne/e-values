@@ -141,14 +141,81 @@ lemma maxUtility_nonneg (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsProbabilityMeas
     refine le_iSup₂ (f := fun X _ ↦ ∫ᵉ (x : 𝓧), (logUtility.toFun ∘ X) x ∂P) (fun _ ↦ 1) ?_
     exact isEVar_fun_one S hS
 
+lemma EReal.iSup_coe_mul_of_nonneg {α : Type*} [Nonempty α] {f : α → EReal} {a : ℝ} (ha : 0 ≤ a) :
+    a * (⨆ x, f x) = ⨆ x, a * f x := by
+  by_cases ha' : a = 0
+  · simp [ha']
+  refine le_antisymm ?_ ?_
+  · calc a * ⨆ x, f x
+    _ ≤ a * (a⁻¹ * ⨆ x, a * f x) := by
+      gcongr
+      simp only [iSup_le_iff]
+      intro x
+      suffices a * f x ≤ ⨆ x, a * f x by
+        calc f x
+        _ = a⁻¹ * (a * f x) := by rw [← mul_assoc]; norm_cast; rw [inv_mul_cancel₀ ha']; simp
+        _ ≤ a⁻¹ * ⨆ x, a * f x := by gcongr
+      exact le_iSup (fun x ↦ a * f x) x
+    _ = ⨆ x, a * f x := by rw [← mul_assoc]; norm_cast; rw [mul_inv_cancel₀ ha']; simp
+  · simp only [iSup_le_iff]
+    intro x
+    gcongr
+    exact le_iSup f x
+
+lemma EReal.iSup_ennreal_mul {α : Type*} [Nonempty α] {f : α → EReal} {a : ℝ≥0∞} (ha : a ≠ ∞) :
+    a * (⨆ x, f x) = ⨆ x, a * f x := by
+  by_cases ha' : a = 0
+  · simp [ha']
+  refine le_antisymm ?_ ?_
+  · calc a * ⨆ x, f x
+    _ ≤ a * (a⁻¹ * ⨆ x, a * f x) := by
+      gcongr
+      simp only [iSup_le_iff]
+      intro x
+      suffices a * f x ≤ ⨆ x, a * f x by
+        calc f x
+        _ = a⁻¹ * (a * f x) := by
+          rw [← mul_assoc]; norm_cast; rw [ENNReal.inv_mul_cancel ha' ha]; simp
+        _ ≤ a⁻¹ * ⨆ x, a * f x := by gcongr
+      exact le_iSup (fun x ↦ a * f x) x
+    _ = ⨆ x, a * f x := by rw [← mul_assoc]; norm_cast; rw [ENNReal.mul_inv_cancel ha' ha]; simp
+  · simp only [iSup_le_iff]
+    intro x
+    gcongr
+    exact le_iSup f x
+
 lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :
     ConvexOn ℝ≥0∞ Set.univ (fun P ↦ maxUtility P S U) := by
   refine ⟨convex_univ, fun P _ Q _ a b ha hb hab ↦ ?_⟩
   simp only
   rw [maxUtility]
   simp_rw [eintegral_add_measure, eintegral_smul_measure]
-  -- sup of sums ≤ sum of sups
-  sorry
+  calc ⨆ X, ⨆ (_ : IsEVar X S), a * ∫ᵉ x, (U.toFun ∘ X) x ∂P + b * ∫ᵉ x, (U.toFun ∘ X) x ∂Q
+  _ = ⨆ X, (a * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂P)
+      + b * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂Q := by
+    congr with X
+    by_cases hX : IsEVar X S
+    · simp [hX]
+    · simp only [hX, Function.comp_apply, not_false_eq_true, iSup_neg]
+      by_cases ha : a = 0
+      · have hb : 0 < (b : EReal) := by
+          simp only [EReal.coe_ennreal_pos]
+          by_contra!
+          have : b = 0 := by grind
+          simp [ha, this] at hab
+        rw [EReal.mul_bot_of_pos hb]
+        simp
+      · have ha' : 0 < (a : EReal) := by simp; grind
+        rw [EReal.mul_bot_of_pos ha']
+        simp
+  _ ≤ (⨆ X, a * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂P)
+      + ⨆ X, b * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂Q := EReal.iSup_add_le_add_iSup
+  _ = a • maxUtility P S U + b • maxUtility Q S U := by
+    simp_rw [maxUtility]
+    simp only [EReal.smul_nnreal_eq_mul]
+    rw [EReal.iSup_ennreal_mul, EReal.iSup_ennreal_mul]
+    · exact ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
+    · exact ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
 
 lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : 𝓧 → 𝓧} (hφ : Measurable φ)
     (hφ_inv : φ ∘ φ = id) :
