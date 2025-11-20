@@ -184,25 +184,25 @@ Let $\mathcal{P},\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be two sets of 
 Suppose that there exists a measurable map $\phi : \mathcal{X} \to \mathcal{X}$ such that $\phi \circ \phi = \id$ and $\phi_* \mathcal{P} = \mathcal{Q}$.
 Then
 \begin{align*}
-  \eR_\alpha(\mathcal{P}, \mathcal{Q})
-  &= \frac{1}{1 - \alpha} \inf_{R \in \mathcal{P}(\mathcal{X}), \: \phi_* R = R} \mathcal{U}_{\log}(R, \mathcal{P})
+  \eR_{1/2}(\mathcal{P}, \mathcal{Q})
+  &= 2 \inf_{R \in \mathcal{P}(\mathcal{X}), \: \phi_* R = R} \mathcal{U}_{\log}(R, \mathcal{P})
   \: .
 \end{align*}
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\leanok
   \uses{lem:logUtility_map_le, lem:convex_logUtility, lem:logUtility_map_swap}
 First consider an arbitrary $R \in \mathcal{P}(\mathcal{X})$.
 Then $R' = \frac{1}{2}(R + \phi_* R)$ satisfies $\phi_* R' = R'$ and by convexity (Lemma~\ref{lem:convex_logUtility}) and Lemma~\ref{lem:logUtility_map_swap},
 \begin{align*}
-  \alpha \mathcal{U}_{\log}(R', \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(R', \mathcal{Q})
-  &\le \frac{1}{2} \left( \alpha \mathcal{U}_{\log}(R, \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(R, \mathcal{Q}) \right)
+  \frac{1}{2} \mathcal{U}_{\log}(R', \mathcal{P}) + \frac{1}{2} \mathcal{U}_{\log}(R', \mathcal{Q})
+  &\le \frac{1}{2} \left( \frac{1}{2} \mathcal{U}_{\log}(R, \mathcal{P}) + \frac{1}{2} \mathcal{U}_{\log}(R, \mathcal{Q}) \right)
   \\
-  &\quad + \frac{1}{2} \left( \alpha \mathcal{U}_{\log}(\phi_* R, \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(\phi_* R, \mathcal{Q}) \right)
+  &\quad + \frac{1}{2} \left( \frac{1}{2} \mathcal{U}_{\log}(\phi_* R, \mathcal{P}) + \frac{1}{2} \mathcal{U}_{\log}(\phi_* R, \mathcal{Q}) \right)
   \\
-  &= \alpha \mathcal{U}_{\log}(R, \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(R, \mathcal{Q})
+  &= \frac{1}{2} \mathcal{U}_{\log}(R, \mathcal{P}) + \frac{1}{2} \mathcal{U}_{\log}(R, \mathcal{Q})
   \: .
 \end{align*}
-Hence we can restrict the infimum defining $\eR_\alpha(\mathcal{P}, \mathcal{Q})$ to measures $R$ such that $\phi_* R = R$.
+Hence we can restrict the infimum defining $\eR_{1/2}(\mathcal{P}, \mathcal{Q})$ to measures $R$ such that $\phi_* R = R$.
 For such measures, by Lemma~\ref{lem:logUtility_map_swap}, $\mathcal{U}_{\log}(R, \mathcal{Q}) = \mathcal{U}_{\log}(\phi_* R, \mathcal{P}) = \mathcal{U}_{\log}(R, \mathcal{P})$ and we get the result.
 \end{proof}

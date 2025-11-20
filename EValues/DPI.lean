@@ -132,6 +132,16 @@ lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure 
     maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P :=
   (isNumeraire_numeraire P hS).maxUtility_eq_integral
 
+lemma maxUtility_nonneg (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    0 ≤ maxUtility P S logUtility := by
+  calc 0
+  _ ≤ ∫ᵉ (x : 𝓧), (logUtility.toFun ∘ (fun _ ↦ 1)) x ∂P := by simp [logUtility]
+  _ ≤ maxUtility P S logUtility := by
+    rw [maxUtility]
+    refine le_iSup₂ (f := fun X _ ↦ ∫ᵉ (x : 𝓧), (logUtility.toFun ∘ X) x ∂P) (fun _ ↦ 1) ?_
+    exact isEVar_fun_one S hS
+
 lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :
     ConvexOn ℝ≥0∞ Set.univ (fun P ↦ maxUtility P S U) := by
   refine ⟨convex_univ, fun P _ Q _ a b ha hb hab ↦ ?_⟩
