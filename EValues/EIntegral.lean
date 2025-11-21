@@ -168,10 +168,35 @@ lemma eintegral_add_measure {ν : Measure α} (f : α → EReal) :
   simp only [eintegral, lintegral_add_measure, EReal.coe_ennreal_add]
   rw [todo]
 
-lemma eintegral_smul_measure {c : ℝ≥0∞} (f : α → EReal) :
+lemma todo'' {a b c : EReal} (ha : 0 ≤ a) (ha' : a ≠ ⊤) (hb : b ≠ ⊥) (hc : c ≠ ⊥) :
+    a * (b - c) = a * b - a * c := by
+  by_cases ha_zero : a = 0
+  · simp [ha_zero]
+  have ha_pos : 0 < a := lt_of_le_of_ne ha (Ne.symm ha_zero)
+  have ha_ne_bot : a ≠ ⊥ := fun h_eq ↦ by simp [h_eq] at ha
+  lift a to ℝ using ⟨ha', ha_ne_bot⟩
+  cases b <;> cases c
+  · simp at hc
+  · simp at hb
+  · simp at hb
+  · simp at hc
+  · norm_cast
+    ring
+  · simp [EReal.mul_bot_of_pos ha_pos, EReal.mul_top_of_pos ha_pos]
+  · simp at hc
+  · simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true, EReal.top_sub,
+      EReal.mul_top_of_pos ha_pos]
+    rw [EReal.top_sub]
+    rw [← EReal.coe_mul]
+    exact EReal.coe_ne_top _
+  · simp [EReal.mul_bot_of_pos ha_pos, EReal.mul_top_of_pos ha_pos]
+
+lemma eintegral_smul_measure {c : ℝ≥0∞} (hc : c ≠ ∞) (f : α → EReal) :
     ∫ᵉ x, f x ∂(c • μ) = c * ∫ᵉ x, f x ∂μ := by
   simp only [eintegral, lintegral_smul_measure, smul_eq_mul, EReal.coe_ennreal_mul]
-  sorry
+  rw [todo'' _ (by simp [hc]) (by simp) (by simp)]
+  norm_cast
+  exact zero_le'
 
 @[simp]
 lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClass α]
