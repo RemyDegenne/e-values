@@ -146,7 +146,9 @@ lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :
   refine ⟨convex_univ, fun P _ Q _ a b ha hb hab ↦ ?_⟩
   simp only
   rw [maxUtility]
-  simp_rw [eintegral_add_measure, eintegral_smul_measure]
+  have ha : a ≠ ∞ := ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
+  have hb : b ≠ ∞ := ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
+  simp_rw [eintegral_add_measure, eintegral_smul_measure ha, eintegral_smul_measure hb]
   calc ⨆ X, ⨆ (_ : IsEVar X S), a * ∫ᵉ x, (U.toFun ∘ X) x ∂P + b * ∫ᵉ x, (U.toFun ∘ X) x ∂Q
   _ = ⨆ X, (a * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂P)
       + b * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂Q := by
@@ -193,22 +195,9 @@ lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : �
 
 lemma quadratic_inequality {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt_one : δ < 1) (u : ℝ) :
     (1 - u * δ) * (1 + u * (1 - δ)) ≤ (1 - δ)⁻¹ * (δ⁻¹ * 4⁻¹) := by
-  have : 0 < 1 - δ := by linarith
-  have h_nonneg : 0 ≤ (u - ((δ⁻¹ - (1 - δ)⁻¹) / 2)) ^ 2 := sq_nonneg _
-  have : (1 - u * δ) * (1 + u * (1 - δ)) = - δ * (1 - δ) * (δ⁻¹ - u) * (- (1 - δ)⁻¹ - u) := by
-    field_simp
-    ring
-  rw [this]
-  have h_eq_sq (a b : ℝ) : (a - u) * (b - u) = (u - (a + b) / 2) ^ 2 - ((a - b) / 2) ^ 2 := by
-    ring
-  specialize h_eq_sq (δ⁻¹) (-(1 - δ)⁻¹)
-  simp_rw [mul_assoc, h_eq_sq, ← mul_assoc, neg_mul]
-  rw [neg_le, ← inv_mul_le_iff₀ (by positivity), le_sub_iff_add_le]
-  simp_rw [sub_neg_eq_add]
-  have : (δ * (1 - δ))⁻¹ * -((1 - δ)⁻¹ * δ⁻¹ * 4⁻¹) + ((δ⁻¹ + (1 - δ)⁻¹) / 2) ^ 2 = 0 := by
-    field_simp
-    ring
-  rwa [this]
+  have : 0 ≤ (u - (δ⁻¹ - (1-δ)⁻¹)/2)^2 := by positivity -- complete square
+  field_simp (disch := bound) at this ⊢ -- clear denominators
+  linarith
 
 lemma four_le_mul_inv {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt : δ < 1) :
     4 ≤ (1 - δ)⁻¹ * δ⁻¹ := by
@@ -232,8 +221,9 @@ lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2
   rw [maxUtility]
   have hδ_le_one : δ ≤ 1 := by linarith
   simp_rw [isEVar_bernoulli_le_iff hδ_pos hδ_le_one]
+  have : (2 : ℝ≥0∞)⁻¹ ≠ ∞ := by simp
   simp only [Subtype.forall, Set.mem_insert_iff, Set.mem_singleton_iff, exists_prop,
-    logUtility, Function.comp_apply, eintegral_add_measure, eintegral_smul_measure,
+    logUtility, Function.comp_apply, eintegral_add_measure, eintegral_smul_measure this,
     eintegral_dirac, one_div, mul_inv_rev, P]
   refine le_antisymm ?_ ?_
   · simp only [iSup_exists, iSup_le_iff, and_imp]

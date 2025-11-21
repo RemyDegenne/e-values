@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré, Rémy Degenne
 -/
 import Mathlib.MeasureTheory.Measure.Prod
+import EValues.Mathlib.EReal
 
 open scoped ENNReal
 
@@ -150,12 +151,14 @@ theorem eintegral_bind {β : Type*} {mβ : MeasurableSpace β} {m : α → Measu
 lemma eintegral_add_measure {ν : Measure α} (f : α → EReal) :
     ∫ᵉ x, f x ∂(μ + ν) = ∫ᵉ x, f x ∂μ + ∫ᵉ x, f x ∂ν := by
   simp only [eintegral, lintegral_add_measure, EReal.coe_ennreal_add]
-  sorry
+  rw [EReal.add_sub_add _ _ (by simp) (by simp)]
 
-lemma eintegral_smul_measure {c : ℝ≥0∞} (f : α → EReal) :
+lemma eintegral_smul_measure {c : ℝ≥0∞} (hc : c ≠ ∞) (f : α → EReal) :
     ∫ᵉ x, f x ∂(c • μ) = c * ∫ᵉ x, f x ∂μ := by
   simp only [eintegral, lintegral_smul_measure, smul_eq_mul, EReal.coe_ennreal_mul]
-  sorry
+  rw [EReal.mul_sub_of_nonneg_of_ne_top _ (by simp [hc])]
+  norm_cast
+  exact zero_le'
 
 @[simp]
 lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClass α]
