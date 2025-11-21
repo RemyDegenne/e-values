@@ -131,3 +131,43 @@ lemma EReal.inv_coe_ennreal {x : ℝ≥0∞} (hx : x ≠ 0) :
   rw [← ENNReal.ofReal_inv_of_pos (ENNReal.toReal_pos hx hx_top)]
   simp only [EReal.coe_ennreal_ofReal, inv_nonneg, ENNReal.toReal_nonneg, sup_of_le_left]
   rw [EReal.coe_inv]
+
+lemma EReal.mul_sub_of_nonneg_of_ne_top {a b c : EReal} (ha : 0 ≤ a) (ha' : a ≠ ⊤) :
+    a * (b - c) = a * b - a * c := by
+  by_cases ha_zero : a = 0
+  · simp [ha_zero]
+  have ha_pos : 0 < a := lt_of_le_of_ne ha (Ne.symm ha_zero)
+  have ha_ne_bot : a ≠ ⊥ := fun h_eq ↦ by simp [h_eq] at ha
+  lift a to ℝ using ⟨ha', ha_ne_bot⟩
+  cases b <;> cases c
+  · simp [EReal.mul_bot_of_pos ha_pos]
+  · simp [EReal.mul_bot_of_pos ha_pos]
+  · simp [EReal.mul_bot_of_pos ha_pos]
+  · simp only [ne_eq, EReal.coe_ne_bot, not_false_eq_true, EReal.sub_bot,
+      EReal.mul_top_of_pos ha_pos, EReal.mul_bot_of_pos ha_pos]
+    rw [EReal.sub_bot]
+    rw [← EReal.coe_mul]
+    exact EReal.coe_ne_bot _
+  · norm_cast
+    ring
+  · simp [EReal.mul_bot_of_pos ha_pos, EReal.mul_top_of_pos ha_pos]
+  · simp [EReal.mul_top_of_pos ha_pos, EReal.mul_bot_of_pos ha_pos]
+  · simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true, EReal.top_sub,
+      EReal.mul_top_of_pos ha_pos]
+    rw [EReal.top_sub]
+    rw [← EReal.coe_mul]
+    exact EReal.coe_ne_top _
+  · simp [EReal.mul_bot_of_pos ha_pos, EReal.mul_top_of_pos ha_pos]
+
+lemma EReal.add_sub_add (a b : EReal) {c d : EReal} (hc : c ≠ ⊥) (hd : d ≠ ⊥) :
+    a + b - (c + d) = (a - c) + (b - d) := by
+  cases a <;> cases b <;> cases c <;> cases d
+  -- 81 goals :)
+  any_goals simp [hc, hd]
+  any_goals simp at hc
+  any_goals simp at hd
+  · norm_cast
+    ring
+  · norm_cast
+  · norm_cast
+  · norm_cast
