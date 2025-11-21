@@ -150,24 +150,15 @@ theorem eintegral_bind {β : Type*} {mβ : MeasurableSpace β} {m : α → Measu
 lemma todo' (a b : EReal) {c d : EReal} (hc : c ≠ ⊥) (hd : d ≠ ⊥) :
     a + b - (c + d) = (a - c) + (b - d) := by
   cases a <;> cases b <;> cases c <;> cases d
+  -- 81 goals :)
   any_goals simp [hc, hd]
-  · simp at hc
-  · simp at hc
-  · simp at hd
+  any_goals simp at hc
+  any_goals simp at hd
   · norm_cast
     ring
-  · simp at hd
-  · simp at hc
-  · simp at hd
   · norm_cast
-  · simp at hd
   · norm_cast
-  · simp at hc
   · norm_cast
-  · simp at hd
-  · simp at hc
-  · norm_cast
-  · simp at hd
 
 lemma todo (a b c d : ℝ≥0∞) : (a : EReal) + b - (c + d) = (a - c) + (b - d) := by
   rw [todo' _ _ (by simp) (by simp)]
