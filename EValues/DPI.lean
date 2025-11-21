@@ -146,7 +146,9 @@ lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :
   refine ⟨convex_univ, fun P _ Q _ a b ha hb hab ↦ ?_⟩
   simp only
   rw [maxUtility]
-  simp_rw [eintegral_add_measure, eintegral_smul_measure]
+  have ha : a ≠ ∞ := ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
+  have hb : b ≠ ∞ := ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
+  simp_rw [eintegral_add_measure, eintegral_smul_measure ha, eintegral_smul_measure hb]
   calc ⨆ X, ⨆ (_ : IsEVar X S), a * ∫ᵉ x, (U.toFun ∘ X) x ∂P + b * ∫ᵉ x, (U.toFun ∘ X) x ∂Q
   _ = ⨆ X, (a * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂P)
       + b * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂Q := by
@@ -219,8 +221,9 @@ lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2
   rw [maxUtility]
   have hδ_le_one : δ ≤ 1 := by linarith
   simp_rw [isEVar_bernoulli_le_iff hδ_pos hδ_le_one]
+  have : (2 : ℝ≥0∞)⁻¹ ≠ ∞ := by simp
   simp only [Subtype.forall, Set.mem_insert_iff, Set.mem_singleton_iff, exists_prop,
-    logUtility, Function.comp_apply, eintegral_add_measure, eintegral_smul_measure,
+    logUtility, Function.comp_apply, eintegral_add_measure, eintegral_smul_measure this,
     eintegral_dirac, one_div, mul_inv_rev, P]
   refine le_antisymm ?_ ?_
   · simp only [iSup_exists, iSup_le_iff, and_imp]
