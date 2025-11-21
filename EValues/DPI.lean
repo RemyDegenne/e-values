@@ -193,22 +193,9 @@ lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : �
 
 lemma quadratic_inequality {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt_one : δ < 1) (u : ℝ) :
     (1 - u * δ) * (1 + u * (1 - δ)) ≤ (1 - δ)⁻¹ * (δ⁻¹ * 4⁻¹) := by
-  have : 0 < 1 - δ := by linarith
-  have h_nonneg : 0 ≤ (u - ((δ⁻¹ - (1 - δ)⁻¹) / 2)) ^ 2 := sq_nonneg _
-  have : (1 - u * δ) * (1 + u * (1 - δ)) = - δ * (1 - δ) * (δ⁻¹ - u) * (- (1 - δ)⁻¹ - u) := by
-    field_simp
-    ring
-  rw [this]
-  have h_eq_sq (a b : ℝ) : (a - u) * (b - u) = (u - (a + b) / 2) ^ 2 - ((a - b) / 2) ^ 2 := by
-    ring
-  specialize h_eq_sq (δ⁻¹) (-(1 - δ)⁻¹)
-  simp_rw [mul_assoc, h_eq_sq, ← mul_assoc, neg_mul]
-  rw [neg_le, ← inv_mul_le_iff₀ (by positivity), le_sub_iff_add_le]
-  simp_rw [sub_neg_eq_add]
-  have : (δ * (1 - δ))⁻¹ * -((1 - δ)⁻¹ * δ⁻¹ * 4⁻¹) + ((δ⁻¹ + (1 - δ)⁻¹) / 2) ^ 2 = 0 := by
-    field_simp
-    ring
-  rwa [this]
+  have : 0 ≤ (u - (δ⁻¹ - (1-δ)⁻¹)/2)^2 := by positivity -- complete square
+  field_simp (disch := bound) at this ⊢ -- clear denominators
+  linarith
 
 lemma four_le_mul_inv {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt : δ < 1) :
     4 ≤ (1 - δ)⁻¹ * δ⁻¹ := by
