@@ -308,16 +308,31 @@ lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [
   rw [eintegral_sub]
   exact eintegrable_of_nonneg (fun _ ↦ hf₂ _)
 
-lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
-    {ν : Measure β} [SFinite ν]
-    (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) :
-    ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by
-  sorry
-
 theorem eintegral_map {β : Type*} {mβ : MeasurableSpace β} {f : β → EReal} {g : α → β}
     (hf : Measurable f) (hg : Measurable g) : ∫ᵉ a, f a ∂μ.map g = ∫ᵉ a, f (g a) ∂μ := by
   simp only [eintegral]
   repeat rw [lintegral_map (by fun_prop) hg]
+
+theorem eintegral_map' {β : Type*} {mβ : MeasurableSpace β} {f : β → EReal} {g : α → β}
+    (hf : AEMeasurable f (μ.map g)) (hg : AEMeasurable g μ) :
+    ∫ᵉ a, f a ∂μ.map g = ∫ᵉ a, f (g a) ∂μ := by
+  simp only [eintegral]
+  repeat rw [lintegral_map' (by fun_prop) hg]
+
+lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
+    {ν : Measure β} [SFinite ν]
+    (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) :
+    ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by
+  calc ∫ᵉ z, f z ∂(μ.prod ν)
+  _ = ∫ᵉ z, (f ∘ Prod.swap) z ∂(ν.prod μ) := by
+    simp only [Function.comp_apply]
+    rw [← eintegral_map' _ measurable_swap.aemeasurable, Measure.prod_swap]
+    rwa [Measure.prod_swap]
+  _ = ∫ᵉ y, ∫ᵉ x, (f ∘ Prod.swap) (y, x) ∂μ ∂ν := by
+    rw [eintegral_prod]
+    refine AEMeasurable.comp_aemeasurable ?_ (by fun_prop)
+    rwa [Measure.prod_swap]
+  _ = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by simp
 
 lemma eintegral_lintegral_toEReal {β : Type*} {mβ : MeasurableSpace β} {m : α → Measure β}
     {f : β → EReal} : ∫ᵉ a, (∫⁻ x, (f x).toENNReal ∂m a).toEReal ∂μ =
