@@ -38,6 +38,9 @@ def eintegrable (f : α → EReal) (μ : Measure α := by volume_tac) : Prop :=
 -- if the integral of `f` gives `⊤ - ⊤ = ⊥`, then `-f` also gives `⊤ - ⊤ = ⊥`, so the integral
 -- of `-f` is not the negation of the integral of `f`
 
+lemma eintegrable_of_nonneg {f : α → EReal} (hf : ∀ x, 0 ≤ f x) : eintegrable f μ :=
+  Or.inr <| by simp [hf]
+
 @[simp]
 lemma eintegral_of_not_eintegrable {f : α → EReal} (hf : ¬ eintegrable f μ) :
     ∫ᵉ x, f x ∂μ = ⊥ := by
@@ -269,10 +272,41 @@ lemma eintegral_sub (μ : Measure α) (f g : α → EReal) (hg : eintegrable g �
   simp_rw [sub_eq_add_neg]
   rw [eintegral_add, eintegral_neg μ g hg]
 
+lemma eintegral_prod_of_nonneg {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [SFinite ν]
+    (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) (hf_nonneg : ∀ (x : α × β), 0 ≤ f x) :
+    ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ x, ∫ᵉ y, f (x, y) ∂ν ∂μ := by
+  have hf_nonneg' x : ∀ y, 0 ≤ f (x, y) := fun y ↦ hf_nonneg (x, y)
+  rw [eintegral_of_nonneg hf_nonneg, eintegral_of_nonneg]
+  swap; · exact fun x ↦ eintegral_nonneg (hf_nonneg' x)
+  simp_rw [eintegral_of_nonneg (hf_nonneg' _)]
+  congr
+  rw [lintegral_prod _ (by fun_prop)]
+  congr with x
+  rw [EReal.toENNReal_coe]
+
 lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [SFinite ν]
     (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) :
     ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ x, ∫ᵉ y, f (x, y) ∂ν ∂μ := by
-  sorry
+  let f₁ := fun x ↦ max (f x) 0
+  let f₂ := fun x ↦ - min (f x) 0
+  have hf₁ x : 0 ≤ f₁ x := by simp [f₁]
+  have hf₂ x : 0 ≤ f₂ x := by simp [f₂]
+  have h_or x : f₁ x = 0 ∨ f₂ x = 0 := by
+    rcases le_total 0 (f x) with h | h <;> simp [f₁, f₂, h]
+  have h_eq x : f x = f₁ x - f₂ x := by
+    rcases le_total 0 (f x) with h | h <;> simp [f₁, f₂, h]
+  simp_rw [h_eq]
+  rw [eintegral_sub_of_nonneg_of_eq_zero hf₁ hf₂ h_or]
+  rw [eintegral_prod_of_nonneg, eintegral_prod_of_nonneg]
+  rotate_left
+  · unfold f₂; fun_prop
+  · exact hf₂
+  · unfold f₁; fun_prop
+  · exact hf₁
+  rw [← eintegral_sub _ _ _ (eintegrable_of_nonneg (fun _ ↦ eintegral_nonneg (fun _ ↦ hf₂ _)))]
+  congr with x
+  rw [eintegral_sub]
+  exact eintegrable_of_nonneg (fun _ ↦ hf₂ _)
 
 lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
     {ν : Measure β} [SFinite ν]
