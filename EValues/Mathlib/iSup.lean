@@ -4,10 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré
 -/
 
-import Mathlib.Algebra.Group.Pointwise.Set.Basic
-import Mathlib.Algebra.Order.Sub.Defs
+import Mathlib.Data.EReal.Basic
 import Mathlib.Order.CompletePartialOrder
-import Mathlib.Order.ConditionallyCompleteLattice.Basic
 
 lemma iSup₂_eq_sSup {α ι : Type*} [CompleteLattice ι] {P : α → Prop} {g : α → ι} :
     ⨆ (x : α) (_ : P x), g x = sSup {y | ∃ x, P x ∧ y = g x} := by
@@ -113,3 +111,17 @@ lemma iInf₂_add {α β ι : Type*} [AddCommMagma ι] [Sub ι] [CompleteLattice
     exact ⟨a, b, ha, hb, rfl⟩
   · rintro ⟨a, b, ha, hb, rfl⟩
     exact ⟨f a, ⟨a, ha, rfl⟩, g b, ⟨b, hb, rfl⟩, rfl⟩
+
+lemma exists_iSup₂_EReal_add {α β : Type*} {P₁ : α → Prop} {P₂ : β → Prop}
+    {f : α → EReal} {g : β → EReal} {x : α} (hx : P₁ x) {y : β} (hy : P₂ y)
+    (hx_sup : f x = ⨆ (x : α) (_ : P₁ x), f x)
+    (hy_sup : g y = ⨆ (y : β) (_ : P₂ y), g y) :
+    (⨆ (x : α) (_ : P₁ x), f x) + (⨆ (y : β) (_ : P₂ y), g y) =
+    ⨆ (x : α) (y : β) (_ : P₁ x) (_ : P₂ y), f x + g y := by
+  refine le_antisymm ?_ ?_
+  · rw [← hx_sup, ← hy_sup]
+    exact le_iSup₂_of_le x y <| le_iSup₂_of_le hx hy <| le_refl _
+  · refine iSup₂_le fun i j ↦ iSup₂_le fun hi hj ↦ ?_
+    calc
+    _ ≤ (⨆ (x) (_ : P₁ x), f x) + g j := add_le_add_right (le_biSup f hi) _
+    _ ≤ (⨆ (x) (_ : P₁ x), f x) + ⨆ (y) (_ : P₂ y), g y := add_le_add_left (le_biSup g hj) _
