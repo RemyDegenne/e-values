@@ -117,14 +117,6 @@ lemma eintegral_mono_ae {f g : α → EReal} (hfg : f ≤ᵐ[μ] g) : ∫ᵉ x, 
 lemma eintegral_mono {f g : α → EReal} (hfg : f ≤ g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ :=
   eintegral_mono_ae <| ae_of_all _ hfg
 
-lemma todo_add (f : α → EReal) :
-    ∃ f₁ f₂ : α → EReal, (∀ x, 0 ≤ f₁ x) ∧ (∀ x, 0 ≤ f₂ x) ∧ (∀ x, f x = f₁ x - f₂ x) ∧
-      (∀ x, f₁ x = 0 ∨ f₂ x = 0) := by
-  refine ⟨fun x ↦ max (f x) 0, fun x ↦ - min (f x) 0, fun _ ↦ by positivity, fun _ ↦ by simp,
-    fun x ↦ ?_, fun x ↦ ?_⟩
-  · rcases le_total 0 (f x) with h | h <;> simp [h]
-  · rcases le_total 0 (f x) with h | h <;> simp [h]
-
 lemma eintegral_sub_of_nonneg_of_eq_zero {f g : α → EReal} (hf : ∀ x, 0 ≤ f x) (hg : ∀ x, 0 ≤ g x)
     (h_or : ∀ x, f x = 0 ∨ g x = 0) :
     ∫ᵉ x, f x - g x ∂μ = ∫ᵉ x, f x ∂μ - ∫ᵉ x, g x ∂μ := by
