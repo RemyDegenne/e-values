@@ -31,11 +31,11 @@ def maxRandUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) (U : Utility) : E
 variable {P : Measure 𝓧} {S T : Set (Measure 𝓧)} {U : Utility} {φ : 𝓧 → 𝓨}
 
 lemma maxUtility_eq_sSup : maxUtility P S U =
-    sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := iSup₂_eq_sSup (ι := EReal)
+    sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := iSup₂_eq_sSup
 
 lemma maxRandUtility_eq_sSup : maxRandUtility P S U =
       sSup {y | ∃ η, IsMarkovKernel η ∧ IsRandEVar η S ∧ y = ∫ᵉ x, U x ∂(η ∘ₘ P)} :=
-  iSup₃_eq_sSup (ι := EReal)
+  iSup₃_eq_sSup
 
 lemma maxUtility_anti (hS : S ⊆ T) : maxUtility P T U ≤ maxUtility P S U := by
   rw [maxUtility_eq_sSup, maxUtility_eq_sSup]
@@ -79,7 +79,7 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
         eintegral_map U.measurable hX.measurable]
       rfl
 
-lemma maxRandUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
+lemma maxRandUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)
     [IsMarkovKernel κ] : maxRandUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxRandUtility P S U := by
   calc maxRandUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U
   _ = sSup {y | ∃ η, IsMarkovKernel η ∧ IsRandEVar η {κ ∘ₘ μ | μ ∈ S} ∧
@@ -110,12 +110,12 @@ lemma maxUtility_map_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (hφ : Measu
   rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _,
     ← Measure.deterministic_comp_eq_map hφ]
   simp_rw [← Measure.deterministic_comp_eq_map hφ]
-  exact maxRandUtility_comp_le P S <| Kernel.deterministic φ hφ
+  exact maxRandUtility_comp_le P <| Kernel.deterministic φ hφ
 
-lemma maxUtility_comp_le (P : Measure 𝓧) (S : Set (Measure 𝓧)) (κ : Kernel 𝓧 𝓨)
+lemma maxUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)
     [IsMarkovKernel κ] : maxUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxUtility P S U := by
   rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _]
-  exact maxRandUtility_comp_le P S κ
+  exact maxRandUtility_comp_le P κ
 
 lemma IsNumeraire.maxUtility_eq_integral {X : 𝓧 → ℝ≥0∞} (hX : IsNumeraire X S P) :
     maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (X x) ∂P := by

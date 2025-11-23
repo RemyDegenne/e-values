@@ -20,6 +20,25 @@ variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableS
   {P : Measure 𝓧} [IsProbabilityMeasure P] {Q : Measure 𝓨} [IsProbabilityMeasure Q]
   {S : Set (Measure 𝓧)} {T : Set (Measure 𝓨)}
 
+/-- The product of the two e-variables is an e-variable for the product measure
+  with respect to the product of the two sets. -/
+lemma IsEVar.prod {T : Set (Measure 𝓨)} (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
+    {X : 𝓧 → ℝ≥0∞} {Y : 𝓨 → ℝ≥0∞} (hX : IsEVar X S) (hY : IsEVar Y T) :
+    IsEVar (fun (x : 𝓧 × 𝓨) ↦ X x.1 * Y x.2) (Measure.prod.uncurry '' (S ×ˢ T)) where
+  measurable := by
+    have hX_meas := hX.measurable
+    have hY_meas := hY.measurable
+    fun_prop
+  lintegral_le_one := by
+    have hX_meas := hX.measurable
+    have hY_meas := hY.measurable
+    rintro _ ⟨⟨μ, ν⟩, hμS, _, rfl⟩
+    obtain ⟨hμS, hνT⟩ := Set.mem_prod.mp hμS
+    specialize hT ν hνT
+    have : Measure.prod.uncurry (μ, ν) = μ.prod ν := by rfl
+    rw [this, lintegral_prod_mul (by fun_prop) (by fun_prop)]
+    exact mul_le_one' (hX.lintegral_le_one μ hμS) (hY.lintegral_le_one ν hνT)
+
 /-- The numeraire of a product measure with respect to a product of sets is the product
 of the numeraires. -/
 theorem isNumeraire_mul
@@ -126,7 +145,7 @@ lemma maxUtility_prod (P : Measure 𝓧) (Q : Measure 𝓨) [IsProbabilityMeasur
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
     (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
     maxUtility (P.prod Q) (Measure.prod.uncurry '' (S ×ˢ T)) logUtility =
-    maxUtility P S logUtility + maxUtility Q T logUtility := by
+      maxUtility P S logUtility + maxUtility Q T logUtility := by
   rw [maxUtility_eq_integral_numeraire (P.prod Q),
     maxUtility_eq_integral_numeraire _ hT, maxUtility_eq_integral_numeraire _ hS]
   · exact logUtility_numeraire_prod hS hT
@@ -136,6 +155,17 @@ lemma maxUtility_prod (P : Measure 𝓧) (Q : Measure 𝓨) [IsProbabilityMeasur
     specialize hS μ₁ hμ₁S
     specialize hT μ₂ hμ₂T
     infer_instance
+
+lemma iSup_prod_le_maxUtility (P : Measure (𝓧 × 𝓨)) {T : Set (Measure 𝓨)}
+    (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
+    ⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞) (_ : IsEVar X S) (_ : IsEVar Y T),
+      ∫ᵉ x, (logUtility ∘ (fun x ↦ X x.1 * Y x.2)) x ∂P ≤
+      maxUtility P (Measure.prod.uncurry '' (S ×ˢ T)) logUtility := by
+  unfold maxUtility
+  rw [iSup₂_eq_sSup, iSup₄_eq_sSup]
+  refine sSup_le_sSup fun z ↦ ?_
+  rintro ⟨X, Y, hX, hY, rfl⟩
+  exact ⟨fun x ↦ X x.1 * Y x.2, hX.prod hT hY, rfl⟩
 
 lemma isNumeraire_prod_numeraire_fintype {ι : Type*} {𝓧 : ι → Type*} [hι : Fintype ι]
     {m𝓧 : ∀ i, MeasurableSpace (𝓧 i)} {P : (i : ι) → Measure (𝓧 i)}
