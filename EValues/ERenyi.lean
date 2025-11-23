@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rémy Degenne
+Authors: Rémy Degenne, Gaëtan Serré
 -/
 import EValues.DPI
 import EValues.Product
@@ -32,6 +32,12 @@ def erenyiDiv (α : ℝ≥0∞) (S T : Set (Measure 𝓧)) : ℝ≥0∞ :=
   (1 - α)⁻¹ * ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
     α * (maxUtility R S logUtility).toENNReal + (1 - α) * (maxUtility R T logUtility).toENNReal
 
+lemma erenyiDiv_eq_sInf : erenyiDiv α S T =
+    (1 - α)⁻¹ * sInf {y | ∃ R, IsProbabilityMeasure R ∧
+    y = α * (maxUtility R S logUtility).toENNReal
+      + (1 - α) * (maxUtility R T logUtility).toENNReal} := by
+  simp [erenyiDiv, iInf₂_eq_sInf]
+
 /-- The e-Chernoff divergence between two sets of measures. -/
 noncomputable
 def echernoffDiv (S T : Set (Measure 𝓧)) : ℝ≥0∞ :=
@@ -41,7 +47,7 @@ def echernoffDiv (S T : Set (Measure 𝓧)) : ℝ≥0∞ :=
 lemma echernoffDiv_eq_sInf : echernoffDiv S T =
     sInf {y | ∃ R, IsProbabilityMeasure R ∧
     y = max (maxUtility R S logUtility).toENNReal (maxUtility R T logUtility).toENNReal} :=
-  iInf₂_eq_sInf (ι := ℝ≥0∞)
+  iInf₂_eq_sInf
 
 lemma erenyiDiv_anti {S₁ S₂ T₁ T₂ : Set (Measure 𝓧)} (hS : S₁ ⊆ S₂) (hT : T₁ ⊆ T₂) :
     erenyiDiv α S₂ T₂ ≤ erenyiDiv α S₁ T₁ := by
@@ -57,60 +63,243 @@ lemma echernoffDiv_anti {S₁ S₂ T₁ T₂ : Set (Measure 𝓧)} (hS : S₁ �
   · exact EReal.toENNReal_le_toENNReal <| maxUtility_anti hS
   · exact EReal.toENNReal_le_toENNReal <| maxUtility_anti hT
 
-/-- Data processing inequality for the e-Rényi divergence. -/
-lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
-    erenyiDiv α {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} ≤ erenyiDiv α S T := by
+lemma erenyiDiv_comp_le (κ : Kernel 𝓧 𝓨) [IsMarkovKernel κ] :
+    erenyiDiv α {κ ∘ₘ μ | μ ∈ S} {κ ∘ₘ μ | μ ∈ T} ≤ erenyiDiv α S T := by
   unfold erenyiDiv
   gcongr 1
-  set S' := {μ.map f | μ ∈ S}
-  set T' := {μ.map f | μ ∈ T}
   calc
   _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
-      α * (maxUtility (R.map f) S' logUtility).toENNReal +
-        (1 - α) * (maxUtility (R.map f) T' logUtility).toENNReal := by
-    rw [iInf₂_eq_sInf (ι := ℝ≥0∞), iInf₂_eq_sInf (ι := ℝ≥0∞)]
+      α * (maxUtility (κ ∘ₘ R) {κ ∘ₘ μ | μ ∈ S} logUtility).toENNReal +
+        (1 - α) * (maxUtility (κ ∘ₘ R) {κ ∘ₘ μ | μ ∈ T} logUtility).toENNReal := by
+    rw [iInf₂_eq_sInf, iInf₂_eq_sInf]
     refine sInf_le_sInf fun y ↦ ?_
     rintro ⟨R, hR, rfl⟩
-    exact ⟨R.map f, R.isProbabilityMeasure_map hf.aemeasurable, rfl⟩
+    exact ⟨κ ∘ₘ R, inferInstance, rfl⟩
   _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
       α * (maxUtility R S logUtility).toENNReal +
         (1 - α) * (maxUtility R T logUtility).toENNReal := by
     refine iInf₂_mono fun R _ ↦ add_le_add ?_ ?_
-    · gcongr 1
-      exact EReal.toENNReal_le_toENNReal <| maxUtility_map_le R hf
-    · gcongr 1
-      exact EReal.toENNReal_le_toENNReal <| maxUtility_map_le R hf
+    all_goals
+      gcongr 1
+      exact EReal.toENNReal_le_toENNReal <| maxUtility_comp_le R κ
+
+
+/-- Data processing inequality for the e-Rényi divergence. -/
+lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
+    erenyiDiv α {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} ≤ erenyiDiv α S T := by
+  simp_rw [← Measure.deterministic_comp_eq_map hf]
+  exact erenyiDiv_comp_le <| Kernel.deterministic f hf
+
+lemma echernoffDiv_comp_le (κ : Kernel 𝓧 𝓨) [IsMarkovKernel κ] :
+    echernoffDiv {κ ∘ₘ μ | μ ∈ S} {κ ∘ₘ μ | μ ∈ T} ≤ echernoffDiv S T := by
+  calc echernoffDiv {κ ∘ₘ μ | μ ∈ S} {κ ∘ₘ μ | μ ∈ T}
+  _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R), max
+      (maxUtility (κ ∘ₘ R) {κ ∘ₘ μ | μ ∈ S} logUtility).toENNReal
+      (maxUtility (κ ∘ₘ R) {κ ∘ₘ μ | μ ∈ T} logUtility).toENNReal := by
+    rw [iInf₂_eq_sInf, echernoffDiv_eq_sInf]
+    refine sInf_le_sInf fun y ↦ ?_
+    rintro ⟨R, hR, rfl⟩
+    exact ⟨κ ∘ₘ R, inferInstance, rfl⟩
+  _ ≤ echernoffDiv S T := by
+    refine iInf₂_mono fun R _ ↦ max_le_max ?_ ?_
+    all_goals exact EReal.toENNReal_le_toENNReal <| maxUtility_comp_le R κ
 
 /-- Data processing inequality for the e-Chernoff divergence. -/
 lemma echernoffDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
     echernoffDiv {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} ≤ echernoffDiv S T := by
-  set S' := {μ.map f | μ ∈ S}
-  set T' := {μ.map f | μ ∈ T}
-  calc echernoffDiv S' T'
-  _ ≤ ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R), max
-      (maxUtility (R.map f) S' logUtility).toENNReal
-      (maxUtility (R.map f) T' logUtility).toENNReal := by
-    rw [iInf₂_eq_sInf (ι := ℝ≥0∞), echernoffDiv_eq_sInf]
-    refine sInf_le_sInf fun y ↦ ?_
-    rintro ⟨R, hR, rfl⟩
-    exact ⟨R.map f, R.isProbabilityMeasure_map hf.aemeasurable, rfl⟩
-  _ ≤ echernoffDiv S T := by
-    refine iInf₂_mono fun R _ ↦ max_le_max ?_ ?_
-    all_goals exact (EReal.toENNReal_le_toENNReal <| maxUtility_map_le R hf)
+  simp_rw [← Measure.deterministic_comp_eq_map hf]
+  exact echernoffDiv_comp_le <| Kernel.deterministic f hf
+
+lemma erenyiDiv_add_eq_sInf {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
+    (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
+    (hT₁ : ∀ μ ∈ T₁, IsProbabilityMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsProbabilityMeasure μ) :
+      (1 - α)⁻¹ * sInf {y | ∃ R₁ R₂,
+        IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
+        y = α * (maxUtility R₁ S₁ logUtility + maxUtility R₂ T₁ logUtility).toENNReal +
+            (1 - α) * (maxUtility R₁ S₂ logUtility + maxUtility R₂ T₂ logUtility).toENNReal} =
+         erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
+  calc
+  _ = (1 - α)⁻¹ * (sInf {y | ∃ R₁,
+                    IsProbabilityMeasure R₁ ∧
+                    y = α * (maxUtility R₁ S₁ logUtility).toENNReal +
+                        (1 - α) * (maxUtility R₁ S₂ logUtility).toENNReal}
+                  +
+                    sInf {y | ∃ R₂,
+                    IsProbabilityMeasure R₂ ∧
+                    y = α * (maxUtility R₂ T₁ logUtility).toENNReal +
+                        (1 - α) * (maxUtility R₂ T₂ logUtility).toENNReal}) := by
+    congr 1
+    rw [← sInf_add']
+    congr 1 with y
+    constructor
+    · rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+      rw [Set.mem_add]
+      let x := α * (maxUtility R₁ S₁ logUtility).toENNReal +
+        (1 - α) * (maxUtility R₁ S₂ logUtility).toENNReal
+      let z := α * (maxUtility R₂ T₁ logUtility).toENNReal +
+        (1 - α) * (maxUtility R₂ T₂ logUtility).toENNReal
+      refine ⟨x, ⟨R₁, hR₁, rfl⟩, z, ⟨R₂, hR₂, rfl⟩, ?_⟩
+      rw [EReal.mul_add_ENNReal, EReal.mul_add_ENNReal]
+      · ring
+      · exact maxUtility_nonneg _ hS₂
+      · exact maxUtility_nonneg _ hT₂
+      · exact maxUtility_nonneg _ hS₁
+      · exact maxUtility_nonneg _ hT₁
+    · rw [Set.mem_add]
+      rintro ⟨_, ⟨R₁, hR₁, rfl⟩, _, ⟨R₂, hR₂, rfl⟩, rfl⟩
+      refine ⟨R₁, R₂, hR₁, hR₂, ?_⟩
+      rw [EReal.mul_add_ENNReal, EReal.mul_add_ENNReal]
+      · ring
+      · exact maxUtility_nonneg _ hS₂
+      · exact maxUtility_nonneg _ hT₂
+      · exact maxUtility_nonneg _ hS₁
+      · exact maxUtility_nonneg _ hT₁
+  _ = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
+    rw [erenyiDiv_eq_sInf, erenyiDiv_eq_sInf]
+    ring
 
 lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
     (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
     (hT₁ : ∀ μ ∈ T₁, IsProbabilityMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsProbabilityMeasure μ) :
     erenyiDiv α (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) (Measure.prod.uncurry '' (S₂ ×ˢ T₂))
       = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
-  sorry
+  set ST₁ := Measure.prod.uncurry '' (S₁ ×ˢ T₁)
+  set ST₂ := Measure.prod.uncurry '' (S₂ ×ˢ T₂)
+  refine le_antisymm ?_ ?_
+  · calc
+    _ ≤ (1 - α)⁻¹ * sInf {y | ∃ R₁ R₂,
+        IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
+        y = α * (maxUtility (R₁.prod R₂) ST₁ logUtility).toENNReal +
+            (1 - α) * (maxUtility (R₁.prod R₂) ST₂ logUtility).toENNReal} := by
+      rw [erenyiDiv_eq_sInf]
+      gcongr 1
+      refine sInf_le_sInf fun y ↦ ?_
+      rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+      exact ⟨R₁.prod R₂, inferInstance, rfl⟩
+    _ = (1 - α)⁻¹ * sInf {y | ∃ R₁ R₂,
+        IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
+        y = α * (maxUtility R₁ S₁ logUtility + maxUtility R₂ T₁ logUtility).toENNReal +
+            (1 - α) * (maxUtility R₁ S₂ logUtility + maxUtility R₂ T₂ logUtility).toENNReal} := by
+      congr with y
+      constructor
+      · rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+        rw [maxUtility_prod _ _ hS₁ hT₁, maxUtility_prod _ _ hS₂ hT₂]
+        exact ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+      · rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+        rw [← maxUtility_prod _ _ hS₁ hT₁, ← maxUtility_prod _ _ hS₂ hT₂]
+        exact ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+    _ = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := erenyiDiv_add_eq_sInf hS₁ hS₂ hT₁ hT₂
+
+  · calc
+    _ ≥ (1 - α)⁻¹ * ⨅ (R : Measure (𝓧 × 𝓨)) (_ : IsProbabilityMeasure R),
+        α * (⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞) (_ : IsEVar X S₁) (_ : IsEVar Y T₁),
+              ∫ᵉ x, (logUtility ∘ (fun x ↦ X x.1 * Y x.2)) x ∂R).toENNReal +
+          (1 - α) * (⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞) (_ : IsEVar X S₂) (_ : IsEVar Y T₂),
+              ∫ᵉ x, (logUtility ∘ (fun x ↦ X x.1 * Y x.2)) x ∂R).toENNReal := by
+      unfold erenyiDiv
+      gcongr 1
+      refine iInf₂_mono fun R _ ↦ add_le_add ?_ ?_
+      · gcongr 1
+        exact EReal.toENNReal_le_toENNReal <| iSup_prod_le_maxUtility _ hT₁
+      · gcongr 1
+        exact EReal.toENNReal_le_toENNReal <| iSup_prod_le_maxUtility _ hT₂
+    _ = (1 - α)⁻¹ * ⨅ (R) (_ : IsProbabilityMeasure R),
+        α * (maxUtility (R.map Prod.fst) S₁ logUtility
+            + maxUtility (R.map Prod.snd) T₁ logUtility).toENNReal +
+          (1 - α) * (maxUtility (R.map Prod.fst) S₂ logUtility
+            + maxUtility (R.map Prod.snd) T₂ logUtility).toENNReal := by
+      congr with R
+      congr with hR
+      set R₁ := R.map Prod.fst
+      set R₂ := R.map Prod.snd
+
+      have sup_prod_sum : ∀ (S : Set (Measure 𝓧)) (T : Set (Measure 𝓨)),
+          ⨆ X, ⨆ Y, ⨆ (_ : IsEVar X S), ⨆ (_ : IsEVar Y T),
+            ∫ᵉ x, (logUtility ∘ fun x ↦ X x.1 * Y x.2) x ∂R =
+          ⨆ X, ⨆ Y, ⨆ (_ : IsEVar X S), ⨆ (_ : IsEVar Y T),
+            ∫ᵉ x, logUtility (X x) ∂R₁ + ∫ᵉ x, logUtility (Y x) ∂R₂ := by
+        intro S T
+        congr with X
+        congr with Y
+        congr with hX
+        congr with hY
+        calc
+        _ = ∫ᵉ x, logUtility (X x.1) ∂R + ∫ᵉ x, logUtility (Y x.2) ∂R := by
+          simp_rw [logUtility, Function.comp, ENNReal.log_mul_add]
+          rw [eintegral_add]
+        _ = ∫ᵉ x, logUtility (X x) ∂R₁ + ∫ᵉ x, logUtility (Y x) ∂R₂ := by
+            congr
+            · rw [eintegral_map ?_ measurable_fst]
+              have : Measurable X := hX.measurable
+              fun_prop
+            · rw [eintegral_map ?_ measurable_snd]
+              have : Measurable Y := hY.measurable
+              fun_prop
+      congr
+      · rw [sup_prod_sum S₁ T₁, ← exists_iSup₂_EReal_add]
+        · rfl
+        · exact isEVar_numeraire R₁ S₁
+        · exact numeraire R₂ T₁
+        · exact isEVar_numeraire R₂ T₁
+        · haveI := R.isProbabilityMeasure_map measurable_fst.aemeasurable
+          exact (maxUtility_eq_integral_numeraire R₁ hS₁).symm
+        · haveI := R.isProbabilityMeasure_map measurable_snd.aemeasurable
+          exact (maxUtility_eq_integral_numeraire R₂ hT₁).symm
+      · rw [sup_prod_sum S₂ T₂, ← exists_iSup₂_EReal_add]
+        · rfl
+        · exact isEVar_numeraire R₁ S₂
+        · exact numeraire R₂ T₂
+        · exact isEVar_numeraire R₂ T₂
+        · haveI := R.isProbabilityMeasure_map measurable_fst.aemeasurable
+          exact (maxUtility_eq_integral_numeraire R₁ hS₂).symm
+        · haveI := R.isProbabilityMeasure_map measurable_snd.aemeasurable
+          exact (maxUtility_eq_integral_numeraire R₂ hT₂).symm
+    _ = (1 - α)⁻¹ * sInf {y | ∃ R₁ R₂,
+        IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
+        y = α * (maxUtility R₁ S₁ logUtility + maxUtility R₂ T₁ logUtility).toENNReal +
+            (1 - α) * (maxUtility R₁ S₂ logUtility + maxUtility R₂ T₂ logUtility).toENNReal} := by
+      congr
+      rw [iInf₂_eq_sInf]
+      congr with y
+      constructor
+      · rintro ⟨R, hR, rfl⟩
+        refine ⟨R.map Prod.fst, R.map Prod.snd, ?_, ?_, rfl⟩
+        · exact R.isProbabilityMeasure_map measurable_fst.aemeasurable
+        · exact R.isProbabilityMeasure_map measurable_snd.aemeasurable
+      · rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+        refine ⟨R₁.prod R₂, inferInstance, ?_⟩
+        simp
+    _ = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := erenyiDiv_add_eq_sInf hS₁ hS₂ hT₁ hT₂
 
 lemma echernoffDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
     (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
     (hT₁ : ∀ μ ∈ T₁, IsProbabilityMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsProbabilityMeasure μ) :
     echernoffDiv (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) (Measure.prod.uncurry '' (S₂ ×ˢ T₂))
       ≤ echernoffDiv S₁ S₂ + echernoffDiv T₁ T₂ := by
-  sorry
+  calc
+  _ ≤ sInf {y | ∃ R₁ R₂, IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
+      y = max (maxUtility (R₁.prod R₂) (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) logUtility).toENNReal
+        (maxUtility (R₁.prod R₂) (Measure.prod.uncurry '' (S₂ ×ˢ T₂)) logUtility).toENNReal} := by
+      rw [echernoffDiv_eq_sInf]
+      refine sInf_le_sInf fun y ↦ ?_
+      rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+      exact ⟨R₁.prod R₂, inferInstance, rfl⟩
+  _ ≤ sInf {y | ∃ R₁ R₂, IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
+      y = max (maxUtility R₁ S₁ logUtility + maxUtility R₂ T₁ logUtility).toENNReal
+        (maxUtility R₁ S₂ logUtility + maxUtility R₂ T₂ logUtility).toENNReal} := by
+      refine sInf_le_sInf fun y ↦ ?_
+      rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+      refine ⟨R₁, R₂, hR₁, hR₂, ?_⟩
+      rw [maxUtility_prod _ _ hS₁ hT₁, maxUtility_prod _ _ hS₂ hT₂]
+  _ ≤ echernoffDiv S₁ S₂ + echernoffDiv T₁ T₂ := by
+    rw [← iInf₄_eq_sInf, echernoffDiv, echernoffDiv, iInf₂_add]
+    refine iInf₂_mono fun R₁ R₂ ↦ iInf₂_mono fun hR₁ hR₂ ↦ ?_
+    rw [EReal.toENNReal_add, EReal.toENNReal_add]
+    · exact max_add_add_le_max_add_max
+    · exact maxUtility_nonneg _ hS₂
+    · exact maxUtility_nonneg _ hT₂
+    · exact maxUtility_nonneg _ hS₁
+    · exact maxUtility_nonneg _ hT₁
 
 lemma erenyiDiv_of_involutive_aux {S T : Set (Measure 𝓧)}
     {φ : 𝓧 → 𝓧} (hφ : Measurable φ) (hφ_inv : φ ∘ φ = id)
