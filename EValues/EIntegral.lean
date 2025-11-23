@@ -131,6 +131,17 @@ lemma eintegral_mono_ae {f g : α → EReal} (hfg : f ≤ᵐ[μ] g) : ∫ᵉ x, 
 lemma eintegral_mono {f g : α → EReal} (hfg : f ≤ g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ :=
   eintegral_mono_ae <| ae_of_all _ hfg
 
+lemma ae_ne_bot_of_eintegral_ne_bot {f : α → EReal}
+    (hf_meas : AEMeasurable f μ) (hf : ∫ᵉ x, f x ∂μ ≠ ⊥) :
+    ∀ᵐ x ∂μ, f x ≠ ⊥ := by
+  rw [eintegral, sub_eq_add_neg, ne_eq, EReal.add_eq_bot_iff] at hf
+  simp only [EReal.coe_ennreal_ne_bot, EReal.neg_eq_bot_iff, EReal.coe_ennreal_eq_top_iff,
+    false_or] at hf
+  have h := ae_lt_top' (by fun_prop) hf
+  filter_upwards [h] with x hx
+  rw [lt_top_iff_ne_top, ne_eq, EReal.toENNReal_eq_top_iff] at hx
+  simpa using hx
+
 lemma eintegral_sub_of_nonneg_of_eq_zero {f g : α → EReal} (hf : ∀ x, 0 ≤ f x) (hg : ∀ x, 0 ≤ g x)
     (h_or : ∀ x, f x = 0 ∨ g x = 0) :
     ∫ᵉ x, f x - g x ∂μ = ∫ᵉ x, f x ∂μ - ∫ᵉ x, g x ∂μ := by
@@ -358,7 +369,22 @@ lemma eintegral_sub_of_nonneg {f g : α → EReal} (hf : ∀ x, 0 ≤ f x) (hg :
     simp [h_false] at hg
   by_cases hg_top : ∀ᵐ x ∂μ, g x ≠ ⊤
   swap
-  · sorry -- both sides are ⊥
+  · -- right side is bot
+    have h_imp : ∫ᵉ x, -g x ∂μ ≠ ⊥ → ∀ᵐ x ∂μ, -g x ≠ ⊥ := ae_ne_bot_of_eintegral_ne_bot hg_meas.neg
+    rw [← not_imp_not] at h_imp
+    simp only [ne_eq, EReal.neg_eq_bot_iff, Decidable.not_not] at h_imp
+    specialize h_imp hg_top
+    rw [eintegral_neg] at h_imp
+    swap; · exact eintegrable_of_nonneg hg
+    rw [sub_eq_add_neg, h_imp, EReal.add_bot]
+    -- left side is also bot
+    have h_imp' : ∫ᵉ x, f x - g x ∂μ ≠ ⊥ → ∀ᵐ x ∂μ, f x - g x ≠ ⊥ :=
+      ae_ne_bot_of_eintegral_ne_bot (hf_meas.sub hg_meas)
+    rw [← not_imp_not] at h_imp'
+    simp only [ne_eq, Filter.not_eventually, Decidable.not_not] at h_imp'
+    refine h_imp' ?_
+    simp only [ne_eq, Filter.not_eventually, Decidable.not_not] at hg_top
+    exact hg_top.mono fun x hx ↦ by simp [hx]
   let f' := fun x ↦ f x - min (f x) (g x)
   let g' := fun x ↦ g x - min (f x) (g x)
   have hf' : ∀ᵐ x ∂μ, 0 ≤ f' x := by
