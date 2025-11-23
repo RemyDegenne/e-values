@@ -227,6 +227,10 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
         _ = ∫ᵉ x, logUtility (X x.1) ∂R + ∫ᵉ x, logUtility (Y x.2) ∂R := by
           simp_rw [logUtility, Function.comp, ENNReal.log_mul_add]
           rw [eintegral_add]
+          · have := hX.measurable
+            fun_prop
+          · have := hY.measurable
+            fun_prop
         _ = ∫ᵉ x, logUtility (X x) ∂R₁ + ∫ᵉ x, logUtility (Y x) ∂R₂ := by
             congr
             · rw [eintegral_map ?_ measurable_fst]
