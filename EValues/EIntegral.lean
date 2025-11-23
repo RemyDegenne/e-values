@@ -457,6 +457,7 @@ lemma eintegral_sub_of_nonneg {f g : α → EReal} (hf : ∀ x, 0 ≤ f x) (hg :
   · simp
   · exact EReal.ne_bot_of_nonneg <| eintegral_nonneg (by simp [hf, hg])
 
+-- Will need to add assumptions because if `g = -f` the lhs is `0` but the rhs can be `⊥`.
 lemma eintegral_add (μ : Measure α) (f g : α → EReal)
     (hf : AEMeasurable f μ) (hg : AEMeasurable g μ) :
     ∫ᵉ x, f x + g x ∂μ = ∫ᵉ x, f x ∂μ + ∫ᵉ x, g x ∂μ := by
