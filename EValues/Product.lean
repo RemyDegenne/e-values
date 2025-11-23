@@ -115,6 +115,8 @@ theorem logUtility_numeraire_prod (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
       ∫ᵉ p, ENNReal.log (numeraire Q T p.2) ∂P.prod Q := by
     simp_rw [ENNReal.log_mul_add]
     rw [eintegral_add]
+    · fun_prop
+    · fun_prop
   _ = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P + ∫ᵉ y, ENNReal.log (numeraire Q T y) ∂Q := by
     rw [eintegral_prod _ (by fun_prop), eintegral_prod_symm _ (by fun_prop)]
     simp
