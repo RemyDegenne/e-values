@@ -23,12 +23,6 @@ lemma doubleton_union_univ : ({⟨0, by simp⟩} : Set ({0, 1} : Set ℝ)) ∪ {
     = Set.univ := by
   grind
 
-lemma doubleton_integral {μ : Measure ({0, 1} : Set ℝ)} {f : ({0, 1} : Set ℝ) → ℝ}
-  (hf : Integrable f μ) : ∫ x, f x ∂μ =
-    μ.real {⟨0, by simp⟩} * f ⟨0, by simp⟩ + μ.real {⟨1, by simp⟩} * f ⟨1, by simp⟩ := by
-  rw [integral_countable' hf, tsum_fintype]
-  sorry
-
 lemma doubleton_lintegral {μ : Measure ({0, 1} : Set ℝ)} {f : ({0, 1} : Set ℝ) → ℝ≥0∞}
     : ∫⁻ x, f x ∂μ = μ {⟨0, by simp⟩} * f ⟨0, by simp⟩ + μ {⟨1, by simp⟩} * f ⟨1, by simp⟩ := by
   rw [lintegral_countable' f, tsum_fintype]
