@@ -196,11 +196,14 @@ theorem eintegral_log_le (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
   have h_nonpos := eintegral_log_div_nonpos hX hY
   simp_rw [ENNReal.log_div] at h_nonpos
   rwa [eintegral_sub, EReal.sub_nonpos] at h_nonpos
+  · sorry
   · have := hY.measurable
     fun_prop
   · sorry -- might not be true.
   · have := hX.measurable
     fun_prop
+  · sorry
+  · sorry
 
 lemma eintegral_log_nonneg (hX : IsNumeraire X S μ) :
     0 ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by

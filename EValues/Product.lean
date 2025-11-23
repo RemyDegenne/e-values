@@ -136,9 +136,15 @@ theorem logUtility_numeraire_prod (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
     rw [eintegral_add]
     · fun_prop
     · fun_prop
+    · sorry
+    · sorry
+    · sorry
+    · sorry
   _ = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P + ∫ᵉ y, ENNReal.log (numeraire Q T y) ∂Q := by
     rw [eintegral_prod _ (by fun_prop), eintegral_prod_symm _ (by fun_prop)]
-    simp
+    · simp
+    · sorry
+    · sorry
 
 lemma maxUtility_prod (P : Measure 𝓧) (Q : Measure 𝓨) [IsProbabilityMeasure P]
     [IsProbabilityMeasure Q] {T : Set (Measure 𝓨)}
