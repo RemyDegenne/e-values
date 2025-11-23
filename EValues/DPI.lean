@@ -6,6 +6,7 @@ Authors: Rémy Degenne, Gaëtan Serré
 import EValues.EValue
 import EValues.Utility
 import EValues.Mathlib.iSup
+import EValues.Mathlib.unitInterval
 import EValues.NumeraireExistence
 
 open scoped ENNReal NNReal ProbabilityTheory
@@ -312,5 +313,34 @@ lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2
     simp only [u]
     field_simp
     ring
+
+open unitInterval in
+lemma maxUtility_bernoulli_eq_unitInterval (P : Measure ({0, 1} : Set ℝ))
+    (S : Set (Measure ({0, 1} : Set ℝ))) :
+    maxUtility P S U = maxUtility (P.map doubleton) {μ.map doubleton | μ ∈ S} U := by
+  rw [maxUtility_eq_sSup, maxUtility_eq_sSup]
+  congr with y
+  constructor
+  · rintro ⟨X, hX, rfl⟩
+    refine ⟨X ∘ doubleton_inv, hX.bernoulli_imp_unitInterval S, ?_⟩
+    rw [eintegral_map (by fun_prop) (by fun_prop)]
+    have : ∀ a, doubleton_inv (doubleton a) = a := doubleton_left_inv
+    simp_rw [Function.comp_apply, this]
+  · rintro ⟨X, hX, rfl⟩
+    refine ⟨X ∘ doubleton, hX.unitInterval_imp_bernoulli S, ?_⟩
+    rw [eintegral_map ?_ (by fun_prop)]
+    · simp
+    · have := hX.measurable
+      fun_prop
+
+open unitInterval in
+lemma maxUtility_unitInterval_le_bernoulli (P : Measure I) (S : Set (Measure ({0, 1} : Set ℝ))) :
+    maxUtility (P.map doubleton_inv) S U ≤ maxUtility P {μ.map doubleton | μ ∈ S} U := by
+  rw [maxUtility_eq_sSup, maxUtility_eq_sSup]
+  refine sSup_le_sSup fun y ↦ ?_
+  rintro ⟨X, hX, rfl⟩
+  refine ⟨X ∘ doubleton_inv, hX.bernoulli_imp_unitInterval S, ?_⟩
+  rw [eintegral_map (by fun_prop) (by fun_prop)]
+  simp
 
 end ProbabilityTheory

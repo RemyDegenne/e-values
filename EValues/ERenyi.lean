@@ -6,6 +6,7 @@ Authors: Rémy Degenne, Gaëtan Serré
 import EValues.DPI
 import EValues.Product
 import EValues.Mathlib.iSup
+import EValues.Mathlib.unitInterval
 
 /-!
 # E-Rényi divergence
@@ -509,6 +510,56 @@ lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
       rw [this, EReal.toENNReal_inv (by simp)]
       simp
     rw [this, ENNReal.mul_inv_cancel (by simp) (by simp)]
+
+open unitInterval in
+lemma erenyi_unitInterval_le_bernoulli (S₁ S₂ : Set (Measure ({0, 1} : Set ℝ))) :
+    erenyiDiv α {μ.map doubleton | μ ∈ S₁} {μ.map doubleton | μ ∈ S₂} ≤ erenyiDiv α S₁ S₂ := by
+  unfold erenyiDiv
+  gcongr
+  rw [iInf₂_eq_sInf, iInf₂_eq_sInf]
+  refine sInf_le_sInf fun y ↦ ?_
+  rintro ⟨R, hR, rfl⟩
+  simp_rw [maxUtility_bernoulli_eq_unitInterval]
+  exact ⟨R.map doubleton, R.isProbabilityMeasure_map measurable_doubleton.aemeasurable, rfl⟩
+
+open unitInterval in
+lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} (ha : a ∈ I) (hb : b ∈ I) :
+    erenyiDiv 2⁻¹ {μ : Measure I | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ a}
+        {μ : Measure I | IsProbabilityMeasure μ ∧ b ≤ ∫ x, (x : ℝ) ∂μ}
+      = erenyiDiv 2⁻¹ {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ a}
+        {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ b ≤ ∫ x, (x : ℝ) ∂μ} := by
+  set D₁ := {μ : Measure I | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ a}
+  set D₂ := {μ : Measure I | IsProbabilityMeasure μ ∧ b ≤ ∫ x, (x : ℝ) ∂μ}
+  set B₁ := {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ a}
+  set B₂ := {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ b ≤ ∫ x, (x : ℝ) ∂μ}
+  refine le_antisymm ?_ ?_
+  · trans erenyiDiv 2⁻¹ {μ.map doubleton | μ ∈ B₁} {μ.map doubleton | μ ∈ B₂}
+    swap
+    · exact erenyi_unitInterval_le_bernoulli B₁ B₂
+    · refine erenyiDiv_anti ?_ ?_
+      · rintro _ ⟨μ, hμ, rfl⟩
+        refine ⟨?_, ?_⟩
+        · haveI := hμ.1
+          exact μ.isProbabilityMeasure_map measurable_doubleton.aemeasurable
+        · have := hμ.2
+          rw [integral_map (by fun_prop) (by fun_prop)]
+          simp_all [doubleton]
+      · rintro _ ⟨μ, hμ, rfl⟩
+        refine ⟨?_, ?_⟩
+        · haveI := hμ.1
+          exact μ.isProbabilityMeasure_map measurable_doubleton.aemeasurable
+        · have := hμ.2
+          rw [integral_map (by fun_prop) (by fun_prop)]
+          simp_all [doubleton]
+  · let κ : Kernel I ({0, 1} : Set ℝ) := by sorry
+    haveI : IsMarkovKernel κ := by sorry
+    have : B₁ = {κ ∘ₘ μ | μ ∈ D₁} := by sorry
+    rw [this]
+    clear this
+    have : B₂ = {κ ∘ₘ μ | μ ∈ D₂} := by sorry
+    rw [this]
+    clear this
+    exact erenyiDiv_comp_le κ
 
 -- todo: rename
 theorem main_result_one_sample {f : 𝓧 → ℝ≥0∞} (hf : Measurable f) (hf_le : ∀ x, f x ≤ 1)

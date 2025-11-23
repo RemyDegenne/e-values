@@ -11,6 +11,7 @@ import Mathlib.Probability.Kernel.Composition.MeasureComp
 import Mathlib.Probability.Kernel.Composition.IntegralCompProd
 import Mathlib.Probability.Notation
 import EValues.Mathlib.ENNReal
+import EValues.Mathlib.unitInterval
 
 /-!
 # E-variables
@@ -188,6 +189,27 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
   lintegral_le_one μ hμ := by
     have h' := h.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
     rwa [Measure.comp_assoc] at h'
+
+open unitInterval in
+lemma IsEVar.bernoulli_imp_unitInterval {X : ({0, 1} : Set ℝ) → ℝ≥0∞}
+    (S : Set (Measure ({0, 1} : Set ℝ))) (hX : IsEVar X S) :
+    IsEVar (X ∘ doubleton_inv) {μ.map doubleton | μ ∈ S} := by
+  refine ⟨by fun_prop, ?_⟩
+  rintro _ ⟨μ, hμ, rfl⟩
+  rw [lintegral_map (by fun_prop) (by fun_prop)]
+  have : ∀ a, doubleton_inv (doubleton a) = a := doubleton_left_inv
+  simp_rw [Function.comp_apply, this]
+  exact hX.lintegral_le_one μ hμ
+
+open unitInterval in
+lemma IsEVar.unitInterval_imp_bernoulli {X : I → ℝ≥0∞} (S : Set (Measure ({0, 1} : Set ℝ)))
+    (hX : IsEVar X {μ.map doubleton | μ ∈ S}) : IsEVar (X ∘ doubleton) S := by
+  refine ⟨?_, ?_⟩
+  · have := hX.measurable
+    fun_prop
+  · intro μ hμ
+    have lintegral_le_one := hX.lintegral_le_one (μ.map doubleton) ⟨μ, hμ, rfl⟩
+    rwa [lintegral_map hX.measurable (by fun_prop)] at lintegral_le_one
 
 lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
     (X : ({0, 1} : Set ℝ) → ℝ≥0∞) :
