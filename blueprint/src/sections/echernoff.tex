@@ -83,6 +83,7 @@ Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
 \begin{lemma}\label{lem:erenyiDiv_comp_le}
   \uses{def:erenyiDiv}
   \leanok
+  \lean{ProbabilityTheory.erenyiDiv_comp_le}
 Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
 \begin{align*}
   \eR_\alpha(\kappa \circ \mathcal{P}, \kappa \circ \mathcal{Q})
@@ -117,6 +118,8 @@ Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
 
 \begin{lemma}\label{lem:echernoffDiv_comp_le}
   \uses{def:echernoffDiv}
+  \leanok
+  \lean{ProbabilityTheory.echernoffDiv_comp_le}
 Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
 \begin{align*}
   \eC_\alpha(\kappa \circ \mathcal{P}, \kappa \circ \mathcal{Q})
@@ -125,7 +128,7 @@ Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
 \end{align*}
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\leanok
   \uses{lem:logUtility_comp_le}
 
 \end{proof}
@@ -150,6 +153,7 @@ Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
 \begin{lemma}\label{lem:erenyiDiv_prod}
   \uses{def:erenyiDiv}
   \leanok
+  \lean{ProbabilityTheory.erenyiDiv_prod}
 \begin{align*}
   \eR_\alpha(\mathcal{P}_1 \otimes \mathcal{P}_2, \mathcal{Q}_1 \otimes \mathcal{Q}_2)
   &= \eR_\alpha(\mathcal{P}_1, \mathcal{Q}_1) + \eR_\alpha(\mathcal{P}_2, \mathcal{Q}_2)
@@ -166,6 +170,7 @@ Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
 \begin{lemma}\label{lem:echernoffDiv_prod_le}
   \uses{def:echernoffDiv}
   \leanok
+  \lean{ProbabilityTheory.echernoffDiv_prod_le}
 \begin{align*}
   \eC_\alpha(\mathcal{P}_1 \otimes \mathcal{P}_2, \mathcal{Q}_1 \otimes \mathcal{Q}_2)
   &\le \eC_\alpha(\mathcal{P}_1, \mathcal{Q}_1) + \eC_\alpha(\mathcal{P}_2, \mathcal{Q}_2)
