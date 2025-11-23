@@ -455,7 +455,9 @@ lemma eintegral_add (μ : Measure α) (f g : α → EReal)
     eintegral_sub_of_nonneg_of_eq_zero hg₁ hg₂ hg_or]
   have : ∫ᵉ x, f₁ x ∂μ - ∫ᵉ x, f₂ x ∂μ + (∫ᵉ x, g₁ x ∂μ - ∫ᵉ x, g₂ x ∂μ)
       = ∫ᵉ x, f₁ x ∂μ + ∫ᵉ x, g₁ x ∂μ - (∫ᵉ x, f₂ x ∂μ + ∫ᵉ x, g₂ x ∂μ) := by
-    sorry
+    rw [EReal.add_sub_add]
+    · exact EReal.ne_bot_of_nonneg <| eintegral_nonneg hf₂
+    · exact EReal.ne_bot_of_nonneg <| eintegral_nonneg hg₂
   rw [this, ← eintegral_add_of_nonneg _ (by fun_prop) hf₁ hg₁,
     ← eintegral_add_of_nonneg _ (by fun_prop) hf₂ hg₂,
     ← eintegral_sub_of_nonneg _ _ (by fun_prop) (by fun_prop)]
