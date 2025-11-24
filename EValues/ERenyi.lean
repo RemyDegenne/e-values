@@ -525,13 +525,7 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} (ha : a ∈ I) (hb : 
   refine le_antisymm ?_ ?_
   · trans erenyiDiv 2⁻¹ {μ.map doubleton | μ ∈ B₁} {μ.map doubleton | μ ∈ B₂}
     swap
-    · unfold erenyiDiv
-      gcongr
-      rw [iInf₂_eq_sInf, iInf₂_eq_sInf]
-      refine sInf_le_sInf fun y ↦ ?_
-      rintro ⟨R, hR, rfl⟩
-      simp_rw [maxUtility_bernoulli_eq_unitInterval]
-      exact ⟨R.map doubleton, R.isProbabilityMeasure_map measurable_doubleton.aemeasurable, rfl⟩
+    · exact erenyiDiv_map_le (by fun_prop)
     · refine erenyiDiv_anti ?_ ?_
       · rintro _ ⟨μ, hμ, rfl⟩
         refine ⟨?_, ?_⟩
