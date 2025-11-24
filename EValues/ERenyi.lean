@@ -665,6 +665,13 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
     rw [B₂_eq_κ_comp]
     exact erenyiDiv_comp_le κ
 
+open unitInterval in
+lemma erenyiDiv_bounded {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
+    erenyiDiv 2⁻¹ {μ : Measure I | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ}
+        {μ : Measure I | IsProbabilityMeasure μ ∧ 1 - δ ≤ ∫ x, (x : ℝ) ∂μ} =
+      ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ)))) := by
+  rw [erenyiDiv_bounded_eq_erenyiDiv_bernoulli, erenyiDiv_bernoulli hδ_pos hδ]
+
 -- todo: rename
 theorem main_result_one_sample {f : 𝓧 → ℝ≥0∞} (hf : Measurable f) (hf_le : ∀ x, f x ≤ 1)
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
