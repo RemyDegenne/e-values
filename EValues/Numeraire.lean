@@ -205,9 +205,64 @@ theorem eintegral_log_le (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
   · sorry
   · sorry
 
+theorem eintegral_log_le' (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
+    ∫ᵉ ω, ENNReal.log (Y ω) ∂μ ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ :=
+  calc ∫ᵉ ω, ENNReal.log (Y ω) ∂μ
+  _ ≤ ∫ᵉ ω, ENNReal.log (X ω) + (Y ω - X ω) * (if X ω = 0 then ⊤ else 1 / X ω) ∂μ := by
+    gcongr
+    intro ω
+    simp only
+    rw [← deriv_logUtility]
+    sorry -- concavity
+  _ = ∫ᵉ ω, ENNReal.log (X ω) + (Y ω - X ω) / X ω ∂μ := by
+    refine eintegral_congr_ae ?_
+    filter_upwards [hX.ae_ne_zero] with ω hω
+    congr
+    simp only [hω, ↓reduceIte, one_div]
+    rw [← EReal.inv_coe_ennreal hω]
+    rfl
+  _ = ∫ᵉ ω, ENNReal.log (X ω) ∂μ + ∫ᵉ ω, (Y ω - X ω) / X ω ∂μ := by
+    rw [eintegral_add']
+    · have := hX.measurable
+      fun_prop
+    · have := hX.measurable
+      have := hY.measurable
+      refine Measurable.aemeasurable ?_
+      sorry
+    · refine ne_top_of_le_ne_top (by norm_cast : (1 : EReal) ≠ ⊤) ?_
+      calc ∫ᵉ ω, (Y ω - X ω) / X ω ∂μ
+      _ ≤ ∫ᵉ ω, Y ω / X ω ∂μ := by
+        refine eintegral_mono ?_
+        intro ω
+        simp only
+        gcongr
+        sorry
+      _ = ∫⁻ ω, Y ω / X ω ∂μ := by
+        rw [eintegral_of_nonneg]
+        · congr 1
+          refine lintegral_congr_ae ?_
+          filter_upwards [hX.ae_ne_zero] with ω hω
+          rw [div_eq_mul_inv, EReal.toENNReal_mul, EReal.toENNReal_coe, EReal.toENNReal_inv,
+            EReal.toENNReal_coe, div_eq_mul_inv]
+          · positivity
+          · positivity
+        · intro x
+          positivity
+      _ ≤ 1 := mod_cast hX.lintegral_div_le_one hY
+    · refine ne_bot_of_le_ne_bot (by norm_cast : (-1 : EReal) ≠ ⊥) ?_
+      sorry
+  _ ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := sorry
+
 lemma eintegral_log_nonneg (hX : IsNumeraire X S μ) :
     0 ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by
   simpa using eintegral_log_le hX (isEVar_one S hX.isProbabilityMeasure_set)
+
+-- supposes that we don't need that fact to prove that a numeraire is log-optimal
+lemma eintegrable_log (hX : IsNumeraire X S μ) :
+    eintegrable (fun ω ↦ ENNReal.log (X ω)) μ := by
+  have h_nonneg := eintegral_log_nonneg hX
+  by_contra h_false
+  simp [eintegral_of_not_eintegrable h_false] at h_nonneg
 
 end LogOptimal
 
