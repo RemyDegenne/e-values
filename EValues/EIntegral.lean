@@ -479,6 +479,22 @@ lemma eintegral_add (μ : Measure α) (f g : α → EReal)
     rcases le_total 0 (f x) with h | h <;> simp [f₁, f₂, h]
   have hf_eq x : f x = f₁ x - f₂ x := by
     rcases le_total 0 (f x) with h | h <;> simp [f₁, f₂, h]
+  have hf_int_eq : ∫ᵉ x, f x ∂μ = ∫ᵉ x, f₁ x ∂μ - ∫ᵉ x, f₂ x ∂μ := by
+    rw [← eintegral_sub_of_nonneg_of_eq_zero hf₁ hf₂ hf_or]
+    simp_rw [hf_eq]
+  have hf_int_or : ∫ᵉ x, f₁ x ∂μ ≠ ⊤ ∨ ∫ᵉ x, f₂ x ∂μ ≠ ⊤ := by
+    unfold eintegrable at hf_int
+    rcases hf_int with h | h
+    · left
+      rw [eintegral_of_nonneg hf₁]
+      simp only [ne_eq, EReal.coe_ennreal_eq_top_iff, f₁]
+      convert h using 4 with x
+      rcases le_total 0 (f x) with h | h <;> simp [h]
+    · right
+      rw [eintegral_of_nonneg hf₂]
+      simp only [ne_eq, EReal.coe_ennreal_eq_top_iff, f₂]
+      convert h using 4 with x
+      rcases le_total 0 (f x) with h | h <;> simp [h]
   let g₁ := fun x ↦ max (g x) 0
   let g₂ := fun x ↦ - min (g x) 0
   have hg₁ x : 0 ≤ g₁ x := by simp [g₁]
@@ -487,6 +503,22 @@ lemma eintegral_add (μ : Measure α) (f g : α → EReal)
     rcases le_total 0 (g x) with h | h <;> simp [g₁, g₂, h]
   have hg_eq x : g x = g₁ x - g₂ x := by
     rcases le_total 0 (g x) with h | h <;> simp [g₁, g₂, h]
+  have hg_int_eq : ∫ᵉ x, g x ∂μ = ∫ᵉ x, g₁ x ∂μ - ∫ᵉ x, g₂ x ∂μ := by
+    rw [← eintegral_sub_of_nonneg_of_eq_zero hg₁ hg₂ hg_or]
+    simp_rw [hg_eq]
+  have hg_int_or : ∫ᵉ x, g₁ x ∂μ ≠ ⊤ ∨ ∫ᵉ x, g₂ x ∂μ ≠ ⊤ := by
+    unfold eintegrable at hg_int
+    rcases hg_int with h | h
+    · left
+      rw [eintegral_of_nonneg hg₁]
+      simp only [ne_eq, EReal.coe_ennreal_eq_top_iff, g₁]
+      convert h using 4 with x
+      rcases le_total 0 (g x) with h | h <;> simp [h]
+    · right
+      rw [eintegral_of_nonneg hg₂]
+      simp only [ne_eq, EReal.coe_ennreal_eq_top_iff, g₂]
+      convert h using 4 with x
+      rcases le_total 0 (g x) with h | h <;> simp [h]
   have hf_add_g : ∀ x, f x + g x = (f₁ x + g₁ x) - (f₂ x + g₂ x) := by
     intro x
     rw [hf_eq x, hg_eq x, EReal.add_sub_add]
@@ -513,25 +545,36 @@ lemma eintegral_add (μ : Measure α) (f g : α → EReal)
     refine lt_of_le_of_lt (eintegral_mono h_le) ?_
     rw [eintegral_add_of_nonneg']
     rotate_left
-    · sorry
-    · sorry
-    · sorry
-    · sorry
+    · unfold f₁ g₂; fun_prop
+    · unfold f₂ g₁; fun_prop
+    · filter_upwards [] with x using by simp [hf₁, hg₂]
+    · filter_upwards [] with x using by simp [hf₂, hg₁]
+    rw [hf_int_eq, hg_int_eq] at h_ne_bot_1 h_ne_bot_2
     refine EReal.add_lt_top (ne_of_lt ?_) (ne_of_lt ?_)
     · cases h_ne_bot_2 with
       | inl h =>
-        refine lt_of_le_of_lt (eintegral_mono (fun _ ↦ min_le_left _ _)) ?_
-        sorry
+        refine lt_of_le_of_lt (eintegral_mono (fun _ ↦ min_le_left _ _)) (Ne.lt_top ?_)
+        cases hf_int_or with
+        | inl h' => exact h'
+        | inr h' =>
+          intro h_false
+          simp [h_false, EReal.top_sub h'] at h
       | inr h =>
-        refine lt_of_le_of_lt (eintegral_mono (fun _ ↦ min_le_right _ _)) ?_
-        sorry
+        refine lt_of_le_of_lt (eintegral_mono (fun _ ↦ min_le_right _ _)) (Ne.lt_top ?_)
+        intro h_false
+        simp [h_false] at h
     · cases h_ne_bot_1 with
       | inl h =>
-        refine lt_of_le_of_lt (eintegral_mono (fun _ ↦ min_le_left _ _)) ?_
-        sorry
+        refine lt_of_le_of_lt (eintegral_mono (fun _ ↦ min_le_left _ _)) (Ne.lt_top ?_)
+        intro h_false
+        simp [h_false] at h
       | inr h =>
-        refine lt_of_le_of_lt (eintegral_mono (fun _ ↦ min_le_right _ _)) ?_
-        sorry
+        refine lt_of_le_of_lt (eintegral_mono (fun _ ↦ min_le_right _ _)) (Ne.lt_top ?_)
+        cases hg_int_or with
+        | inl h' => exact h'
+        | inr h' =>
+          intro h_false
+          simp [h_false, EReal.top_sub h'] at h
   · intro x; positivity
   · intro x; specialize hf₂ x; specialize hg₂ x; positivity
 
