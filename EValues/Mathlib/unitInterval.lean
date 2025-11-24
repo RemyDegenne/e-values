@@ -23,10 +23,22 @@ lemma doubleton_union_univ : ({⟨0, by simp⟩} : Set ({0, 1} : Set ℝ)) ∪ {
     = Set.univ := by
   grind
 
-lemma doubleton_lintegral {μ : Measure ({0, 1} : Set ℝ)} {f : ({0, 1} : Set ℝ) → ℝ≥0∞}
-    : ∫⁻ x, f x ∂μ = μ {⟨0, by simp⟩} * f ⟨0, by simp⟩ + μ {⟨1, by simp⟩} * f ⟨1, by simp⟩ := by
-  rw [lintegral_countable' f, tsum_fintype]
-  sorry
+lemma measure_doubleton_eq_add (μ : Measure ({0, 1} : Set ℝ)) :
+    μ = μ {⟨0, by simp⟩} • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ)) +
+      μ {⟨1, by simp⟩} • Measure.dirac (⟨1, by simp⟩ : ({0, 1} : Set ℝ)) := by
+  rw [Measure.ext_iff_singleton]
+  intro x
+  by_cases hx0 : x = ⟨0, by simp⟩
+  · simp [hx0]
+  · have hx1 : x = ⟨1, by simp⟩ := by grind
+    simp [hx1]
+
+lemma doubleton_lintegral {μ : Measure ({0, 1} : Set ℝ)} {f : ({0, 1} : Set ℝ) → ℝ≥0∞} :
+    ∫⁻ x, f x ∂μ = μ {⟨0, by simp⟩} * f ⟨0, by simp⟩ + μ {⟨1, by simp⟩} * f ⟨1, by simp⟩ := by
+  conv_lhs => rw [measure_doubleton_eq_add μ]
+  rw [lintegral_add_measure, lintegral_smul_measure, lintegral_dirac, lintegral_smul_measure,
+    lintegral_dirac]
+  abel
 
 namespace unitInterval
 
