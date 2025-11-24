@@ -544,7 +544,6 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
   · let Ber (p : I) : Measure ({0, 1} : Set ℝ) :=
       (ENNReal.ofReal p) • Measure.dirac ⟨1, by simp⟩ +
         (ENNReal.ofReal (1 - p)) • Measure.dirac ⟨0, by simp⟩
-
     haveI Ber_is_prob : ∀ p, IsProbabilityMeasure (Ber p) := by
       intro p
       refine isProbabilityMeasure_iff.mpr ?_
@@ -552,39 +551,38 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
         smul_eq_mul, mul_one, Ber]
       rw [← ENNReal.ofReal_add (by unit_interval) (by unit_interval)]
       simp
-
     let κ : Kernel I ({0, 1} : Set ℝ) := ⟨Ber, by fun_prop⟩
     haveI : IsMarkovKernel κ := ⟨Ber_is_prob⟩
-
-    have : B₁ = {κ ∘ₘ μ | μ ∈ D₁} := by
+    have κ_comp : ∀ μ, IsProbabilityMeasure μ → κ ∘ₘ (μ.map doubleton) = μ := by
+      intro μ hμ
+      ext S hS
+      rw [Measure.bind_apply hS (by fun_prop),
+        lintegral_map (Kernel.measurable_coe κ hS) (by fun_prop)]
+      rw [doubleton_lintegral]
+      simp only [doubleton, Set.Icc.mk_zero, Kernel.coe_mk, Set.Icc.coe_zero,
+        ENNReal.ofReal_zero, zero_smul, sub_zero, ENNReal.ofReal_one, one_smul, zero_add,
+        Measure.dirac_apply, Set.Icc.mk_one, Set.Icc.coe_one, sub_self, add_zero, κ, Ber]
+      by_cases h0 : ⟨0, by simp⟩ ∈ S <;> by_cases h1 : ⟨1, by simp⟩ ∈ S
+      · have : S = Set.univ := by grind
+        rw [this]
+        simp_all only [Set.mem_Icc, Subtype.forall, forall_and_index, MeasurableSet.univ,
+          Set.mem_univ, Set.indicator_of_mem, Pi.one_apply, mul_one, measure_univ]
+        rw [← measure_union (by simp) (by simp), doubleton_union_univ]
+        simp
+      · have : S = {⟨0, by simp⟩} := by grind
+        simp_all
+      · have : S = {⟨1, by simp⟩} := by grind
+        simp_all
+      · have : S = ∅ := by grind
+        simp_all
+    have B₁_eq_κ_comp : B₁ = {κ ∘ₘ μ | μ ∈ D₁} := by
       ext μ
       constructor
       · rintro ⟨hμ_prob, hμ_int⟩
-        refine ⟨μ.map doubleton, ?_, ?_⟩
+        refine ⟨μ.map doubleton, ?_, κ_comp μ hμ_prob⟩
         · refine ⟨μ.isProbabilityMeasure_map measurable_doubleton.aemeasurable, ?_⟩
           rw [integral_map (by fun_prop) (by fun_prop)]
           simp_all [doubleton]
-        · ext S hS
-          rw [Measure.bind_apply hS (by fun_prop), lintegral_map]
-          · rw [doubleton_lintegral]
-            simp only [doubleton, Set.Icc.mk_zero, Kernel.coe_mk, Set.Icc.coe_zero,
-              ENNReal.ofReal_zero, zero_smul, sub_zero, ENNReal.ofReal_one, one_smul, zero_add,
-              Measure.dirac_apply, Set.Icc.mk_one, Set.Icc.coe_one, sub_self, add_zero, κ, Ber]
-            by_cases h0 : ⟨0, by simp⟩ ∈ S <;> by_cases h1 : ⟨1, by simp⟩ ∈ S
-            · have : S = Set.univ := by grind
-              rw [this]
-              simp_all only [Set.mem_Icc, Subtype.forall, forall_and_index, MeasurableSet.univ,
-                Set.mem_univ, Set.indicator_of_mem, Pi.one_apply, mul_one, measure_univ]
-              rw [← measure_union (by simp) (by simp), doubleton_union_univ]
-              simp
-            · have : S = {⟨0, by simp⟩} := by grind
-              simp_all
-            · have : S = {⟨1, by simp⟩} := by grind
-              simp_all
-            · have : S = ∅ := by grind
-              simp_all
-          · exact Kernel.measurable_coe κ hS
-          · fun_prop
       · rintro ⟨ν, hν, rfl⟩
         refine ⟨?_, ?_⟩
         · have := hν.1
@@ -615,38 +613,15 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
             intro x
             unit_interval
           · fun_prop
-    rw [this]
-    clear this
-    have : B₂ = {κ ∘ₘ μ | μ ∈ D₂} := by
+    rw [B₁_eq_κ_comp]
+    have B₂_eq_κ_comp : B₂ = {κ ∘ₘ μ | μ ∈ D₂} := by
       ext μ
       constructor
       · rintro ⟨hμ_prob, hμ_int⟩
-        refine ⟨μ.map doubleton, ?_, ?_⟩
+        refine ⟨μ.map doubleton, ?_, κ_comp μ hμ_prob⟩
         · refine ⟨μ.isProbabilityMeasure_map measurable_doubleton.aemeasurable, ?_⟩
           rw [integral_map (by fun_prop) (by fun_prop)]
           simp_all [doubleton]
-        · -- Factorize
-          ext S hS
-          rw [Measure.bind_apply hS (by fun_prop), lintegral_map]
-          · rw [doubleton_lintegral]
-            simp only [doubleton, Set.Icc.mk_zero, Kernel.coe_mk, Set.Icc.coe_zero,
-              ENNReal.ofReal_zero, zero_smul, sub_zero, ENNReal.ofReal_one, one_smul, zero_add,
-              Measure.dirac_apply, Set.Icc.mk_one, Set.Icc.coe_one, sub_self, add_zero, κ, Ber]
-            by_cases h0 : ⟨0, by simp⟩ ∈ S <;> by_cases h1 : ⟨1, by simp⟩ ∈ S
-            · have : S = Set.univ := by grind
-              rw [this]
-              simp_all only [Set.mem_Icc, Subtype.forall, forall_and_index, MeasurableSet.univ,
-                Set.mem_univ, Set.indicator_of_mem, Pi.one_apply, mul_one, measure_univ]
-              rw [← measure_union (by simp) (by simp), doubleton_union_univ]
-              simp
-            · have : S = {⟨0, by simp⟩} := by grind
-              simp_all
-            · have : S = {⟨1, by simp⟩} := by grind
-              simp_all
-            · have : S = ∅ := by grind
-              simp_all
-          · exact Kernel.measurable_coe κ hS
-          · fun_prop
       · rintro ⟨ν, hν, rfl⟩
         refine ⟨?_, ?_⟩
         · have := hν.1
@@ -679,8 +654,7 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
             intro x
             unit_interval
           · fun_prop
-    rw [this]
-    clear this
+    rw [B₂_eq_κ_comp]
     exact erenyiDiv_comp_le κ
 
 -- todo: rename
