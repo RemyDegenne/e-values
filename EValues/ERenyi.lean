@@ -513,7 +513,7 @@ lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
     rw [this, ENNReal.mul_inv_cancel (by simp) (by simp)]
 
 open unitInterval in
-lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} (ha : a ∈ I) (hb : b ∈ I) :
+lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
     erenyiDiv 2⁻¹ {μ : Measure I | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ a}
         {μ : Measure I | IsProbabilityMeasure μ ∧ b ≤ ∫ x, (x : ℝ) ∂μ}
       = erenyiDiv 2⁻¹ {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ a}
@@ -591,7 +591,7 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} (ha : a ∈ I) (hb : 
           infer_instance
         · obtain ⟨hν_prob, hν⟩ := hν
           rw [integral_eq_lintegral_of_nonneg_ae] at ⊢ hν
-          · rw [Measure.lintegral_bind]
+          · rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
             trans (∫⁻ (x : I), ENNReal.ofReal x ∂ν).toReal
             · gcongr with b
               · apply ne_of_lt
@@ -605,8 +605,6 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} (ha : a ∈ I) (hb : 
               · rw [doubleton_lintegral]
                 simp [κ, Ber]
             · exact hν
-            · fun_prop
-            · fun_prop
           · apply ae_of_all
             intro x
             cases x.2 with
@@ -619,7 +617,68 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} (ha : a ∈ I) (hb : 
           · fun_prop
     rw [this]
     clear this
-    have : B₂ = {κ ∘ₘ μ | μ ∈ D₂} := by sorry
+    have : B₂ = {κ ∘ₘ μ | μ ∈ D₂} := by
+      ext μ
+      constructor
+      · rintro ⟨hμ_prob, hμ_int⟩
+        refine ⟨μ.map doubleton, ?_, ?_⟩
+        · refine ⟨μ.isProbabilityMeasure_map measurable_doubleton.aemeasurable, ?_⟩
+          rw [integral_map (by fun_prop) (by fun_prop)]
+          simp_all [doubleton]
+        · -- Factorize
+          ext S hS
+          rw [Measure.bind_apply hS (by fun_prop), lintegral_map]
+          · rw [doubleton_lintegral]
+            simp only [doubleton, Set.Icc.mk_zero, Kernel.coe_mk, Set.Icc.coe_zero,
+              ENNReal.ofReal_zero, zero_smul, sub_zero, ENNReal.ofReal_one, one_smul, zero_add,
+              Measure.dirac_apply, Set.Icc.mk_one, Set.Icc.coe_one, sub_self, add_zero, κ, Ber]
+            by_cases h0 : ⟨0, by simp⟩ ∈ S <;> by_cases h1 : ⟨1, by simp⟩ ∈ S
+            · have : S = Set.univ := by grind
+              rw [this]
+              simp_all only [Set.mem_Icc, Subtype.forall, forall_and_index, MeasurableSet.univ,
+                Set.mem_univ, Set.indicator_of_mem, Pi.one_apply, mul_one, measure_univ]
+              rw [← measure_union (by simp) (by simp), doubleton_union_univ]
+              simp
+            · have : S = {⟨0, by simp⟩} := by grind
+              simp_all
+            · have : S = {⟨1, by simp⟩} := by grind
+              simp_all
+            · have : S = ∅ := by grind
+              simp_all
+          · exact Kernel.measurable_coe κ hS
+          · fun_prop
+      · rintro ⟨ν, hν, rfl⟩
+        refine ⟨?_, ?_⟩
+        · have := hν.1
+          infer_instance
+        · obtain ⟨hν_prob, hν⟩ := hν
+          rw [integral_eq_lintegral_of_nonneg_ae] at ⊢ hν
+          · rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
+            trans (∫⁻ (x : I), ENNReal.ofReal x ∂ν).toReal
+            · exact hν
+            · gcongr with b
+              · apply ne_of_lt
+                calc
+                _ ≤ ∫⁻ x, ∫⁻ y, 1 ∂(κ x) ∂ν := by
+                  refine lintegral_mono fun x ↦ lintegral_mono fun y ↦ ?_
+                  rw [ENNReal.ofReal_le_one]
+                  cases y.2 with
+                  | inl hy0 => simp_all
+                  | inr hy1 => simp_all
+                _ = (1 : ℝ≥0∞) := by simp
+                _ < ⊤ := by simp
+              · rw [doubleton_lintegral]
+                simp [κ, Ber]
+          · apply ae_of_all
+            intro x
+            cases x.2 with
+            | inl hx0 => simp_all
+            | inr hx1 => simp_all
+          · fun_prop
+          · apply ae_of_all
+            intro x
+            unit_interval
+          · fun_prop
     rw [this]
     clear this
     exact erenyiDiv_comp_le κ
