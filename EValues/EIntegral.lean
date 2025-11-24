@@ -578,7 +578,7 @@ lemma eintegral_add (μ : Measure α) (f g : α → EReal)
   · intro x; positivity
   · intro x; specialize hf₂ x; specialize hg₂ x; positivity
 
-lemma eintegral_sub (μ : Measure α) (f g : α → EReal) (hf : eintegrable f μ)
+lemma eintegral_sub (f g : α → EReal) (hf : eintegrable f μ)
     (hf_meas : AEMeasurable f μ) (hg : eintegrable g μ) (hg_meas : AEMeasurable g μ)
     (h_ne_top : ∫ᵉ x, f x ∂μ ≠ ⊤ ∨ ∫ᵉ x, g x ∂μ ≠ ⊤)
     (h_ne_bot : ∫ᵉ x, f x ∂μ ≠ ⊥ ∨ ∫ᵉ x, g x ∂μ ≠ ⊥) :
@@ -615,6 +615,22 @@ lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [
     rcases le_total 0 (f x) with h | h <;> simp [f₁, f₂, h]
   have h_eq x : f x = f₁ x - f₂ x := by
     rcases le_total 0 (f x) with h | h <;> simp [f₁, f₂, h]
+  have hf_int_eq : ∫ᵉ x, f x ∂(μ.prod ν) = ∫ᵉ x, f₁ x ∂(μ.prod ν) - ∫ᵉ x, f₂ x ∂(μ.prod ν) := by
+    rw [← eintegral_sub_of_nonneg_of_eq_zero hf₁ hf₂ h_or]
+    simp_rw [h_eq]
+  have hf_int_or : ∫ᵉ x, f₁ x ∂(μ.prod ν) ≠ ⊤ ∨ ∫ᵉ x, f₂ x ∂(μ.prod ν) ≠ ⊤ := by
+    unfold eintegrable at hf_int
+    rcases hf_int with h | h
+    · left
+      rw [eintegral_of_nonneg hf₁]
+      simp only [ne_eq, EReal.coe_ennreal_eq_top_iff, f₁]
+      convert h using 4 with x
+      rcases le_total 0 (f x) with h | h <;> simp [h]
+    · right
+      rw [eintegral_of_nonneg hf₂]
+      simp only [ne_eq, EReal.coe_ennreal_eq_top_iff, f₂]
+      convert h using 4 with x
+      rcases le_total 0 (f x) with h | h <;> simp [h]
   simp_rw [h_eq]
   rw [eintegral_sub_of_nonneg_of_eq_zero hf₁ hf₂ h_or]
   rw [eintegral_prod_of_nonneg, eintegral_prod_of_nonneg]
@@ -630,14 +646,14 @@ lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [
     · sorry
     · exact eintegrable_of_nonneg (fun _ ↦ hf₂ _)
     · sorry
-    · sorry
-    · sorry
+    · sorry -- will only be true a.e. Need a filter_upwards above
+    · exact .inl <| EReal.ne_bot_of_nonneg <| eintegral_nonneg (fun _ ↦ hf₁ _)
   · exact eintegrable_of_nonneg (fun _ ↦ eintegral_nonneg (fun _ ↦ hf₁ _))
   · sorry
   · sorry
   · sorry
   · sorry
-  · sorry
+  · exact .inl (EReal.ne_bot_of_nonneg <| eintegral_nonneg fun _ ↦ eintegral_nonneg (fun _ ↦ hf₁ _))
 
 theorem eintegral_map {β : Type*} {mβ : MeasurableSpace β} {f : β → EReal} {g : α → β}
     (hf : Measurable f) (hg : Measurable g) : ∫ᵉ a, f a ∂μ.map g = ∫ᵉ a, f (g a) ∂μ := by
