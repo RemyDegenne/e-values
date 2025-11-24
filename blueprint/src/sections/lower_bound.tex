@@ -58,6 +58,8 @@ which is equal to $\frac{1}{2} \log \frac{1}{1 - u^2}$ by Lemma~\ref{lem:sup_qua
 
 \begin{lemma}\label{lem:erenyiDiv_bounded_eq_erenyiDiv_bernoulli}
   \uses{def:erenyiDiv}
+  \leanok
+  \lean{ProbabilityTheory.erenyiDiv_bounded_eq_erenyiDiv_bernoulli}
 Let $a \le b \in [0,1]$.
 Let $\mathcal{D}_{\le a} = \{P \in \mathcal{P}([0,1]) \mid P[\id] \le a\}$ and $\mathcal{D}_{\ge b} = \{P \in \mathcal{P}([0,1]) \mid P[\id] \ge b\}$ be sets of distributions on $[0,1]$ with mean constraints.
 Let $B_{\le a} = \{\Ber(p) \mid p \le a\}$ and $B_{\ge a} = \{\Ber(p) \mid p \ge a\}$ be sets of Bernoulli distributions with the same constraints.
@@ -69,7 +71,7 @@ Then
 \end{align*}
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\leanok
   \uses{lem:erenyiDiv_anti, lem:erenyiDiv_comp_le}
 First, by Lemma~\ref{lem:erenyiDiv_anti}, since $B_{\le a} \subseteq \mathcal{D}_{\le a}$ and $B_{\ge b} \subseteq \mathcal{D}_{\ge b}$, we have
 \begin{align*}

@@ -11,6 +11,7 @@ import Mathlib.Probability.Kernel.Composition.MeasureComp
 import Mathlib.Probability.Kernel.Composition.IntegralCompProd
 import Mathlib.Probability.Notation
 import EValues.Mathlib.ENNReal
+import EValues.Mathlib.unitInterval
 
 /-!
 # E-variables
