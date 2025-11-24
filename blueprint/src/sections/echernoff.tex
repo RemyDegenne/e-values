@@ -134,6 +134,41 @@ Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
 \end{proof}
 
 
+\begin{lemma}\label{lem:erenyiDiv_eq_iInf_acSet}
+  \uses{def:erenyiDiv, def:acSet}
+For $\alpha \in (0,1)$, if $\eC_\alpha(\mathcal{P}, \mathcal{Q}) < \infty$, then
+\begin{align*}
+  \eC_\alpha(\mathcal{P}, \mathcal{Q})
+  &= \frac{1}{1 - \alpha} \inf_{R \in \mathcal{P}(\mathcal{X}), \: R \ll \mathcal{P}, \: R \ll \mathcal{Q}} \left( \alpha \mathcal{U}_{\log}(R, \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(R, \mathcal{Q}) \right)
+  \: .
+\end{align*}
+That is, the infimum defining $\eR_\alpha(\mathcal{P}, \mathcal{Q})$ can be restricted to measures $R$ that are absolutely continuous with respect to both $\mathcal{P}$ and $\mathcal{Q}$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:logUtility_eq_top_of_not_acSet}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:erenyiDiv_map_eq}
+  \uses{def:erenyiDiv}
+Let $\phi : \mathcal{X} \to \mathcal{Y}$ be a measurable embedding. Then
+\begin{align*}
+  \eR_\alpha(\phi_*\mathcal{P}, \phi_*\mathcal{Q})
+  &= \eR_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:erenyiDiv_map_le}
+By Lemma~\ref{lem:erenyiDiv_map_le}, we have $\eR_\alpha(\phi_*\mathcal{P}, \phi_*\mathcal{Q}) \le \eR_\alpha(\mathcal{P}, \mathcal{Q})$.
+
+TODO
+\end{proof}
+
+
 \begin{lemma}\label{lem:logUtility_prod}
   \uses{def:logUtility, thm:numeraire_prod}
   \leanok
