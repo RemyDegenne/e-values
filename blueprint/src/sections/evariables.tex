@@ -292,9 +292,9 @@ Then
 \end{proof}
 
 
-\begin{lemma}\label{lem:logUtility_eq_top_of_measure_ne_zero}
-  \uses{def:logUtility}
-Suppose that there exists an event $A$ such that $P(A) > 0$ and $Q(A) = 0$ for all $Q \in \mathcal{Q}$.
+\begin{lemma}\label{lem:logUtility_eq_top_of_not_acSet}
+  \uses{def:logUtility, def:acSet}
+Suppose that there exists an event $A$ such that $P(A) > 0$ and $Q(A) = 0$ for all $Q \in \mathcal{Q}$. That is, we don't have $P \ll \mathcal{Q}$.
 Then
 \begin{align*}
   \mathcal{U}_{\log}(P, \mathcal{Q})
