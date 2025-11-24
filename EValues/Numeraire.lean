@@ -205,7 +205,10 @@ theorem eintegral_log_le (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
   · sorry
   · sorry
 
-theorem eintegral_log_le' (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
+lemma EReal.neg_div (a b : EReal) : - a / b = - (a / b) := by
+  rw [div_eq_mul_inv, div_eq_mul_inv, EReal.neg_mul]
+
+theorem eintegral_log_le' [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫ᵉ ω, ENNReal.log (Y ω) ∂μ ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ :=
   calc ∫ᵉ ω, ENNReal.log (Y ω) ∂μ
   _ ≤ ∫ᵉ ω, ENNReal.log (X ω) + (Y ω - X ω) * (if X ω = 0 then ⊤ else 1 / X ω) ∂μ := by
@@ -250,15 +253,34 @@ theorem eintegral_log_le' (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
           positivity
       _ ≤ 1 := mod_cast hX.lintegral_div_le_one hY
     · refine ne_bot_of_le_ne_bot (by norm_cast : (-1 : EReal) ≠ ⊥) ?_
-      sorry
-  _ ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := sorry
+      calc -1
+      _ = ∫ᵉ ω, -1 ∂μ := by simp
+      _ ≤ ∫ᵉ ω, - X ω / X ω ∂μ := by
+        gcongr
+        intro ω
+        simp only
+        by_cases hX0 : X ω = 0
+        · simp [hX0]
+        by_cases hX_top : X ω = ∞
+        · simp [hX_top]
+        rw [EReal.neg_div, EReal.div_self (by simp) (by simp [hX_top]) (by simp [hX0])]
+      _ ≤ ∫ᵉ ω, (Y ω - X ω) / X ω ∂μ := by
+        gcongr
+        intro ω
+        simp only
+        gcongr
+        sorry
+  _ ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by
+    conv_rhs => rw [← add_zero (∫ᵉ ω, ENNReal.log (X ω) ∂μ)]
+    gcongr
+    sorry
 
-lemma eintegral_log_nonneg (hX : IsNumeraire X S μ) :
+lemma eintegral_log_nonneg [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) :
     0 ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by
-  simpa using eintegral_log_le hX (isEVar_one S hX.isProbabilityMeasure_set)
+  simpa using eintegral_log_le' hX (isEVar_one S hX.isProbabilityMeasure_set)
 
 -- supposes that we don't need that fact to prove that a numeraire is log-optimal
-lemma eintegrable_log (hX : IsNumeraire X S μ) :
+lemma eintegrable_log [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) :
     eintegrable (fun ω ↦ ENNReal.log (X ω)) μ := by
   have h_nonneg := eintegral_log_nonneg hX
   by_contra h_false
