@@ -314,24 +314,32 @@ lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2
     field_simp
     ring
 
+lemma _root_.MeasurableEmbedding.maxUtility_map_eq [Nonempty 𝓧] (φ : 𝓧 → 𝓨)
+    (hφ : MeasurableEmbedding φ) (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
+    maxUtility (P.map φ) {μ.map φ | μ ∈ S} U = maxUtility P S U := by
+  have hφ_inv : hφ.invFun ∘ φ = id := by -- extract lemma
+    ext x
+    simp only [Function.comp_apply, id_eq]
+    rw [hφ.leftInverse_invFun]
+  apply le_antisymm (maxUtility_map_le P hφ.measurable)
+  have hP_eq : P = (P.map φ).map hφ.invFun := by
+    rw [Measure.map_map hφ.measurable_invFun hφ.measurable, hφ_inv, Measure.map_id]
+  have hS_eq : S = {μ.map hφ.invFun | μ ∈ {ν.map φ | ν ∈ S}} := by
+    ext μ
+    simp only [Set.mem_setOf_eq, exists_exists_and_eq_and]
+    refine ⟨fun hμ ↦ ?_, fun hμ ↦ ?_⟩
+    · refine ⟨μ, hμ, ?_⟩
+      rw [Measure.map_map hφ.measurable_invFun hφ.measurable, hφ_inv, Measure.map_id]
+    · obtain ⟨ν, hν, rfl⟩ := hμ
+      rwa [Measure.map_map hφ.measurable_invFun hφ.measurable, hφ_inv, Measure.map_id]
+  conv_lhs => rw [hP_eq, hS_eq]
+  exact maxUtility_map_le (P.map φ) hφ.measurable_invFun
+
 open unitInterval in
 lemma maxUtility_bernoulli_eq_unitInterval (P : Measure ({0, 1} : Set ℝ))
     (S : Set (Measure ({0, 1} : Set ℝ))) :
     maxUtility P S U = maxUtility (P.map doubleton) {μ.map doubleton | μ ∈ S} U := by
-  rw [maxUtility_eq_sSup, maxUtility_eq_sSup]
-  congr with y
-  constructor
-  · rintro ⟨X, hX, rfl⟩
-    refine ⟨X ∘ doubleton_inv, hX.bernoulli_imp_unitInterval S, ?_⟩
-    rw [eintegral_map (by fun_prop) (by fun_prop)]
-    have : ∀ a, doubleton_inv (doubleton a) = a := doubleton_left_inv
-    simp_rw [Function.comp_apply, this]
-  · rintro ⟨X, hX, rfl⟩
-    refine ⟨X ∘ doubleton, hX.unitInterval_imp_bernoulli S, ?_⟩
-    rw [eintegral_map ?_ (by fun_prop)]
-    · simp
-    · have := hX.measurable
-      fun_prop
+  rw [doubleton_emb.maxUtility_map_eq _ P S]
 
 open unitInterval in
 lemma maxUtility_unitInterval_le_bernoulli (P : Measure I) (S : Set (Measure ({0, 1} : Set ℝ))) :
