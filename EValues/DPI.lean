@@ -341,14 +341,5 @@ lemma maxUtility_bernoulli_eq_unitInterval (P : Measure ({0, 1} : Set ℝ))
     maxUtility P S U = maxUtility (P.map doubleton) {μ.map doubleton | μ ∈ S} U := by
   rw [doubleton_emb.maxUtility_map_eq _ P S]
 
-open unitInterval in
-lemma maxUtility_unitInterval_le_bernoulli (P : Measure I) (S : Set (Measure ({0, 1} : Set ℝ))) :
-    maxUtility (P.map doubleton_inv) S U ≤ maxUtility P {μ.map doubleton | μ ∈ S} U := by
-  rw [maxUtility_eq_sSup, maxUtility_eq_sSup]
-  refine sSup_le_sSup fun y ↦ ?_
-  rintro ⟨X, hX, rfl⟩
-  refine ⟨X ∘ doubleton_inv, hX.bernoulli_imp_unitInterval S, ?_⟩
-  rw [eintegral_map (by fun_prop) (by fun_prop)]
-  simp
 
 end ProbabilityTheory
