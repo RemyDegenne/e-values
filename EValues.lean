@@ -8,6 +8,7 @@ import EValues.Mathlib.ENNReal
 import EValues.Mathlib.EReal
 import EValues.Mathlib.Jensen
 import EValues.Mathlib.iSup
+import EValues.Mathlib.unitInterval
 import EValues.Numeraire
 import EValues.NumeraireExistence
 import EValues.Product

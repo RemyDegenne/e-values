@@ -6,6 +6,8 @@ Authors: Rémy Degenne, Gaëtan Serré
 import EValues.DPI
 import EValues.Product
 import EValues.Mathlib.iSup
+import EValues.Mathlib.unitInterval
+import Mathlib.MeasureTheory.Measure.GiryMonad
 
 /-!
 # E-Rényi divergence
@@ -517,6 +519,151 @@ lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
       rw [this, EReal.toENNReal_inv (by simp)]
       simp
     rw [this, ENNReal.mul_inv_cancel (by simp) (by simp)]
+
+open unitInterval in
+lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
+    erenyiDiv 2⁻¹ {μ : Measure I | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ a}
+        {μ : Measure I | IsProbabilityMeasure μ ∧ b ≤ ∫ x, (x : ℝ) ∂μ}
+      = erenyiDiv 2⁻¹ {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ a}
+        {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ b ≤ ∫ x, (x : ℝ) ∂μ} := by
+  set D₁ := {μ : Measure I | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ a}
+  set D₂ := {μ : Measure I | IsProbabilityMeasure μ ∧ b ≤ ∫ x, (x : ℝ) ∂μ}
+  set B₁ := {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ a}
+  set B₂ := {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ b ≤ ∫ x, (x : ℝ) ∂μ}
+  refine le_antisymm ?_ ?_
+  · trans erenyiDiv 2⁻¹ {μ.map doubleton | μ ∈ B₁} {μ.map doubleton | μ ∈ B₂}
+    swap
+    · exact erenyiDiv_map_le (by fun_prop)
+    · refine erenyiDiv_anti ?_ ?_
+      · rintro _ ⟨μ, hμ, rfl⟩
+        refine ⟨?_, ?_⟩
+        · haveI := hμ.1
+          exact μ.isProbabilityMeasure_map measurable_doubleton.aemeasurable
+        · have := hμ.2
+          rw [integral_map (by fun_prop) (by fun_prop)]
+          simp_all [doubleton]
+      · rintro _ ⟨μ, hμ, rfl⟩
+        refine ⟨?_, ?_⟩
+        · haveI := hμ.1
+          exact μ.isProbabilityMeasure_map measurable_doubleton.aemeasurable
+        · have := hμ.2
+          rw [integral_map (by fun_prop) (by fun_prop)]
+          simp_all [doubleton]
+  · let Ber (p : I) : Measure ({0, 1} : Set ℝ) :=
+      (ENNReal.ofReal p) • Measure.dirac ⟨1, by simp⟩ +
+        (ENNReal.ofReal (1 - p)) • Measure.dirac ⟨0, by simp⟩
+    haveI Ber_is_prob : ∀ p, IsProbabilityMeasure (Ber p) := by
+      intro p
+      refine isProbabilityMeasure_iff.mpr ?_
+      simp only [Measure.coe_add, Measure.coe_smul, Pi.add_apply, Pi.smul_apply, measure_univ,
+        smul_eq_mul, mul_one, Ber]
+      rw [← ENNReal.ofReal_add (by unit_interval) (by unit_interval)]
+      simp
+    let κ : Kernel I ({0, 1} : Set ℝ) := ⟨Ber, by fun_prop⟩
+    haveI : IsMarkovKernel κ := ⟨Ber_is_prob⟩
+    have κ_comp : ∀ μ, IsProbabilityMeasure μ → κ ∘ₘ (μ.map doubleton) = μ := by
+      intro μ hμ
+      ext S hS
+      rw [Measure.bind_apply hS (by fun_prop),
+        lintegral_map (Kernel.measurable_coe κ hS) (by fun_prop)]
+      rw [doubleton_lintegral]
+      simp only [doubleton, Set.Icc.mk_zero, Kernel.coe_mk, Set.Icc.coe_zero,
+        ENNReal.ofReal_zero, zero_smul, sub_zero, ENNReal.ofReal_one, one_smul, zero_add,
+        Measure.dirac_apply, Set.Icc.mk_one, Set.Icc.coe_one, sub_self, add_zero, κ, Ber]
+      by_cases h0 : ⟨0, by simp⟩ ∈ S <;> by_cases h1 : ⟨1, by simp⟩ ∈ S
+      · have : S = Set.univ := by grind
+        rw [this]
+        simp_all only [Set.mem_Icc, Subtype.forall, forall_and_index, MeasurableSet.univ,
+          Set.mem_univ, Set.indicator_of_mem, Pi.one_apply, mul_one, measure_univ]
+        rw [← measure_union (by simp) (by simp), doubleton_union_univ]
+        simp
+      · have : S = {⟨0, by simp⟩} := by grind
+        simp_all
+      · have : S = {⟨1, by simp⟩} := by grind
+        simp_all
+      · have : S = ∅ := by grind
+        simp_all
+    have B₁_eq_κ_comp : B₁ = {κ ∘ₘ μ | μ ∈ D₁} := by
+      ext μ
+      constructor
+      · rintro ⟨hμ_prob, hμ_int⟩
+        refine ⟨μ.map doubleton, ?_, κ_comp μ hμ_prob⟩
+        · refine ⟨μ.isProbabilityMeasure_map measurable_doubleton.aemeasurable, ?_⟩
+          rw [integral_map (by fun_prop) (by fun_prop)]
+          simp_all [doubleton]
+      · rintro ⟨ν, hν, rfl⟩
+        refine ⟨?_, ?_⟩
+        · have := hν.1
+          infer_instance
+        · obtain ⟨hν_prob, hν⟩ := hν
+          rw [integral_eq_lintegral_of_nonneg_ae] at ⊢ hν
+          · rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
+            trans (∫⁻ (x : I), ENNReal.ofReal x ∂ν).toReal
+            · gcongr with b
+              · apply ne_of_lt
+                calc
+                _ ≤ ∫⁻ x, 1 ∂ν := by
+                  refine lintegral_mono fun x ↦ ?_
+                  simp only [ENNReal.ofReal_le_one]
+                  unit_interval
+                _ = (1 : ℝ≥0∞) := by simp
+                _ < ⊤ := by simp
+              · rw [doubleton_lintegral]
+                simp [κ, Ber]
+            · exact hν
+          · apply ae_of_all
+            intro x
+            cases x.2 with
+            | inl hx0 => simp_all
+            | inr hx1 => simp_all
+          · fun_prop
+          · apply ae_of_all
+            intro x
+            unit_interval
+          · fun_prop
+    rw [B₁_eq_κ_comp]
+    have B₂_eq_κ_comp : B₂ = {κ ∘ₘ μ | μ ∈ D₂} := by
+      ext μ
+      constructor
+      · rintro ⟨hμ_prob, hμ_int⟩
+        refine ⟨μ.map doubleton, ?_, κ_comp μ hμ_prob⟩
+        · refine ⟨μ.isProbabilityMeasure_map measurable_doubleton.aemeasurable, ?_⟩
+          rw [integral_map (by fun_prop) (by fun_prop)]
+          simp_all [doubleton]
+      · rintro ⟨ν, hν, rfl⟩
+        refine ⟨?_, ?_⟩
+        · have := hν.1
+          infer_instance
+        · obtain ⟨hν_prob, hν⟩ := hν
+          rw [integral_eq_lintegral_of_nonneg_ae] at ⊢ hν
+          · rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
+            trans (∫⁻ (x : I), ENNReal.ofReal x ∂ν).toReal
+            · exact hν
+            · gcongr with b
+              · apply ne_of_lt
+                calc
+                _ ≤ ∫⁻ x, ∫⁻ y, 1 ∂(κ x) ∂ν := by
+                  refine lintegral_mono fun x ↦ lintegral_mono fun y ↦ ?_
+                  rw [ENNReal.ofReal_le_one]
+                  cases y.2 with
+                  | inl hy0 => simp_all
+                  | inr hy1 => simp_all
+                _ = (1 : ℝ≥0∞) := by simp
+                _ < ⊤ := by simp
+              · rw [doubleton_lintegral]
+                simp [κ, Ber]
+          · apply ae_of_all
+            intro x
+            cases x.2 with
+            | inl hx0 => simp_all
+            | inr hx1 => simp_all
+          · fun_prop
+          · apply ae_of_all
+            intro x
+            unit_interval
+          · fun_prop
+    rw [B₂_eq_κ_comp]
+    exact erenyiDiv_comp_le κ
 
 -- todo: rename
 theorem main_result_one_sample {f : 𝓧 → ℝ≥0∞} (hf : Measurable f) (hf_le : ∀ x, f x ≤ 1)
