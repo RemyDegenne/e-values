@@ -62,6 +62,24 @@ Then
 \end{proof}
 
 
+\begin{lemma}\label{lem:erenyiDiv_comp_le}
+  \uses{def:erenyiDiv}
+  \leanok
+  \lean{ProbabilityTheory.erenyiDiv_comp_le}
+Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
+\begin{align*}
+  \eR_\alpha(\kappa \circ \mathcal{P}, \kappa \circ \mathcal{Q})
+  &\le \eR_\alpha(\mathcal{P}, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:logUtility_comp_le}
+
+\end{proof}
+
+
 \begin{lemma}\label{lem:erenyiDiv_map_le}
   \uses{def:erenyiDiv}
   \leanok
@@ -75,19 +93,19 @@ Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
 \end{lemma}
 
 \begin{proof}\leanok
-  \uses{lem:logUtility_map_le}
+  \uses{lem:erenyiDiv_comp_le}
 
 \end{proof}
 
 
-\begin{lemma}\label{lem:erenyiDiv_comp_le}
-  \uses{def:erenyiDiv}
+\begin{lemma}\label{lem:echernoffDiv_comp_le}
+  \uses{def:echernoffDiv}
   \leanok
-  \lean{ProbabilityTheory.erenyiDiv_comp_le}
+  \lean{ProbabilityTheory.echernoffDiv_comp_le}
 Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
 \begin{align*}
-  \eR_\alpha(\kappa \circ \mathcal{P}, \kappa \circ \mathcal{Q})
-  &\le \eR_\alpha(\mathcal{P}, \mathcal{Q})
+  \eC_\alpha(\kappa \circ \mathcal{P}, \kappa \circ \mathcal{Q})
+  &\le \eC_\alpha(\mathcal{P}, \mathcal{Q})
   \: .
 \end{align*}
 \end{lemma}
@@ -111,25 +129,7 @@ Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable map. Then
 \end{lemma}
 
 \begin{proof}\leanok
-  \uses{lem:logUtility_map_le}
-
-\end{proof}
-
-
-\begin{lemma}\label{lem:echernoffDiv_comp_le}
-  \uses{def:echernoffDiv}
-  \leanok
-  \lean{ProbabilityTheory.echernoffDiv_comp_le}
-Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
-\begin{align*}
-  \eC_\alpha(\kappa \circ \mathcal{P}, \kappa \circ \mathcal{Q})
-  &\le \eC_\alpha(\mathcal{P}, \mathcal{Q})
-  \: .
-\end{align*}
-\end{lemma}
-
-\begin{proof}\leanok
-  \uses{lem:logUtility_comp_le}
+  \uses{lem:echernoffDiv_comp_le}
 
 \end{proof}
 
