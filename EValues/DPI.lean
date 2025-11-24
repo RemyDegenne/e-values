@@ -335,11 +335,4 @@ lemma _root_.MeasurableEmbedding.maxUtility_map_eq [Nonempty 𝓧] (φ : 𝓧 �
   conv_lhs => rw [hP_eq, hS_eq]
   exact maxUtility_map_le (P.map φ) hφ.measurable_invFun
 
-open unitInterval in
-lemma maxUtility_bernoulli_eq_unitInterval (P : Measure ({0, 1} : Set ℝ))
-    (S : Set (Measure ({0, 1} : Set ℝ))) :
-    maxUtility P S U = maxUtility (P.map doubleton) {μ.map doubleton | μ ∈ S} U := by
-  rw [doubleton_emb.maxUtility_map_eq _ P S]
-
-
 end ProbabilityTheory

@@ -81,13 +81,4 @@ lemma doubleton_emb : MeasurableEmbedding doubleton where
 @[fun_prop]
 lemma measurable_doubleton : Measurable doubleton := doubleton_emb.measurable
 
-/-- Define an inverse from the unit interval I to the doubleton set {0, 1} -/
-noncomputable def doubleton_inv := doubleton_emb.invFun
-
-@[fun_prop]
-lemma measurable_doubleton_inv : Measurable doubleton_inv := doubleton_emb.measurable_invFun
-
-lemma doubleton_left_inv : Function.LeftInverse doubleton_inv doubleton :=
-  doubleton_emb.leftInverse_invFun
-
 end unitInterval
