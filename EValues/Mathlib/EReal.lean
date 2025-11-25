@@ -5,6 +5,7 @@ Authors: Gaëtan Serré
 -/
 
 import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLog
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Real
 
 open ENNReal
 
@@ -177,3 +178,50 @@ lemma EReal.mul_sub_of_eq_zero {a b c : EReal} (h : b = 0 ∨ c = 0) :
   cases h with
   | inl hb => simp [hb]
   | inr hc => simp [hc]
+
+lemma EReal.ne_bot_of_nonneg {a : EReal} (ha : 0 ≤ a) : a ≠ ⊥ := by
+  intro h_false
+  simp [h_false] at ha
+
+lemma EReal.neg_div (a b : EReal) : - a / b = - (a / b) := by
+  rw [div_eq_mul_inv, div_eq_mul_inv, EReal.neg_mul]
+
+@[simp]
+lemma EReal.toENNReal_one : (1 : EReal).toENNReal = 1 := by
+  have : (1 : EReal) = (1 : ℝ≥0∞) := rfl
+  rw [this, EReal.toENNReal_coe]
+
+lemma EReal.coe_ennreal_div {a b : ℝ≥0∞} (hb_zero : b ≠ 0) :
+    ((a / b : ℝ≥0∞) : EReal) = (a : EReal) / (b : EReal) := by
+  by_cases hb_top : b = ∞
+  · simp [hb_top]
+  by_cases ha_top : a = ∞
+  · simp only [ha_top, EReal.coe_ennreal_top]
+    rw [EReal.top_div_of_pos_ne_top, ENNReal.top_div_of_ne_top]
+    · simp
+    · exact hb_top
+    · simpa [pos_iff_ne_zero] using hb_zero
+    · simpa
+  have ha : a = ENNReal.ofReal a.toReal := by rw [ENNReal.ofReal_toReal ha_top]
+  have hb : b = ENNReal.ofReal b.toReal := by rw [ENNReal.ofReal_toReal hb_top]
+  rw [ha, hb]
+  rw [← ENNReal.ofReal_div_of_pos (ENNReal.toReal_pos hb_zero hb_top)]
+  simp only [EReal.coe_ennreal_ofReal]
+  rw [max_eq_left (by positivity), max_eq_left (by positivity), max_eq_left (by positivity),
+    EReal.coe_div]
+
+lemma EReal.coe_ennreal_inv {a : ℝ≥0∞} (ha : a ≠ 0) : ((a⁻¹ : ℝ≥0∞) : EReal) = (a : EReal)⁻¹ := by
+  by_cases ha_top : a = ⊤
+  · simp [ha_top]
+  have ha_eq : a = ENNReal.ofReal a.toReal := by rw [ENNReal.ofReal_toReal ha_top]
+  have ha_pos : 0 < a.toReal := ENNReal.toReal_pos ha ha_top
+  rw [ha_eq, EReal.coe_ennreal_ofReal, ← ENNReal.ofReal_inv_of_pos ha_pos, EReal.coe_ennreal_ofReal]
+  simp only [inv_nonneg, ENNReal.toReal_nonneg, sup_of_le_left]
+  rw [EReal.coe_inv]
+
+instance : MeasurableInv EReal where
+  measurable_inv := by
+    refine EReal.measurable_of_measurable_real ?_
+    simp_rw [← EReal.coe_inv]
+    change Measurable (Real.toEReal ∘ _)
+    exact Measurable.comp measurable_coe_real_ereal (by fun_prop)

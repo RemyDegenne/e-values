@@ -357,10 +357,6 @@ lemma eintegral_add_of_nonneg' {f g : α → EReal}
   · filter_upwards [hg_meas.ae_eq_mk, hg] with x hgx hgx_nonneg
     rwa [← hgx]
 
-lemma EReal.ne_bot_of_nonneg {a : EReal} (ha : 0 ≤ a) : a ≠ ⊥ := by
-  intro h_false
-  simp [h_false] at ha
-
 lemma eintegral_sub_of_nonneg {f g : α → EReal} (hf : ∀ x, 0 ≤ f x) (hg : ∀ x, 0 ≤ g x)
     (hf_meas : AEMeasurable f μ) (hg_meas : AEMeasurable g μ)
     (hfg : ∫ᵉ x, min (f x) (g x) ∂μ ≠ ⊤) :
