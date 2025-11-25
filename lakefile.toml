@@ -19,8 +19,3 @@ git = "https://github.com/PatrickMassot/checkdecls.git"
 
 [[lean_lib]]
 name = "EValues"
-
-[[require]]
-name = "batteries"
-scope = "leanprover-community"
-rev = "main"
