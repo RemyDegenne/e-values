@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré, Rémy Degenne
 -/
 import Mathlib.MeasureTheory.Measure.Prod
-import Mathlib.Probability.Kernel.Composition.Lemmas
+import Mathlib.Probability.Kernel.Composition.MeasureComp
 import EValues.Mathlib.EReal
 
 open ProbabilityTheory
