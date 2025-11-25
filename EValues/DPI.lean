@@ -118,7 +118,8 @@ lemma maxUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kerne
   rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _]
   exact maxRandUtility_comp_le P κ
 
-lemma IsNumeraire.maxUtility_eq_integral {X : 𝓧 → ℝ≥0∞} (hX : IsNumeraire X S P) :
+lemma IsNumeraire.maxUtility_eq_integral [IsProbabilityMeasure P]
+    {X : 𝓧 → ℝ≥0∞} (hX : IsNumeraire X S P) :
     maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (X x) ∂P := by
   refine le_antisymm ?_ ?_
   · simp only [maxUtility]
