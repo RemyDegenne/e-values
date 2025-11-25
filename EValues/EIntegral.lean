@@ -46,6 +46,16 @@ lemma eintegrable.neg {f : α → EReal} (hf : eintegrable f μ) : eintegrable (
   | inl h => right; simpa
   | inr h => left; simpa
 
+lemma eintegrable_map {β : Type*} {mβ : MeasurableSpace β} {f : α → β} {g : β → EReal}
+    (hf : AEMeasurable f μ) (hg : AEMeasurable g (Measure.map f μ)) :
+     eintegrable g (μ.map f) ↔ eintegrable (g ∘ f) μ := by
+  unfold eintegrable
+  congr!
+  · rw [lintegral_map' (by fun_prop) hf]
+    rfl
+  · rw [lintegral_map' (by fun_prop) hf]
+    rfl
+
 @[simp]
 lemma eintegral_of_not_eintegrable {f : α → EReal} (hf : ¬ eintegrable f μ) :
     ∫ᵉ x, f x ∂μ = ⊥ := by
