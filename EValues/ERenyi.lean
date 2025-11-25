@@ -8,6 +8,7 @@ import EValues.Product
 import EValues.Mathlib.iSup
 import EValues.Mathlib.unitInterval
 import Mathlib.MeasureTheory.Measure.GiryMonad
+import EValues.FindAxioms
 
 /-!
 # E-Rényi divergence
@@ -699,5 +700,7 @@ theorem erenyiDiv_ge_of_separated {f : 𝓧 → I} (hf : Measurable f)
       rw [integral_map (hf.aemeasurable) (by fun_prop)]
       exact hTf ν hνT
   _ ≤ erenyiDiv 2⁻¹ S T := erenyiDiv_map_le hf
+
+#axiom_blame erenyiDiv_ge_of_separated
 
 end ProbabilityTheory
