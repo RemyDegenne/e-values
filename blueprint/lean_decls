@@ -38,3 +38,4 @@ ProbabilityTheory.isEVar_bernoulli_le_iff
 ProbabilityTheory.maxUtility_bernoulli_half_le
 ProbabilityTheory.erenyiDiv_bernoulli
 ProbabilityTheory.erenyiDiv_bounded
+ProbabilityTheory.erenyiDiv_ge_of_separated
