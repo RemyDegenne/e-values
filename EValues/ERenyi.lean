@@ -674,12 +674,30 @@ lemma erenyiDiv_bounded {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
       ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ)))) := by
   rw [erenyiDiv_bounded_eq_erenyiDiv_bernoulli, erenyiDiv_bernoulli hδ_pos hδ]
 
--- todo: rename
-theorem main_result_one_sample {f : 𝓧 → ℝ≥0∞} (hf : Measurable f) (hf_le : ∀ x, f x ≤ 1)
+open unitInterval in
+theorem erenyiDiv_ge_of_separated {f : 𝓧 → I} (hf : Measurable f)
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
-    {δ : ℝ≥0∞}
-    (hSf : ∀ μ ∈ S, ∫⁻ ω, f ω ∂μ ≤ δ) (hTf : ∀ ν ∈ T, 1 - δ ≤ ∫⁻ ω, f ω ∂ν) :
-    ENNReal.ofReal (Real.log (1 / (4 * δ.toReal * (1 - δ).toReal))) ≤ erenyiDiv 2⁻¹ S T := by
-  sorry
+    {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹)
+    (hSf : ∀ μ ∈ S, ∫ ω, (f ω : ℝ) ∂μ ≤ δ) (hTf : ∀ ν ∈ T, 1 - δ ≤ ∫ ω, (f ω : ℝ) ∂ν) :
+    ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ)))) ≤ erenyiDiv 2⁻¹ S T :=
+  calc ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ))))
+  _ = erenyiDiv 2⁻¹ {μ : Measure I | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ}
+        {μ : Measure I | IsProbabilityMeasure μ ∧ 1 - δ ≤ ∫ x, (x : ℝ) ∂μ} := by
+    rw [← erenyiDiv_bounded hδ_pos hδ]
+  _ ≤ erenyiDiv 2⁻¹ {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} := by
+    refine erenyiDiv_anti ?_ ?_
+    · rintro μ ⟨ν, hνS, rfl⟩
+      constructor
+      · have := hS ν hνS
+        exact Measure.isProbabilityMeasure_map (hf.aemeasurable)
+      rw [integral_map (hf.aemeasurable) (by fun_prop)]
+      exact hSf ν hνS
+    · rintro μ ⟨ν, hνT, rfl⟩
+      constructor
+      · have := hT ν hνT
+        exact Measure.isProbabilityMeasure_map (hf.aemeasurable)
+      rw [integral_map (hf.aemeasurable) (by fun_prop)]
+      exact hTf ν hνT
+  _ ≤ erenyiDiv 2⁻¹ S T := erenyiDiv_map_le hf
 
 end ProbabilityTheory
