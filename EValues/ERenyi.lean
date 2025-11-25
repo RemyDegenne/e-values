@@ -674,9 +674,8 @@ lemma erenyiDiv_bounded {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
       ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ)))) := by
   rw [erenyiDiv_bounded_eq_erenyiDiv_bernoulli, erenyiDiv_bernoulli hδ_pos hδ]
 
--- todo: rename
 open unitInterval in
-theorem main_result_one_sample {f : 𝓧 → I} (hf : Measurable f)
+theorem erenyiDiv_ge_of_separated {f : 𝓧 → I} (hf : Measurable f)
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
     {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹)
     (hSf : ∀ μ ∈ S, ∫ ω, (f ω : ℝ) ∂μ ≤ δ) (hTf : ∀ ν ∈ T, 1 - δ ≤ ∫ ω, (f ω : ℝ) ∂ν) :

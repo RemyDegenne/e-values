@@ -162,6 +162,8 @@ We now use Lemma~\ref{lem:erenyiDiv_bernoulli} to conclude.
 
 \begin{theorem}\label{thm:erenyiDiv_lower_bound}
   \uses{def:erenyiDiv}
+  \leanok
+  \lean{ProbabilityTheory.erenyiDiv_ge_of_separated}
 Let $\mathcal{P},\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be two sets of probability measures.
 Suppose that there exists a measurable function $f_0 : \mathcal{X} \to \mathbb{R}_{+,\infty}$ which is less than 1 and $\delta \in [0,1/2]$ such that
 \begin{align*}
@@ -178,7 +180,7 @@ Then
 \end{align*}
 \end{theorem}
 
-\begin{proof}
+\begin{proof}\leanok
   \uses{lem:erenyiDiv_bounded, lem:erenyiDiv_map_le, lem:erenyiDiv_anti}
 By Lemma~\ref{lem:erenyiDiv_map_le} for the function $f_0$, we have
 \begin{align*}
