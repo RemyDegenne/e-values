@@ -10,12 +10,18 @@ open Lean Elab Command
 
 namespace CollectAxiomBlame
 
+/-- The state for collecting axiom blame information. -/
 structure State where
+  /-- The set of already visited constants. -/
   visited : NameSet      := {}
+  /-- The map from axioms to the list of declarations that depend on them. -/
   axioms  : NameMap (List Name) := {}
 
+/-- The type for collecting axiom blame information. -/
 abbrev M := ReaderT Environment <| StateM State
 
+/-- Recursively collect the axioms that a declaration depends on, along with the chain of
+declarations that lead to each axiom. -/
 partial def collect (src : List Name) (c : Name) : M Unit := do
   let collectExpr (src' : List Name) (e : Expr) : M Unit := e.getUsedConstants.forM (collect src')
   let s ← get
