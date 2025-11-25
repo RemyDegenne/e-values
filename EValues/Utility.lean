@@ -7,6 +7,7 @@ import EValues.EIntegral
 import EValues.Mathlib.Convex
 import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.Analysis.Calculus.ContDiff.Defs
+import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
 
 /-!
@@ -87,7 +88,8 @@ noncomputable def logUtility : Utility where
   differentiable' := by
     have h_eq x (hx : 0 < x) : (ENNReal.log (ENNReal.ofReal x)).toReal = Real.log x := by
       simp [ENNReal.log_ofReal, not_le.mpr hx]
-    have h_diff : ContDiffOn ℝ 1 Real.log (Set.Ioi 0) := sorry
+    have h_diff : ContDiffOn ℝ 1 Real.log (Set.Ioi 0) :=
+      analyticOn_log.contDiffOn (uniqueDiffOn_Ioi 0)
     exact ContDiffOn.congr h_diff h_eq
 
 @[simp]

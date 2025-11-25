@@ -193,20 +193,125 @@ theorem eintegral_log_div_nonpos (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
 /-- A Numeraire maximizes the integral of the logarithm. -/
 theorem eintegral_log_le (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫ᵉ ω, ENNReal.log (Y ω) ∂μ ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by
+  by_cases hY_bot : ∫ᵉ ω, ENNReal.log (Y ω) ∂μ = ⊥
+  · simp [hY_bot]
+  by_cases hX_top : ∫ᵉ ω, ENNReal.log (X ω) ∂μ = ⊤
+  · simp [hX_top]
+  have hY_int : eintegrable (fun ω ↦ ENNReal.log (Y ω)) μ := by
+    by_contra h_false
+    simp [eintegral_of_not_eintegrable h_false] at hY_bot
   have h_nonpos := eintegral_log_div_nonpos hX hY
   simp_rw [ENNReal.log_div] at h_nonpos
-  rwa [eintegral_sub, EReal.sub_nonpos] at h_nonpos
-  · sorry
+  rwa [eintegral_sub hY_int, EReal.sub_nonpos] at h_nonpos
   · have := hY.measurable
     fun_prop
   · sorry -- might not be true.
   · have := hX.measurable
     fun_prop
-  · sorry
-  · sorry
+  · simp [hX_top]
+  · simp [hY_bot]
 
 lemma EReal.neg_div (a b : EReal) : - a / b = - (a / b) := by
   rw [div_eq_mul_inv, div_eq_mul_inv, EReal.neg_mul]
+
+@[simp]
+lemma EReal.toENNReal_one : (1 : EReal).toENNReal = 1 := by
+  have : (1 : EReal) = (1 : ℝ≥0∞) := rfl
+  rw [this, EReal.toENNReal_coe]
+
+lemma EReal.coe_ennreal_div {a b : ℝ≥0∞} (hb_zero : b ≠ 0) :
+    ((a / b : ℝ≥0∞) : EReal) = (a : EReal) / (b : EReal) := by
+  by_cases hb_top : b = ∞
+  · simp [hb_top]
+  by_cases ha_top : a = ∞
+  · simp only [ha_top, EReal.coe_ennreal_top]
+    rw [EReal.top_div_of_pos_ne_top, ENNReal.top_div_of_ne_top]
+    · simp
+    · exact hb_top
+    · simpa [pos_iff_ne_zero] using hb_zero
+    · simpa
+  sorry
+
+-- it would be easy to prove ≤ 1 instead of ≤ 0
+lemma eintegral_sub_div_nonpos (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
+    ∫ᵉ ω, (Y ω - X ω) / X ω ∂μ ≤ 0 := by
+  have h_eq : ∀ᵐ ω ∂μ, X ω ≠ ⊤ → ((Y ω : EReal) - X ω) / X ω = (Y ω / X ω : ℝ≥0∞) - 1 := by
+    filter_upwards [hX.ae_ne_zero, ae_top_implies_numeraire_top hX hY] with ω hX0 h_imp_top hX_top
+    have hY_top : Y ω ≠ ∞ := fun h_false ↦ hX_top <| h_imp_top h_false
+    have hX_eq : (X ω : EReal) = (X ω).toReal := by rw [EReal.coe_ennreal_toReal hX_top]
+    have hY_eq : (Y ω : EReal) = (Y ω).toReal := by rw [EReal.coe_ennreal_toReal hY_top]
+    rw [EReal.coe_ennreal_div hX0, hX_eq, hY_eq]
+    norm_cast
+    rw [← EReal.coe_div, ← EReal.coe_div]
+    have hX_ne_zero : (X ω).toReal ≠ 0 := by simp [ENNReal.toReal_eq_zero_iff, hX0, hX_top]
+    simp [sub_div, div_self hX_ne_zero]
+  sorry -- is this true?
+
+theorem eintegral_log_nonneg' [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) :
+    0 ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by
+  have hX_meas := hX.measurable
+  have hY : IsEVar (fun _ ↦ 1) S := isEVar_one S hX.isProbabilityMeasure_set
+  calc 0
+  _ = ∫ᵉ ω, ENNReal.log 1 ∂μ := by simp
+  _ ≤ ∫ᵉ ω, ENNReal.log (X ω) + (1 - X ω) * (if X ω = 0 then ⊤ else 1 / X ω) ∂μ := by
+    refine eintegral_mono_ae ?_
+    filter_upwards [hX.ae_ne_zero] with ω hω
+    rw [← deriv_logUtility]
+    sorry -- concavity
+  _ = ∫ᵉ ω, ENNReal.log (X ω) + (1 - X ω) / X ω ∂μ := by
+    refine eintegral_congr_ae ?_
+    filter_upwards [hX.ae_ne_zero] with ω hω
+    congr
+    simp only [hω, ↓reduceIte, one_div]
+    rw [← EReal.inv_coe_ennreal hω]
+    rfl
+  _ = ∫ᵉ ω, ENNReal.log (X ω) ∂μ + ∫ᵉ ω, (1 - X ω) / X ω ∂μ := by
+    rw [eintegral_add']
+    · fun_prop
+    · refine Measurable.aemeasurable ?_
+      sorry
+    · refine ne_top_of_le_ne_top (by norm_cast : (1 : EReal) ≠ ⊤) ?_
+      calc ∫ᵉ ω, (1 - X ω) / X ω ∂μ
+      _ ≤ ∫ᵉ ω, 1 / X ω ∂μ := by
+        refine eintegral_mono ?_
+        intro ω
+        simp only
+        gcongr
+        sorry
+      _ = ∫⁻ ω, 1 / X ω ∂μ := by
+        rw [eintegral_of_nonneg]
+        · congr 1
+          refine lintegral_congr_ae ?_
+          filter_upwards [hX.ae_ne_zero] with ω hω
+          rw [div_eq_mul_inv, EReal.toENNReal_mul, EReal.toENNReal_one, EReal.toENNReal_inv,
+            EReal.toENNReal_coe, div_eq_mul_inv]
+          · positivity
+          · positivity
+        · intro x
+          positivity
+      _ ≤ 1 := mod_cast hX.lintegral_div_le_one hY
+    · refine ne_bot_of_le_ne_bot (by norm_cast : (-1 : EReal) ≠ ⊥) ?_
+      calc -1
+      _ = ∫ᵉ ω, -1 ∂μ := by simp
+      _ ≤ ∫ᵉ ω, - X ω / X ω ∂μ := by
+        gcongr
+        intro ω
+        simp only
+        by_cases hX0 : X ω = 0
+        · simp [hX0]
+        by_cases hX_top : X ω = ∞
+        · simp [hX_top]
+        rw [EReal.neg_div, EReal.div_self (by simp) (by simp [hX_top]) (by simp [hX0])]
+      _ ≤ ∫ᵉ ω, (1 - X ω) / X ω ∂μ := by
+        gcongr
+        intro ω
+        simp only
+        gcongr
+        sorry
+  _ ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by
+    conv_rhs => rw [← add_zero (∫ᵉ ω, ENNReal.log (X ω) ∂μ)]
+    gcongr
+    sorry
 
 theorem eintegral_log_le' [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫ᵉ ω, ENNReal.log (Y ω) ∂μ ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ :=
