@@ -4,8 +4,10 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré, Rémy Degenne
 -/
 import Mathlib.MeasureTheory.Measure.Prod
+import Mathlib.Probability.Kernel.Composition.MeasureComp
 import EValues.Mathlib.EReal
 
+open ProbabilityTheory
 open scoped ENNReal
 
 namespace MeasureTheory
@@ -813,13 +815,82 @@ lemma eintegral_lintegral_toEReal {β : Type*} {mβ : MeasurableSpace β} {m : �
   simp_rw [this]
   simp
 
-theorem eintegral_bind {β : Type*} {mβ : MeasurableSpace β} {m : α → Measure β} {f : β → EReal}
+lemma eintegral_bind_of_nonneg {β : Type*} {mβ : MeasurableSpace β} {m : α → Measure β}
+    {f : β → EReal} (hf_nonneg : ∀ x, 0 ≤ f x)
     (hμ : AEMeasurable m μ) (hf : AEMeasurable f (μ.bind m)) :
     ∫ᵉ x, f x ∂μ.bind m = ∫ᵉ a, ∫ᵉ x, f x ∂m a ∂μ := by
-  simp only [eintegral]
-  rw [μ.lintegral_bind hμ (by fun_prop)]
-  rw [μ.lintegral_bind hμ (by fun_prop)]
-  sorry
+  rw [eintegral_of_nonneg hf_nonneg, μ.lintegral_bind hμ (by fun_prop), eintegral_of_nonneg]
+  swap; · exact fun _ ↦ eintegral_nonneg hf_nonneg
+  congr with x
+  rw [eintegral_of_nonneg hf_nonneg]
+  simp_rw [EReal.toENNReal_coe]
+
+theorem eintegral_comp_measure {β : Type*} {mβ : MeasurableSpace β} {κ : Kernel α β} {f : β → EReal}
+    (hf : Measurable f) (hf_int : eintegrable f (κ ∘ₘ μ)) :
+    ∫ᵉ x, f x ∂(κ ∘ₘ μ) = ∫ᵉ a, ∫ᵉ x, f x ∂κ a ∂μ := by
+  let f₁ := fun x ↦ max (f x) 0
+  let f₂ := fun x ↦ - min (f x) 0
+  have hf₁ x : 0 ≤ f₁ x := by simp [f₁]
+  have hf₂ x : 0 ≤ f₂ x := by simp [f₂]
+  have h_or x : f₁ x = 0 ∨ f₂ x = 0 := by
+    rcases le_total 0 (f x) with h | h <;> simp [f₁, f₂, h]
+  have h_eq x : f x = f₁ x - f₂ x := by
+    rcases le_total 0 (f x) with h | h <;> simp [f₁, f₂, h]
+  have hf_int_eq : ∫ᵉ x, f x ∂(κ ∘ₘ μ) = ∫ᵉ x, f₁ x ∂(κ ∘ₘ μ) - ∫ᵉ x, f₂ x ∂(κ ∘ₘ μ) := by
+    rw [← eintegral_sub_of_nonneg_of_eq_zero hf₁ hf₂ h_or]
+    simp_rw [h_eq]
+  have hf_int_or : ∫ᵉ x, f₁ x ∂(κ ∘ₘ μ) ≠ ⊤ ∨ ∫ᵉ x, f₂ x ∂(κ ∘ₘ μ) ≠ ⊤ := by
+    unfold eintegrable at hf_int
+    rcases hf_int with h | h
+    · left
+      rw [eintegral_of_nonneg hf₁]
+      simp only [ne_eq, EReal.coe_ennreal_eq_top_iff, f₁]
+      convert h using 4 with x
+      rcases le_total 0 (f x) with h | h <;> simp [h]
+    · right
+      rw [eintegral_of_nonneg hf₂]
+      simp only [ne_eq, EReal.coe_ennreal_eq_top_iff, f₂]
+      convert h using 4 with x
+      rcases le_total 0 (f x) with h | h <;> simp [h]
+  rw [hf_int_eq, eintegral_bind_of_nonneg hf₁ κ.aemeasurable,
+    eintegral_bind_of_nonneg hf₂ κ.aemeasurable]
+  rotate_left
+  · unfold f₂; fun_prop
+  · unfold f₁; fun_prop
+  rw [← eintegral_sub_of_nonneg]
+  rotate_left
+  · exact fun _ ↦ eintegral_nonneg (fun _ ↦ hf₁ _)
+  · exact fun _ ↦ eintegral_nonneg (fun _ ↦ hf₂ _)
+  · simp_rw [eintegral_of_nonneg hf₁]
+    suffices AEMeasurable (fun a ↦ ∫⁻ x, (f₁ x).toENNReal ∂κ a) μ by fun_prop
+    exact (Measurable.lintegral_kernel (by fun_prop)).aemeasurable
+  · simp_rw [eintegral_of_nonneg hf₂]
+    suffices AEMeasurable (fun a ↦ ∫⁻ x, (f₂ x).toENNReal ∂κ a) μ by fun_prop
+    exact (Measurable.lintegral_kernel (by fun_prop)).aemeasurable
+  · refine ne_of_lt ?_
+    cases hf_int_or with
+    | inl h =>
+      calc ∫ᵉ x, min (∫ᵉ y, f₁ y ∂κ x) (∫ᵉ y, f₂ y ∂κ x) ∂μ
+      _ ≤ ∫ᵉ x, ∫ᵉ y, f₁ y ∂κ x ∂μ := eintegral_mono (fun _ ↦ min_le_left _ _)
+      _ = ∫ᵉ p, f₁ p ∂(κ ∘ₘ μ) := by
+        rw [eintegral_bind_of_nonneg hf₁ κ.aemeasurable (by fun_prop)]
+      _ < ⊤ := h.lt_top
+    | inr h =>
+      calc ∫ᵉ x, min (∫ᵉ y, f₁ y ∂κ x) (∫ᵉ y, f₂ y ∂κ x) ∂μ
+      _ ≤ ∫ᵉ x, ∫ᵉ y, f₂ y ∂κ x ∂μ := eintegral_mono (fun _ ↦ min_le_right _ _)
+      _ = ∫ᵉ p, f₂ p ∂(κ ∘ₘ μ) := by
+        rw [eintegral_bind_of_nonneg hf₂ κ.aemeasurable (by fun_prop)]
+      _ < ⊤ := h.lt_top
+  congr with x
+  rw [← eintegral_sub_of_nonneg_of_eq_zero hf₁ hf₂ h_or]
+  simp_rw [h_eq]
+
+lemma eintegral_comp_measure_le {β : Type*} {mβ : MeasurableSpace β} {κ : Kernel α β}
+    {f : β → EReal} (hf : Measurable f) :
+    ∫ᵉ x, f x ∂(κ ∘ₘ μ) ≤ ∫ᵉ a, ∫ᵉ x, f x ∂κ a ∂μ := by
+  by_cases hf_int : eintegrable f (κ ∘ₘ μ)
+  · rw [eintegral_comp_measure hf hf_int]
+  simp [eintegral_of_not_eintegrable hf_int]
 
 lemma eintegral_add_measure {ν : Measure α} (f : α → EReal) :
     ∫ᵉ x, f x ∂(μ + ν) = ∫ᵉ x, f x ∂μ + ∫ᵉ x, f x ∂ν := by
