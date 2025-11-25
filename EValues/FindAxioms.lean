@@ -37,6 +37,7 @@ partial def collect (src : List Name) (c : Name) : M Unit := do
 
 end CollectAxiomBlame
 
+/-- Command to find which axioms a declaration depends on and where they are used in the proof. -/
 elab "#axiom_blame " id:ident : command => Elab.Command.liftTermElabM do
   let n ← Elab.realizeGlobalConstNoOverloadWithInfo id
   Elab.addCompletionInfo <| .id id id.getId (danglingDot := false) {} none
