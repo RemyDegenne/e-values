@@ -92,20 +92,15 @@ theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
   by_cases h : ∫ᵉ x, U (X x) ∂μ = ⊥
   · simp [h]
   have h_ne_bot : ∀ᵐ ω ∂μ, U (X ω) ≠ ⊥ := ae_ne_bot_of_eintegral_ne_bot (by fun_prop) h
-  by_cases h_ne_top : ∀ᵐ ω ∂μ, U (X ω) ≠ ⊤
-  swap
-  · suffices ∫⁻ x, X x ∂μ = ∞ by
-      rw [this]
-      calc ∫ᵉ x, U (X x) ∂μ
-      _ ≤ ∫ᵉ x, U ∞ ∂μ := eintegral_mono (fun _ ↦ U.monotone (by simp))
-      _ = U ∞ := by simp
-    suffices ∃ᵐ ω ∂μ, X ω = ∞ by
-      rw [lintegral_eq_top_of_measure_eq_top_ne_zero (by fun_prop)]
-      rwa [frequently_ae_iff] at this
-    simp only [ne_eq, not_eventually, Decidable.not_not] at h_ne_top
-    refine h_ne_top.mono fun x ↦ ?_
-    have h := U.ne_top (x := X x)
-    rwa [← not_imp_not]
+  by_cases hX_int_top : ∫⁻ x, X x ∂μ = ∞
+  · rw [hX_int_top]
+    calc ∫ᵉ x, U (X x) ∂μ
+    _ ≤ ∫ᵉ x, U ∞ ∂μ := eintegral_mono (fun _ ↦ U.monotone (by simp))
+    _ = U ∞ := by simp
+  have hX_top : ∀ᵐ ω ∂μ, X ω ≠ ∞ := by
+    filter_upwards [ae_lt_top' (by fun_prop) hX_int_top] with x hx using hx.ne
+  have h_ne_top : ∀ᵐ ω ∂μ, U (X ω) ≠ ⊤ := by
+    filter_upwards [hX_top] with x hx using U.ne_top hx
   sorry
 
 section Log
