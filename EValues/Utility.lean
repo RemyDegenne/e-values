@@ -51,6 +51,22 @@ lemma Utility.aemeasurable {μ : Measure ℝ≥0∞} (U : Utility) :
 
 lemma Utility.concave (U : Utility) : ConcaveOn ℝ≥0 Set.univ U := U.concave'
 
+lemma Utility.ne_top (U : Utility) {x : ℝ≥0∞} (hx_top : x ≠ ∞) : U x ≠ ⊤ := by
+  by_cases hx0 : x = 0
+  · simp only [hx0, ne_eq]
+    refine ne_top_of_le_ne_top (b := U 1) ?_ ?_
+    · exact (U.eq_coe (by simp) (by simp)).2
+    · exact U.monotone (by simp)
+  · exact (U.eq_coe hx0 hx_top).2
+
+lemma Utility.ne_bot (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) : U x ≠ ⊥ := by
+  by_cases hx_top : x = ∞
+  · simp only [hx_top, ne_eq]
+    refine ne_bot_of_le_ne_bot (b := U 1) ?_ ?_
+    · exact (U.eq_coe (by simp) (by simp)).1
+    · exact U.monotone (by simp)
+  · exact (U.eq_coe hx0 hx_top).1
+
 /-- The real-valued representation of a utility function. -/
 def Utility.real (U : Utility) : ℝ → ℝ := fun x ↦ (U (ENNReal.ofReal x)).toReal
 
@@ -70,8 +86,21 @@ def Utility.deriv (U : Utility) (x : ℝ≥0∞) : EReal :=
 
 /-- Jensen's inequality. -/
 theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
-    {μ : Measure α} (U : Utility) {X : α → ℝ≥0∞} (hX_meas : AEMeasurable X μ) :
+    {μ : Measure α} [IsProbabilityMeasure μ]
+    (U : Utility) {X : α → ℝ≥0∞} (hX_meas : AEMeasurable X μ) :
     ∫ᵉ x, U (X x) ∂μ ≤ U (∫⁻ x, X x ∂μ) := by
+  by_cases h : ∫ᵉ x, U (X x) ∂μ = ⊥
+  · simp [h]
+  have h_ne_bot : ∀ᵐ ω ∂μ, U (X ω) ≠ ⊥ := ae_ne_bot_of_eintegral_ne_bot (by fun_prop) h
+  by_cases hX_int_top : ∫⁻ x, X x ∂μ = ∞
+  · rw [hX_int_top]
+    calc ∫ᵉ x, U (X x) ∂μ
+    _ ≤ ∫ᵉ x, U ∞ ∂μ := eintegral_mono (fun _ ↦ U.monotone (by simp))
+    _ = U ∞ := by simp
+  have hX_top : ∀ᵐ ω ∂μ, X ω ≠ ∞ := by
+    filter_upwards [ae_lt_top' (by fun_prop) hX_int_top] with x hx using hx.ne
+  have h_ne_top : ∀ᵐ ω ∂μ, U (X ω) ≠ ⊤ := by
+    filter_upwards [hX_top] with x hx using U.ne_top hx
   sorry
 
 section Log

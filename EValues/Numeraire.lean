@@ -180,7 +180,8 @@ section LogOptimal
 
 -- todo: prove that log-optimal implies numeraire
 /-- A Numeraire is log-optimal. -/
-theorem eintegral_log_div_nonpos (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
+theorem eintegral_log_div_nonpos [IsProbabilityMeasure μ]
+    (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫ᵉ ω, ENNReal.log (Y ω / X ω) ∂μ ≤ 0:= by
   calc ∫ᵉ ω, ENNReal.log (Y ω / X ω) ∂μ
   _ ≤ ENNReal.log (∫⁻ ω, Y ω / X ω ∂μ) := by
