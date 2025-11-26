@@ -174,7 +174,7 @@ lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :
       + ⨆ X, b * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂Q := EReal.iSup_add_le_add_iSup
   _ = a • maxUtility P S U + b • maxUtility Q S U := by
     simp_rw [maxUtility]
-    simp only [EReal.smul_nnreal_eq_mul]
+    simp only [EReal.smul_ennreal_eq_mul]
     rw [EReal.iSup_ennreal_mul, EReal.iSup_ennreal_mul]
     · exact ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
     · exact ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
