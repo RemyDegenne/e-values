@@ -7,6 +7,21 @@ import Mathlib.MeasureTheory.Measure.Prod
 import Mathlib.Probability.Kernel.Composition.MeasureComp
 import EValues.Mathlib.EReal
 
+/-!
+# Integral of EReal-valued functions
+
+TODO
+
+## Main definitions
+
+* TODO
+
+## Main statements
+
+* TODO
+
+-/
+
 open ProbabilityTheory
 open scoped ENNReal
 

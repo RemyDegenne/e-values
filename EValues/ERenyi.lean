@@ -15,6 +15,14 @@ import EValues.FindAxioms
 
 An analogue of the Rényi divergence for e-variables.
 
+## Main definitions
+
+* TODO
+
+## Main statements
+
+* TODO
+
 -/
 
 open MeasureTheory Filter
@@ -28,8 +36,8 @@ variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableS
 
 /-- The e-Rényi divergence between two sets of measures.
 
-Note that the two integrals are non-negative, so the application of `EReal.toENNReal` does not
-truncate. -/
+Note that the two maximal utilities are non-negative, so the application of `EReal.toENNReal`
+does not truncate. -/
 noncomputable
 def erenyiDiv (α : ℝ≥0∞) (S T : Set (Measure 𝓧)) : ℝ≥0∞ :=
   (1 - α)⁻¹ * ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),

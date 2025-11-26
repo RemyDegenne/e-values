@@ -9,6 +9,16 @@ import EValues.DPI
 /-!
 # Numeraire of a product
 
+TODO
+
+## Main definitions
+
+* TODO
+
+## Main statements
+
+* TODO
+
 -/
 
 open MeasureTheory Filter

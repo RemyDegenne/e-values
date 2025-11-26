@@ -14,7 +14,7 @@ import Mathlib.MeasureTheory.Constructions.Polish.Basic
 /-!
 # Numeraire E-variables
 
-
+TODO
 
 ## Main definitions
 
