@@ -399,6 +399,13 @@ lemma eintegral_eq_integral_toReal (hf_meas : AEMeasurable f μ) (h_int_bot : �
   rw [eintegral_congr_ae hf_eq, eintegral_eq_integral]
   exact integrable_toReal hf_meas h_int_bot h_int_top
 
+lemma eintegral_eq_lintegral (f : α → ENNReal) :
+    ∫ᵉ x, f x ∂μ = ∫⁻ x, f x ∂μ := by
+  rw [eintegral_of_nonneg]
+  · simp
+  · intro
+    positivity
+
 lemma eintegral_mul_const_of_nonneg {c : EReal} (hc_bot : c ≠ ⊥) (hc_top : c ≠ ⊤)
     (hf : ∀ x, 0 ≤ f x) :
     ∫ᵉ x, c * f x ∂μ = c * ∫ᵉ x, f x ∂μ := by
