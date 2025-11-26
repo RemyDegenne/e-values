@@ -12,15 +12,26 @@ import EValues.NumeraireExistence
 /-!
 # Data processing inequality for the maximum utility
 
-TODO
+We express the maximal expected utility over all e-variables (deterministic or randomized) and
+prove structural properties such as data-processing inequalities and convexity.
 
 ## Main definitions
 
-* TODO
+* `ProbabilityTheory.maxUtility`: the supremum of `∫ᵉ U ∘ X ∂P` over deterministic e-variables
+  with respect to a set of measures `S`.
+* `ProbabilityTheory.maxRandUtility`: the analogous supremum taken over randomized e-variables
+  (Markov kernels).
+* The relationship with the logarithmic utility via numeraires, used later to link
+  `maxUtility` with `∫ᵉ logUtility`.
 
 ## Main statements
 
-* TODO
+* `maxRandUtility_eq_maxUtility` equates deterministic and randomized optimizers.
+* Antitonicity and functoriality results such as `maxUtility_anti`, `maxRandUtility_comp_le`, and
+  `maxUtility_map_le` give data-processing inequalities.
+* Structural results like `IsNumeraire.maxUtility_eq_integral`, `maxUtility_nonneg`,
+  `convexOn_maxUtility`, and the invariance lemma `maxUtility_involutive` describe positivity,
+  convexity, and symmetry properties of the maximum utility.
 
 -/
 

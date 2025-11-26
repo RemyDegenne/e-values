@@ -13,15 +13,24 @@ import EValues.FindAxioms
 /-!
 # E-Rényi divergence
 
-An analogue of the Rényi divergence for e-variables.
+An analogue of the Rényi and Chernoff divergences defined via maximal utilities of e-variables.
 
 ## Main definitions
 
-* TODO
+* `ProbabilityTheory.erenyiDiv`: the e-Rényi divergence between two sets of measures, written in
+  terms of maximal logarithmic utilities.
+* `ProbabilityTheory.echernoffDiv`: the corresponding e-Chernoff divergence (order `∞`).
+* `erenyiDiv_eq_sInf` / `echernoffDiv_eq_sInf`: infimum representations used to prove structural
+  results.
 
 ## Main statements
 
-* TODO
+* Monotonicity and data-processing lemmas such as `erenyiDiv_anti`, `echernoffDiv_anti`,
+  `erenyiDiv_comp_le`, and `echernoffDiv_comp_le`.
+* `erenyiDiv_add_eq_sInf` rewrites the divergence of products as a sum of divergences of the
+  components.
+* `erenyiDiv_prod` (and the analogous statements for `echernoffDiv`) identifies the divergence of
+  product sets with the sum of the divergences of the factors.
 
 -/
 

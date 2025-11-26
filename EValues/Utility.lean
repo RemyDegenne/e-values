@@ -13,16 +13,22 @@ import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
 /-!
 # Utility functions
 
-TODO
+We formalize the notion of a smooth, concave utility on `ℝ≥0∞` together with the canonical
+logarithmic utility used throughout the project.
 
 ## Main definitions
 
-* TODO
+* `ProbabilityTheory.Utility`: concave, monotone, `C¹` functions on `ℝ≥0∞` that are finite on
+  `(0, ∞)`.
+* `Utility.real` and `Utility.deriv`: the real-valued representative and the derivative obtained
+  from it.
+* `logUtility`: the logarithmic utility, our main example.
 
 ## Main statements
 
-* TODO
-
+* `Utility.eintegral_le_map`: Jensen's inequality for utility functions and `EReal` integrals.
+* `real_logUtility` and `deriv_logUtility`: explicit formulas for the logarithmic utility and its
+  derivative.
 -/
 
 open Filter MeasureTheory

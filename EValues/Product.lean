@@ -9,15 +9,23 @@ import EValues.DPI
 /-!
 # Numeraire of a product
 
-TODO
+We analyze how numeraires and maximal utilities behave with respect to product measures.
 
 ## Main definitions
 
-* TODO
+* `ProbabilityTheory.IsEVar.prod`: constructs the product of two e-variables on component sets.
+* `ProbabilityTheory.isNumeraire_mul` / `isNumeraire_mul_numeraire`: numeraires for product
+  models obtained by multiplying component numeraires.
+* `ProbabilityTheory.logUtility_numeraire_prod`: identifies the logarithmic utility of a product
+  numeraire.
 
 ## Main statements
 
-* TODO
+* `IsEVar.prod` shows that products of e-variables remain e-variables for product sets.
+* `isNumeraire_mul` and `isNumeraire_mul_numeraire` express the numeraire of `P.prod Q` as
+  `numeraire P * numeraire Q`.
+* `logUtility_numeraire_prod` and `maxUtility_prod` yield additivity formulas for logarithmic and
+  maximal utilities under products.
 
 -/
 

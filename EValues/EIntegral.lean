@@ -10,15 +10,23 @@ import EValues.Mathlib.EReal
 /-!
 # Integral of EReal-valued functions
 
-TODO
+We define an extended integral for `EReal`-valued functions and collect the algebraic and
+measure-theoretic tools needed to work with it.
 
 ## Main definitions
 
-* TODO
+* `MeasureTheory.eintegral` and the notation `∫ᵉ` for the integral of `EReal` functions.
+* `MeasureTheory.eintegrable`, the predicate preventing the indeterminate form `⊤ - ⊤`.
+* `MeasureTheory.posPartFun` / `negPartFun`, the positive and negative parts used to control signs.
 
 ## Main statements
 
-* TODO
+* `eintegral_of_nonneg` and `eintegral_of_ae_nonneg` identify the extended integral with
+  lower Lebesgue integrals for non-negative integrands.
+* `eintegral_add`, `eintegral_sub`, `eintegral_add_measure`, and `eintegral_smul_measure` provide
+  the expected algebraic rules.
+* `eintegral_prod`, `eintegral_map`, `eintegral_comp_measure`, and related lemmas give Fubini,
+  change-of-variable, and kernel composition formulas for `EReal` integrals.
 
 -/
 

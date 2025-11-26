@@ -16,15 +16,26 @@ import EValues.Mathlib.unitInterval
 /-!
 # E-variables
 
-
+This file develops the basic API for deterministic and randomized e-variables together with
+the measure-theoretic helpers used to manipulate them.
 
 ## Main definitions
 
-* TODO
+* `MeasureTheory.aeSet` — the almost-everywhere filter obtained from a family of measures.
+* `MeasureTheory.integrableFunctions` / `integrableMeasures` / `integrableSignedMeasures` — dual
+  classes of functions and measures that are integrable against each other.
+* `ProbabilityTheory.IsEVar` and `IsRandEVar` — deterministic e-variables and their randomized
+  kernel version.
 
 ## Main statements
 
-* TODO
+* `isRandEVar_iff_isEVar` identifies randomized e-variables with deterministic ones through
+  integration against the kernel.
+* Monotonicity and change-of-variable lemmas such as `IsEVar.mono`, `IsRandEVar.mono`,
+  `IsEVar.comp`, and `IsRandEVar.comp` show that the class of e-variables is stable under
+  pointwise domination and measurable pushforwards.
+* `isEVar_bernoulli_le_iff` characterizes e-variables for constrained Bernoulli models via linear
+  bounds.
 
 -/
 

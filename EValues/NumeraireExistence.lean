@@ -8,15 +8,24 @@ import EValues.Numeraire
 /-!
 # Existence of the Numeraire
 
-TODO
+We construct numeraires by maximizing bounded utility functionals and specialize the
+construction to the logarithmic utility.
 
 ## Main definitions
 
-* TODO
+* `numeraireOfBounded`: the optimizer obtained from a utility bounded above by some real `b`.
+* `numeraire`: the canonical numeraire e-variable built from the existence theorem when all
+  measures are probabilistic.
 
 ## Main statements
 
-* TODO
+* `exists_eq_iSup_eintegral_of_le` (and the primed variant) build e-variables that maximize the
+  integral of a bounded concave utility.
+* The Euler inequality `eintegral_deriv_log_mul_le` yields optimality conditions for the
+  logarithmic utility, and `exists_numeraire` upgrades this to ratio bounds for all e-variables.
+* `lintegral_div_numeraire_le`, `lintegral_div_numeraire_le_one`, and
+  `lintegral_div_self_le_iff_IsNumeraire` show that the constructed `numeraire` is indeed a
+  numeraire and characterize numeraires via those inequalities.
 
 -/
 

@@ -14,15 +14,23 @@ import Mathlib.MeasureTheory.Constructions.Polish.Basic
 /-!
 # Numeraire E-variables
 
-TODO
+We study numeraires: e-variables that dominate every other e-variable through normalized
+expectations, and show that they optimize logarithmic utility.
 
 ## Main definitions
 
-* TODO
+* `ProbabilityTheory.IsNumeraire` extends `IsEVar` with the normalization conditions used to
+  define a numeraire with respect to a reference measure.
+* Support-based helpers such as `IsNumeraire.lintegral_eq_setLIntegral_fsupport` describe how to
+  restrict integrals to the region where the numeraire is non-zero and finite.
 
 ## Main statements
 
-* TODO
+* `IsNumeraire.ae_unique` shows that numeraires are almost-everywhere unique when they exist.
+* Inequalities like `IsNumeraire.lintegral_div_le_one`, `eintegral_div_le_one`, and
+  `eintegral_sub_div_le_one` control expectations of ratios and differences against numeraires.
+* `eintegral_log_ge_neg_one`, `IsNumeraire.eintegrable_log`, and `eintegral_log_le` prove that
+  numeraires maximize the logarithmic utility.
 
 -/
 
