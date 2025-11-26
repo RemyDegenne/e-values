@@ -5,11 +5,9 @@ Authors: Rémy Degenne
 -/
 import EValues.EIntegral
 import EValues.Mathlib.Convex
-import Mathlib.Algebra.Lie.OfAssociative
-import Mathlib.Analysis.Calculus.ContDiff.Defs
+import Mathlib.Analysis.Convex.Integral
 import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
-import Mathlib
 
 /-!
 # Utility functions
@@ -88,7 +86,7 @@ def Utility.deriv (U : Utility) (x : ℝ≥0∞) : EReal :=
 /-- Jensen's inequality. -/
 theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
     {μ : Measure α} [IsProbabilityMeasure μ]
-    (U : Utility) {X : α → ℝ≥0∞} (hX_meas : Measurable X) :
+    (U : Utility) {X : α → ℝ≥0∞} (hX_meas : AEStronglyMeasurable X μ) :
     ∫ᵉ x, U (X x) ∂μ ≤ U (∫⁻ x, X x ∂μ) := by
   by_cases h : ∫ᵉ x, U (X x) ∂μ = ⊥
   · simp [h]
@@ -118,8 +116,9 @@ theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
     contradiction
 
   calc
-    _ = (∫ a, (U (X a)).toReal ∂μ).toEReal :=
-      eintegral_eq_integral h_eintegrable h_ne_top h_ne_bot (by fun_prop)
+    _ = (∫ a, (U (X a)).toReal ∂μ).toEReal := by
+      refine eintegral_eq_integral h_eintegrable h_ne_top h_ne_bot ?_
+      exact AEMeasurable.aestronglyMeasurable (by fun_prop)
     _ = ∫ x, (U (ENNReal.ofReal (X x).toReal)).toReal ∂μ := by
       rw [integral_congr_ae]
       filter_upwards [hX_top] with x hx
@@ -132,19 +131,16 @@ theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
       · simp
       · simp
       · refine ⟨?_, ?_⟩
-        · refine Measurable.aestronglyMeasurable ?_
-          fun_prop
+        · exact AEMeasurable.aestronglyMeasurable (by fun_prop)
         · exact (hasFiniteIntegral_toReal_iff hX_top).mpr hX_int_top
       · refine ⟨?_, ?_⟩
-        · refine Measurable.aestronglyMeasurable ?_
-          fun_prop
+        · exact AEMeasurable.aestronglyMeasurable (by fun_prop)
         · sorry
     _ = (U (ENNReal.ofReal (∫⁻ (a : α), ENNReal.ofReal (X a).toReal ∂μ).toReal)).toReal := by
       rw [integral_eq_lintegral_of_nonneg_ae]
       · refine ae_of_all _ fun x ↦ ?_
         positivity
-      · refine Measurable.aestronglyMeasurable ?_
-        fun_prop
+      · exact AEMeasurable.aestronglyMeasurable (by fun_prop)
     _ = (U (∫⁻ x, X x ∂μ)).toReal := by
       congr
       have : ∀ᵐ x ∂μ, ENNReal.ofReal (X x).toReal = X x := by

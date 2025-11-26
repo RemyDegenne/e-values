@@ -3,11 +3,11 @@ Copyright (c) 2025 Gaëtan Serré. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré, Rémy Degenne
 -/
-import Mathlib.MeasureTheory.Measure.Prod
-import Mathlib.Probability.Kernel.Composition.MeasureComp
-import Mathlib.MeasureTheory.Integral.Bochner.Basic
-import Mathlib
 import EValues.Mathlib.EReal
+import Mathlib.Topology.Metrizable.Urysohn
+import Mathlib.MeasureTheory.Measure.Prod
+import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.Probability.Kernel.Composition.MeasureComp
 
 open ProbabilityTheory
 open scoped ENNReal
@@ -842,12 +842,11 @@ lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClas
 
 lemma eintegral_eq_integral {f : α → EReal} {μ : Measure α}
     (hf : eintegrable f μ) (hf_top : ∀ᵐ x ∂μ, f x ≠ ⊤)
-    (hf_bot : ∀ᵐ x ∂μ, f x ≠ ⊥) (hfm : Measurable f) :
+    (hf_bot : ∀ᵐ x ∂μ, f x ≠ ⊥) (hfm : AEStronglyMeasurable f μ) :
     ∫ᵉ x, f x ∂μ = (∫ x, (f x).toReal ∂μ).toEReal := by
   have : Integrable (fun x ↦ (f x).toReal) μ := by
     refine ⟨?_, ?_⟩
-    · refine Measurable.aestronglyMeasurable ?_
-      fun_prop
+    · exact AEMeasurable.aestronglyMeasurable (by fun_prop)
     · cases hf with
       | inl hf =>
         rw [hasFiniteIntegral_iff_enorm]
