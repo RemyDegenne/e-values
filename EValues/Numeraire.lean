@@ -186,7 +186,7 @@ theorem eintegral_log_div_nonpos [IsProbabilityMeasure μ]
   calc ∫ᵉ ω, ENNReal.log (Y ω / X ω) ∂μ
   _ ≤ ENNReal.log (∫⁻ ω, Y ω / X ω ∂μ) := by
     refine Utility.eintegral_le_map logUtility ?_
-    exact hY.measurable.aemeasurable.div hX.measurable.aemeasurable
+    exact (hY.measurable.div hX.measurable).aestronglyMeasurable
   _ ≤ 0 := by
     simp only [ENNReal.log_le_zero_iff]
     exact lintegral_div_le_one hX hY
