@@ -225,3 +225,10 @@ instance : MeasurableInv EReal where
     simp_rw [← EReal.coe_inv]
     change Measurable (Real.toEReal ∘ _)
     exact Measurable.comp measurable_coe_real_ereal (by fun_prop)
+
+lemma EReal.sub_ennreal {a b : ℝ≥0∞} (ha : a ≠ ⊤) (hb : b ≠ ⊤) :
+    (a.toReal - b.toReal).toEReal = a.toEReal - b.toEReal := by
+  change a.toReal.toEReal - b.toReal.toEReal = a.toEReal - b.toEReal
+  congr
+  · exact EReal.coe_ennreal_toReal ha
+  · exact EReal.coe_ennreal_toReal hb

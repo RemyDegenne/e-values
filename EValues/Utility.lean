@@ -9,6 +9,7 @@ import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.Analysis.Calculus.ContDiff.Defs
 import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
+import Mathlib
 
 /-!
 # Utility functions
@@ -87,7 +88,7 @@ def Utility.deriv (U : Utility) (x : ℝ≥0∞) : EReal :=
 /-- Jensen's inequality. -/
 theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
     {μ : Measure α} [IsProbabilityMeasure μ]
-    (U : Utility) {X : α → ℝ≥0∞} (hX_meas : AEMeasurable X μ) :
+    (U : Utility) {X : α → ℝ≥0∞} (hX_meas : Measurable X) :
     ∫ᵉ x, U (X x) ∂μ ≤ U (∫⁻ x, X x ∂μ) := by
   by_cases h : ∫ᵉ x, U (X x) ∂μ = ⊥
   · simp [h]
@@ -101,7 +102,59 @@ theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
     filter_upwards [ae_lt_top' (by fun_prop) hX_int_top] with x hx using hx.ne
   have h_ne_top : ∀ᵐ ω ∂μ, U (X ω) ≠ ⊤ := by
     filter_upwards [hX_top] with x hx using U.ne_top hx
-  sorry
+
+  by_cases hX_int_zero : ∫⁻ x, X x ∂μ = 0
+  · rw [hX_int_zero]
+    rw [lintegral_eq_zero_iff' hX_meas.aemeasurable] at hX_int_zero
+    have : ∀ᵐ x ∂μ, U (X x) = U 0 := by
+      filter_upwards [hX_int_zero] with x hx
+      simp [hx]
+    rw [eintegral_congr_ae this]
+    simp
+
+  have h_eintegrable : eintegrable (fun x ↦ U (X x)) μ := by
+    by_contra hc
+    rw [eintegral_of_not_eintegrable hc] at h
+    contradiction
+
+  calc
+    _ = (∫ a, (U (X a)).toReal ∂μ).toEReal :=
+      eintegral_eq_integral h_eintegrable h_ne_top h_ne_bot (by fun_prop)
+    _ = ∫ x, (U (ENNReal.ofReal (X x).toReal)).toReal ∂μ := by
+      rw [integral_congr_ae]
+      filter_upwards [hX_top] with x hx
+      rw [ENNReal.ofReal_toReal hx]
+    _ ≤ (U (ENNReal.ofReal (∫ x, (X x).toReal ∂μ))).toReal := by
+      rw [EReal.coe_le_coe_iff]
+      apply ConcaveOn.le_map_integral (s := Set.univ) (g := fun x ↦ (U (ENNReal.ofReal x)).toReal)
+      · sorry
+      · sorry
+      · simp
+      · simp
+      · refine ⟨?_, ?_⟩
+        · refine Measurable.aestronglyMeasurable ?_
+          fun_prop
+        · exact (hasFiniteIntegral_toReal_iff hX_top).mpr hX_int_top
+      · refine ⟨?_, ?_⟩
+        · refine Measurable.aestronglyMeasurable ?_
+          fun_prop
+        · sorry
+    _ = (U (ENNReal.ofReal (∫⁻ (a : α), ENNReal.ofReal (X a).toReal ∂μ).toReal)).toReal := by
+      rw [integral_eq_lintegral_of_nonneg_ae]
+      · refine ae_of_all _ fun x ↦ ?_
+        positivity
+      · refine Measurable.aestronglyMeasurable ?_
+        fun_prop
+    _ = (U (∫⁻ x, X x ∂μ)).toReal := by
+      congr
+      have : ∀ᵐ x ∂μ, ENNReal.ofReal (X x).toReal = X x := by
+        filter_upwards [hX_top] with x hx
+        rw [ENNReal.ofReal_toReal hx]
+      rw [lintegral_congr_ae this]
+      rw [ENNReal.ofReal_toReal hX_int_top]
+    _ = U (∫⁻ x, X x ∂μ) := by
+      rw [EReal.coe_toReal (U.ne_top hX_int_top) (U.ne_bot hX_int_zero)]
+
 
 section Log
 

@@ -614,14 +614,12 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
               · rw [doubleton_lintegral]
                 simp [κ, Ber]
             · exact hν
-          · apply ae_of_all
-            intro x
+          · refine ae_of_all _ fun x ↦ ?_
             cases x.2 with
             | inl hx0 => simp_all
             | inr hx1 => simp_all
           · fun_prop
-          · apply ae_of_all
-            intro x
+          · refine ae_of_all _ fun x ↦ ?_
             unit_interval
           · fun_prop
     rw [B₁_eq_κ_comp]
@@ -655,14 +653,12 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
                 _ < ⊤ := by simp
               · rw [doubleton_lintegral]
                 simp [κ, Ber]
-          · apply ae_of_all
-            intro x
+          · refine ae_of_all _ fun x ↦ ?_
             cases x.2 with
             | inl hx0 => simp_all
             | inr hx1 => simp_all
           · fun_prop
-          · apply ae_of_all
-            intro x
+          · refine ae_of_all _ fun x ↦ ?_
             unit_interval
           · fun_prop
     rw [B₂_eq_κ_comp]

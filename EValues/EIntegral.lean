@@ -5,6 +5,8 @@ Authors: Gaëtan Serré, Rémy Degenne
 -/
 import Mathlib.MeasureTheory.Measure.Prod
 import Mathlib.Probability.Kernel.Composition.MeasureComp
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib
 import EValues.Mathlib.EReal
 
 open ProbabilityTheory
@@ -837,5 +839,50 @@ lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClas
     ∫ᵉ x, f x ∂(Measure.dirac x₀) = f x₀ := by
   simp only [eintegral, lintegral_dirac]
   rcases le_total (f x₀) 0 with (h | h) <;> simp [h]
+
+lemma eintegral_eq_integral {f : α → EReal} {μ : Measure α}
+    (hf : eintegrable f μ) (hf_top : ∀ᵐ x ∂μ, f x ≠ ⊤)
+    (hf_bot : ∀ᵐ x ∂μ, f x ≠ ⊥) (hfm : Measurable f) :
+    ∫ᵉ x, f x ∂μ = (∫ x, (f x).toReal ∂μ).toEReal := by
+  have : Integrable (fun x ↦ (f x).toReal) μ := by
+    refine ⟨?_, ?_⟩
+    · refine Measurable.aestronglyMeasurable ?_
+      fun_prop
+    · cases hf with
+      | inl hf =>
+        rw [hasFiniteIntegral_iff_enorm]
+        calc
+        _ = ∫⁻ x, (f x).toENNReal ∂μ := by
+          refine lintegral_congr (fun x ↦ ?_)
+          rw [Real.enorm_eq_ofReal_abs]
+          --apply?
+          sorry
+        _ < ⊤ := by exact Ne.lt_top' hf.symm
+      | inr hf => sorry
+  simp only [eintegral]
+  rw [integral_eq_lintegral_pos_part_sub_lintegral_neg_part this]
+  rw [EReal.sub_ennreal]
+  · congr 2
+    · refine lintegral_congr_ae ?_
+      filter_upwards [hf_top] with x hx_top
+      exact EReal.toENNReal_of_ne_top hx_top
+    · refine lintegral_congr_ae ?_
+      filter_upwards [hf_bot] with x hx_bot
+      simp_all
+  · apply ne_of_lt
+    calc
+    _ ≤ ∫⁻ x, ‖(f x).toReal‖ₑ ∂μ := lintegral_mono (fun x ↦ Real.ofReal_le_enorm _)
+    _ < ⊤ := by
+      rw [← hasFiniteIntegral_iff_enorm]
+      exact this.2
+  · apply ne_of_lt
+    calc
+    _ ≤ ∫⁻ x, ‖(f x).toReal‖ₑ ∂μ := by
+      refine lintegral_mono (fun x ↦ ?_)
+      rw [← enorm_neg]
+      exact Real.ofReal_le_enorm _
+    _ < ⊤ := by
+      rw [← hasFiniteIntegral_iff_enorm]
+      exact this.2
 
 end MeasureTheory
