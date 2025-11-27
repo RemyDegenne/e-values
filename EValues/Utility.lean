@@ -111,20 +111,55 @@ lemma Utility.monotoneOn_Ici_real (U : Utility) (hU0 : U 0 ≠ ⊥) :
 lemma Utility.concaveOn_Ioi_real (U : Utility) : ConcaveOn ℝ (Set.Ioi 0) U.real := by
   refine ⟨convex_Ioi 0, ?_⟩
   intro x hx y hy a b ha hb hab
+  have hx_pos : 0 < x := Set.mem_Ioi.mp hx
+  have hy_pos : 0 < y := Set.mem_Ioi.mp hy
   simp only [smul_eq_mul]
   have h_ccv := U.concave.2 (Set.mem_univ (ENNReal.ofReal x)) (Set.mem_univ (ENNReal.ofReal y))
     (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by ext; simp [hab])
   simp only [EReal.smul_nnreal_eq_mul, NNReal.coe_mk, ENNReal.smul_def, smul_eq_mul] at h_ccv
-  sorry
+  have h_mul (x a : ℝ) (ha : 0 ≤ a) :
+      (ENNReal.ofNNReal (⟨a, ha⟩ : ℝ≥0)) * ENNReal.ofReal x = ENNReal.ofReal (a * x) := by
+    rw [ENNReal.ofReal_mul ha]
+    congr
+    simp [ha]
+  rw [h_mul, h_mul, ← ENNReal.ofReal_add (by positivity) (by positivity)] at h_ccv
+  rw [← U.coe_real_toReal' (U.ne_bot (by simpa)) (by simp),
+    ← U.coe_real_toReal' (U.ne_bot (by simpa)) (by simp),
+    ← U.coe_real_toReal' (U.ne_bot ?_) (by simp)] at h_ccv
+  swap
+  · simp only [ne_eq, ENNReal.ofReal_eq_zero, not_le]
+    by_cases ha_zero : a = 0
+    · suffices hb_pos : 0 < b by simpa [ha_zero, hb_pos] using hy
+      by_contra hb_nonpos
+      linarith
+    · have ha_pos : 0 < a := lt_of_le_of_ne ha (Ne.symm ha_zero)
+      positivity
+  norm_cast at h_ccv
+  rwa [ENNReal.toReal_ofReal (by positivity), ENNReal.toReal_ofReal (by positivity),
+    ENNReal.toReal_ofReal (by positivity)] at h_ccv
 
 lemma Utility.concaveOn_Ici_real (U : Utility) (h0 : U 0 ≠ ⊥) : ConcaveOn ℝ (Set.Ici 0) U.real := by
   refine ⟨convex_Ici 0, ?_⟩
   intro x hx y hy a b ha hb hab
+  have hx_nonneg : 0 ≤ x := Set.mem_Ici.mp hx
+  have hy_nonneg : 0 ≤ y := Set.mem_Ici.mp hy
+  have hU_ne_bot x : U x ≠ ⊥ := ne_bot_of_le_ne_bot (b := U 0) h0 (U.monotone zero_le')
   simp only [smul_eq_mul]
   have h_ccv := U.concave.2 (Set.mem_univ (ENNReal.ofReal x)) (Set.mem_univ (ENNReal.ofReal y))
     (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by ext; simp [hab])
   simp only [EReal.smul_nnreal_eq_mul, NNReal.coe_mk, ENNReal.smul_def, smul_eq_mul] at h_ccv
-  sorry
+  have h_mul (x a : ℝ) (ha : 0 ≤ a) :
+      (ENNReal.ofNNReal (⟨a, ha⟩ : ℝ≥0)) * ENNReal.ofReal x = ENNReal.ofReal (a * x) := by
+    rw [ENNReal.ofReal_mul ha]
+    congr
+    simp [ha]
+  rw [h_mul, h_mul, ← ENNReal.ofReal_add (by positivity) (by positivity)] at h_ccv
+  rw [← U.coe_real_toReal' (hU_ne_bot _) (by simp),
+    ← U.coe_real_toReal' (hU_ne_bot _) (by simp),
+    ← U.coe_real_toReal' (hU_ne_bot _) (by simp)] at h_ccv
+  norm_cast at h_ccv
+  rwa [ENNReal.toReal_ofReal (by positivity), ENNReal.toReal_ofReal (by positivity),
+    ENNReal.toReal_ofReal (by positivity)] at h_ccv
 
 /-- The derivative of a utility function.
 At `x ∈ (0, ∞)`, this is the derivative of the real-valued representation.
