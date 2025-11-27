@@ -578,9 +578,7 @@ lemma todo_aux_set (δ : ℝ) :
   constructor
   · rintro ⟨ν, ⟨⟨hν, h_int⟩, rfl⟩⟩
     refine ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩
-    rw [integral_map (by fun_prop) (by fun_prop)]
-    simp only [φ]
-    rw [integral_sub (by fun_prop) (by fun_prop)]
+    rw [integral_map (by fun_prop) (by fun_prop), integral_sub (by fun_prop) (by fun_prop)]
     simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
     linarith
   · rintro ⟨hμ, h_int⟩
@@ -827,7 +825,9 @@ lemma echernoffDiv_bounded {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
   ext μ
   simp only [Set.mem_setOf_eq]
   have h_int (μ : Measure I) [IsFiniteMeasure μ] : Integrable (Subtype.val : I → ℝ) μ := by
-    sorry
+    refine (integrable_const (1 : ℝ)).mono' (by fun_prop) (ae_of_all _ fun x ↦ ?_)
+    rw [Real.norm_of_nonneg (by unit_interval)]
+    unit_interval
   constructor
   · rintro ⟨ν, ⟨⟨hν, h_int⟩, rfl⟩⟩
     refine ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩
