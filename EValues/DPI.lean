@@ -107,17 +107,36 @@ lemma maxRandUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : K
     rw [hξ, ← μ.comp_assoc]
     exact hη₂.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
 
-lemma maxUtility_map_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (hφ : Measurable φ) :
-    maxUtility (P.map φ) {μ.map φ | μ ∈ S} U ≤ maxUtility P S U := by
-  rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _,
-    ← Measure.deterministic_comp_eq_map hφ]
-  simp_rw [← Measure.deterministic_comp_eq_map hφ]
-  exact maxRandUtility_comp_le P <| Kernel.deterministic φ hφ
-
 lemma maxUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)
     [IsMarkovKernel κ] : maxUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxUtility P S U := by
   rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _]
   exact maxRandUtility_comp_le P κ
+
+lemma maxUtility_map_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (hφ : Measurable φ) :
+    maxUtility (P.map φ) {μ.map φ | μ ∈ S} U ≤ maxUtility P S U := by
+  simp_rw [← Measure.deterministic_comp_eq_map hφ]
+  exact maxUtility_comp_le P <| Kernel.deterministic φ hφ
+
+lemma _root_.MeasurableEmbedding.maxUtility_map_eq [Nonempty 𝓧] (φ : 𝓧 → 𝓨)
+    (hφ : MeasurableEmbedding φ) (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
+    maxUtility (P.map φ) {μ.map φ | μ ∈ S} U = maxUtility P S U := by
+  have hφ_inv : hφ.invFun ∘ φ = id := by -- extract lemma
+    ext x
+    simp only [Function.comp_apply, id_eq]
+    rw [hφ.leftInverse_invFun]
+  apply le_antisymm (maxUtility_map_le P hφ.measurable)
+  have hP_eq : P = (P.map φ).map hφ.invFun := by
+    rw [Measure.map_map hφ.measurable_invFun hφ.measurable, hφ_inv, Measure.map_id]
+  have hS_eq : S = {μ.map hφ.invFun | μ ∈ {ν.map φ | ν ∈ S}} := by
+    ext μ
+    simp only [Set.mem_setOf_eq, exists_exists_and_eq_and]
+    refine ⟨fun hμ ↦ ?_, fun hμ ↦ ?_⟩
+    · refine ⟨μ, hμ, ?_⟩
+      rw [Measure.map_map hφ.measurable_invFun hφ.measurable, hφ_inv, Measure.map_id]
+    · obtain ⟨ν, hν, rfl⟩ := hμ
+      rwa [Measure.map_map hφ.measurable_invFun hφ.measurable, hφ_inv, Measure.map_id]
+  conv_lhs => rw [hP_eq, hS_eq]
+  exact maxUtility_map_le (P.map φ) hφ.measurable_invFun
 
 lemma IsNumeraire.maxUtility_eq_integral [IsProbabilityMeasure P]
     {X : 𝓧 → ℝ≥0∞} (hX : IsNumeraire X S P) :
@@ -315,26 +334,5 @@ lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2
     simp only [u]
     field_simp
     ring
-
-lemma _root_.MeasurableEmbedding.maxUtility_map_eq [Nonempty 𝓧] (φ : 𝓧 → 𝓨)
-    (hφ : MeasurableEmbedding φ) (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
-    maxUtility (P.map φ) {μ.map φ | μ ∈ S} U = maxUtility P S U := by
-  have hφ_inv : hφ.invFun ∘ φ = id := by -- extract lemma
-    ext x
-    simp only [Function.comp_apply, id_eq]
-    rw [hφ.leftInverse_invFun]
-  apply le_antisymm (maxUtility_map_le P hφ.measurable)
-  have hP_eq : P = (P.map φ).map hφ.invFun := by
-    rw [Measure.map_map hφ.measurable_invFun hφ.measurable, hφ_inv, Measure.map_id]
-  have hS_eq : S = {μ.map hφ.invFun | μ ∈ {ν.map φ | ν ∈ S}} := by
-    ext μ
-    simp only [Set.mem_setOf_eq, exists_exists_and_eq_and]
-    refine ⟨fun hμ ↦ ?_, fun hμ ↦ ?_⟩
-    · refine ⟨μ, hμ, ?_⟩
-      rw [Measure.map_map hφ.measurable_invFun hφ.measurable, hφ_inv, Measure.map_id]
-    · obtain ⟨ν, hν, rfl⟩ := hμ
-      rwa [Measure.map_map hφ.measurable_invFun hφ.measurable, hφ_inv, Measure.map_id]
-  conv_lhs => rw [hP_eq, hS_eq]
-  exact maxUtility_map_le (P.map φ) hφ.measurable_invFun
 
 end ProbabilityTheory

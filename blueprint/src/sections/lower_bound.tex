@@ -199,33 +199,6 @@ We now use Lemma~\ref{lem:erenyiDiv_bounded} to conclude.
 \end{proof}
 
 
-\begin{lemma}\label{lem:utility_fin_gen_ge}
-  \uses{def:eVar}
-Let $\Phi = \{\phi_1, \ldots, \phi_d\}$ be a set of measurable functions from $\mathcal{X}$ to $\mathbb{R}$.
-Let $\mathcal{P}^\Phi = \{P \in \mathcal{P}(\mathcal{X}) \mid \forall \phi \in \Phi, \ P[\vert \phi \vert] < \infty \text{ and } P[\phi] \le 0\}$.
-Denote by $\phi : \mathcal{X} \to \mathbb{R}^d$ the vector-valued function $\phi(x) = (\phi_1(x), \ldots, \phi_d(x))$.
-Then
-\begin{align*}
-  \sup_{f \in \mathcal{E}_{\mathcal{P}^\Phi}}R[\log f]
-  \ge \sup_{f \in \mathcal{E}_{\{P \in \mathcal{P}(\mathbb{R}^d) \mid \forall i, P[X_i] \le 0\}}}(\phi \circ R)[\log f]
-  \; .
-\end{align*}
-\end{lemma}
-
-\begin{proof}
-  \uses{thm:dataprocessing, lem:eVarSet_anti}
-By Theorem~\ref{thm:dataprocessing} for the function $\phi$, we have
-\begin{align*}
-  \sup_{f \in \mathcal{E}_{\mathcal{P}^{\Phi}}} R[\log f]
-  &\ge \sup_{f \in \mathcal{E}_{\phi \circ \mathcal{P}^\Phi}} (\phi \circ R)[\log f]
-  \: .
-\end{align*}
-$\phi \circ \mathcal{P}^\Phi \subseteq \{P \in \mathcal{P}(\mathbb{R}^d) \mid \forall i, P[X_i] \le 0\}$ and their e-variable sets are in the reversed order (Lemma~\ref{lem:eVarSet_anti}).
-We get the result of the lemma.
-\end{proof}
-
-
-
 
 \section{Data processing inequality through KL duality}
 

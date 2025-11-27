@@ -20,10 +20,12 @@ We denote by $\mathcal{E}_{\mathcal{Q}}$ the set of E-variables for a set of pro
 
 \begin{lemma}\label{lem:eVarSet_anti}
   \uses{def:eVar}
+  \leanok
+  \lean{ProbabilityTheory.IsEVar.anti_set}
 If $\mathcal{P} \subseteq \mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ then $\mathcal{E}_{\mathcal{Q}} \subseteq \mathcal{E}_{\mathcal{P}}$.
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\leanok
 
 \end{proof}
 
@@ -182,6 +184,19 @@ A numeraire for $(P, \mathcal{Q})$ is a $P$-almost surely positive e-variable $f
 \end{definition}
 
 
+\begin{lemma}\label{lem:IsNumeraire.eintegral_log_div_nonpos}
+  \uses{def:IsNumeraire}
+  \leanok
+  \lean{ProbabilityTheory.IsNumeraire.eintegral_log_div_nonpos}
+Let $f^*$ be a numeraire for $(P, \mathcal{Q})$ and let $f \in \mathcal{E}_{\mathcal{Q}}$.
+Then $P\left[\log \frac{f}{f^*}\right] \le 0$.
+\end{lemma}
+
+\begin{proof}\leanok
+
+\end{proof}
+
+
 \begin{lemma}\label{lem:numeraire_iff_logOptimal}
   \uses{def:IsNumeraire}
 Let $f$ be a $P$-almost surely positive E-variable for a set of probability measures $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
@@ -189,7 +204,41 @@ Then $f$ is a numeraire for $(P, \mathcal{Q})$ if and only if $P[\log \frac{g}{f
 \end{lemma}
 
 \begin{proof}
+  \uses{lem:IsNumeraire.eintegral_log_div_nonpos}
 
+\end{proof}
+
+
+\begin{lemma}\label{lem:IsNumeraire.eintegral_log_le}
+  \uses{def:IsNumeraire}
+  \leanok
+  \lean{ProbabilityTheory.IsNumeraire.eintegral_log_le}
+Let $f^*$ be a numeraire for $(P, \mathcal{Q})$.
+Then for all $f \in \mathcal{E}_{\mathcal{Q}}$,
+\begin{align*}
+  P[\log f]
+  &\le P[\log f^*]
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:IsNumeraire.eintegral_log_div_nonpos}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:IsNumeraire.eintegral_log_nonneg}
+  \uses{def:IsNumeraire}
+  \leanok
+  \lean{ProbabilityTheory.IsNumeraire.eintegral_log_nonneg}
+Let $f^*$ be a numeraire for $(P, \mathcal{Q})$.
+Then $P[\log f^*] \ge 0$.
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:IsNumeraire.eintegral_log_le}
+Use Lemma~\ref{lem:IsNumeraire.eintegral_log_le} with the e-variable $f = 1$.
 \end{proof}
 
 
@@ -233,6 +282,7 @@ Then
 \end{lemma}
 
 \begin{proof}\leanok
+  \uses{lem:eVarSet_anti}
 
 \end{proof}
 
@@ -910,62 +960,4 @@ By the duality of numeraire and $\KL$ divergence (Theorem~\ref{thm:eVar_KL_duali
   = \KL(P, Q)
   \: .
 \end{align*}
-\end{proof}
-
-
-\section{Examples}
-\label{sec:examples}
-
-TODO: define the polar sets.
-
-$\mathcal{F}_+^\circ = \{P \in \mathcal{M}_+(\mathcal{X}) \mid \forall f \in \mathcal{F}, \: P[f] \le 1\}$.
-
-$\mathcal{F}_1^\circ = \{P \in \mathcal{P}(\mathcal{X}) \mid \forall f \in \mathcal{F}, \: P[f] \le 1\} = \mathcal{F}_+^\circ \cap \mathcal{P}(\mathcal{X})$.
-
-
-\begin{lemma}\label{lem:eVarSet_polar_singleton}
-  \uses{def:eVar}
-Let $f_0 : \mathcal{X} \to \mathbb{R}_{+,\infty}$ be a measurable function.
-Then
-\begin{align*}
-  \mathcal{E}_{\{f_0\}_+^\circ}
-  &= \{f : \mathcal{X} \to \mathbb{R}_{+,\infty} \mid \forall x, f(x) \le f_0(x)\} \: .
-\end{align*}
-\end{lemma}
-
-\begin{proof}
-\begin{align*}
-  \{f_0\}_+^\circ
-  &= \{P \in \mathcal{M}_+(\mathcal{X}) \mid P[f_0] \le 1\}
-  \: , \\
-  \mathcal{E}_{\{f_0\}_+^\circ}
-  &= \{f : \mathcal{X} \to \mathbb{R}_{+,\infty} \mid \forall P \in \{f_0\}_+^\circ, \: P[f] \le 1\}
-  \\
-  &= \{f : \mathcal{X} \to \mathbb{R}_{+,\infty} \mid \forall P\in \mathcal{M}_+(\mathcal{X}), \: P[f_0] \le 1 \implies P[f] \le 1\}
-  \\
-  &= \{f : \mathcal{X} \to \mathbb{R}_{+,\infty} \mid \forall x, f(x) \le f_0(x)\}
-  \: .
-\end{align*}
-The last line needs an explanation. Taking $P = (f_0(x))^{-1} \cdot \delta_x$ gives $P[f_0] = 1$ and $P[f] = f(x)/f_0(x)$, and $P[f] \le 1$ gives $f(x) \le f_0(x)$.
-Conversely, if $f \le f_0$ then for all $P \in \mathcal{M}_+(\mathcal{X})$, $P[f] \le P[f_0]$.
-\end{proof}
-
-
-\begin{lemma}[Numeraire for Bernoulli with mean constraint]\label{lem:utility_numeraire_bernoulli}
-  \uses{def:IsNumeraire}
-\begin{align*}
-  \mathcal{E}_{\{\Ber(p) \mid p \le \delta\}}
-  &= \{f : \{0,1\} \to \mathbb{R}_{+,\infty} \mid f(0) \le 1 \ \wedge \ (1 - \delta)f(0) + \delta f(1) \le 1 \}
-  \: .
-\end{align*}
-\begin{align*}
-  \sup_{f \in \mathcal{E}_{\{\Ber(p) \mid p \le \delta\}}} \Ber(q)[\log f]
-  &= \inf_{p \le \delta} \kl(q, p)
-  \ge q \log \frac{1}{\delta} - \log 2
-  \: .
-\end{align*}
-\end{lemma}
-
-\begin{proof}
-
 \end{proof}
