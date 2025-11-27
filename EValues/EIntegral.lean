@@ -828,34 +828,6 @@ lemma eintegral_prod_of_nonneg {β : Type*} {mβ : MeasurableSpace β} {ν : Mea
   congr with x
   rw [EReal.toENNReal_coe]
 
-lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [SFinite ν]
-    (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) (hf_int : eintegrable f (μ.prod ν)) :
-    ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ x, ∫ᵉ y, f (x, y) ∂ν ∂μ := by
-  simp_rw [← posPartFun_sub_negPartFun f]
-  rw [eintegral_sub_of_nonneg_of_eq_zero (by simp) (by simp)
-    (posPartFun_eq_zero_or_negPartFun_eq_zero f)]
-  rw [eintegral_prod_of_nonneg, eintegral_prod_of_nonneg]
-  rotate_left
-  · fun_prop
-  · simp
-  · fun_prop
-  · simp
-  rw [← eintegral_sub]
-  · congr with x
-    rw [eintegral_sub]
-    · exact eintegrable_of_nonneg (by simp)
-    · sorry
-    · exact eintegrable_of_nonneg (by simp)
-    · sorry
-    · sorry -- will only be true a.e. Need a filter_upwards above
-    · exact .inl <| EReal.ne_bot_of_nonneg <| eintegral_nonneg (by simp)
-  · exact eintegrable_of_nonneg (fun _ ↦ eintegral_nonneg (by simp))
-  · sorry
-  · sorry
-  · sorry
-  · sorry
-  · exact .inl (EReal.ne_bot_of_nonneg <| eintegral_nonneg fun _ ↦ eintegral_nonneg (by simp))
-
 theorem eintegral_map {β : Type*} {mβ : MeasurableSpace β} {f : β → EReal} {g : α → β}
     (hf : Measurable f) (hg : Measurable g) : ∫ᵉ a, f a ∂μ.map g = ∫ᵉ a, f (g a) ∂μ := by
   simp only [eintegral]
@@ -866,22 +838,6 @@ theorem eintegral_map' {β : Type*} {mβ : MeasurableSpace β} {f : β → EReal
     ∫ᵉ a, f a ∂μ.map g = ∫ᵉ a, f (g a) ∂μ := by
   simp only [eintegral]
   repeat rw [lintegral_map' (by fun_prop) hg]
-
-lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
-    {ν : Measure β} [SFinite ν]
-    (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) (hf_int : eintegrable f (μ.prod ν)) :
-    ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by
-  calc ∫ᵉ z, f z ∂(μ.prod ν)
-  _ = ∫ᵉ z, (f ∘ Prod.swap) z ∂(ν.prod μ) := by
-    simp only [Function.comp_apply]
-    rw [← eintegral_map' _ measurable_swap.aemeasurable, Measure.prod_swap]
-    rwa [Measure.prod_swap]
-  _ = ∫ᵉ y, ∫ᵉ x, (f ∘ Prod.swap) (y, x) ∂μ ∂ν := by
-    rw [eintegral_prod]
-    · refine AEMeasurable.comp_aemeasurable ?_ (by fun_prop)
-      rwa [Measure.prod_swap]
-    · sorry
-  _ = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by simp
 
 lemma eintegral_lintegral_toEReal {β : Type*} {mβ : MeasurableSpace β} {m : α → Measure β}
     {f : β → EReal} : ∫ᵉ a, (∫⁻ x, (f x).toENNReal ∂m a).toEReal ∂μ =
@@ -966,5 +922,49 @@ lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClas
     ∫ᵉ x, f x ∂(Measure.dirac x₀) = f x₀ := by
   simp only [eintegral, lintegral_dirac]
   rcases le_total (f x₀) 0 with (h | h) <;> simp [h]
+
+lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [SFinite ν]
+    (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) (hf_int : eintegrable f (μ.prod ν)) :
+    ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ x, ∫ᵉ y, f (x, y) ∂ν ∂μ := by
+  simp_rw [← posPartFun_sub_negPartFun f]
+  rw [eintegral_sub_of_nonneg_of_eq_zero (by simp) (by simp)
+    (posPartFun_eq_zero_or_negPartFun_eq_zero f)]
+  rw [eintegral_prod_of_nonneg, eintegral_prod_of_nonneg]
+  rotate_left
+  · fun_prop
+  · simp
+  · fun_prop
+  · simp
+  rw [← eintegral_sub]
+  · congr with x
+    rw [eintegral_sub]
+    · exact eintegrable_of_nonneg (by simp)
+    · sorry
+    · exact eintegrable_of_nonneg (by simp)
+    · sorry
+    · sorry -- will only be true a.e. Need a filter_upwards above
+    · exact .inl <| EReal.ne_bot_of_nonneg <| eintegral_nonneg (by simp)
+  · exact eintegrable_of_nonneg (fun _ ↦ eintegral_nonneg (by simp))
+  · sorry
+  · sorry
+  · sorry
+  · sorry
+  · exact .inl (EReal.ne_bot_of_nonneg <| eintegral_nonneg fun _ ↦ eintegral_nonneg (by simp))
+
+lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
+    {ν : Measure β} [SFinite ν]
+    (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) (hf_int : eintegrable f (μ.prod ν)) :
+    ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by
+  calc ∫ᵉ z, f z ∂(μ.prod ν)
+  _ = ∫ᵉ z, (f ∘ Prod.swap) z ∂(ν.prod μ) := by
+    simp only [Function.comp_apply]
+    rw [← eintegral_map' _ measurable_swap.aemeasurable, Measure.prod_swap]
+    rwa [Measure.prod_swap]
+  _ = ∫ᵉ y, ∫ᵉ x, (f ∘ Prod.swap) (y, x) ∂μ ∂ν := by
+    rw [eintegral_prod]
+    · refine AEMeasurable.comp_aemeasurable ?_ (by fun_prop)
+      rwa [Measure.prod_swap]
+    · sorry
+  _ = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by simp
 
 end MeasureTheory

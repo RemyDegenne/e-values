@@ -19,6 +19,22 @@ import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
 open Filter MeasureTheory
 open scoped ENNReal NNReal Topology
 
+lemma ConcaveOn.le_add_deriv_mul {S : Set ℝ} {f : ℝ → ℝ} {x y : ℝ}
+    (hfc : ConcaveOn ℝ S f) (hx : x ∈ S) (hy : y ∈ S) (hfd : DifferentiableAt ℝ f y) :
+    f x ≤ f y + deriv f y * (x - y) := by
+  rcases lt_trichotomy x y with hxy | rfl | hyx
+  · have h_ccv := hfc.deriv_le_slope hx hy hxy hfd
+    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
+    have : 0 < (y - x) := sub_pos.mpr hxy
+    field_simp at h_ccv
+    linarith
+  · simp
+  · have h_ccv := hfc.slope_le_deriv hy hx hyx hfd
+    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
+    have : 0 < (x - y) := sub_pos.mpr hyx
+    field_simp at h_ccv
+    linarith
+
 namespace ProbabilityTheory
 
 variable {U : ℝ≥0∞ → EReal}
@@ -183,22 +199,6 @@ lemma Utility.deriv_nonneg (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx_to
   refine isOpen_Ioi.mem_nhds ?_
   simp only [Set.mem_Ioi, ENNReal.toReal_pos_iff]
   exact ⟨hx0.bot_lt, hx_top.lt_top⟩
-
-lemma _root_.ConcaveOn.le_add_deriv_mul {S : Set ℝ} {f : ℝ → ℝ} {x y : ℝ}
-    (hfc : ConcaveOn ℝ S f) (hx : x ∈ S) (hy : y ∈ S) (hfd : DifferentiableAt ℝ f y) :
-    f x ≤ f y + deriv f y * (x - y) := by
-  rcases lt_trichotomy x y with hxy | rfl | hyx
-  · have h_ccv := hfc.deriv_le_slope hx hy hxy hfd
-    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
-    have : 0 < (y - x) := sub_pos.mpr hxy
-    field_simp at h_ccv
-    linarith
-  · simp
-  · have h_ccv := hfc.slope_le_deriv hy hx hyx hfd
-    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
-    have : 0 < (x - y) := sub_pos.mpr hyx
-    field_simp at h_ccv
-    linarith
 
 lemma Utility.le_add_deriv_mul (U : Utility) {x y : ℝ≥0∞} (hx_top : x ≠ ∞)
     (hy_zero : y ≠ 0) (hy_top : y ≠ ∞) :

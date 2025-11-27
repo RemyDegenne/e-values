@@ -4,7 +4,6 @@ import EValues.ERenyi
 import EValues.EValue
 import EValues.FindAxioms
 import EValues.Mathlib.Convex
-import EValues.Mathlib.EDiv
 import EValues.Mathlib.ENNReal
 import EValues.Mathlib.EReal
 import EValues.Mathlib.Jensen
@@ -13,5 +12,4 @@ import EValues.Mathlib.unitInterval
 import EValues.Numeraire
 import EValues.NumeraireExistence
 import EValues.Product
-import EValues.RealPolar
 import EValues.Utility

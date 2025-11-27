@@ -1,0 +1,50 @@
+\chapter{Extended real numbers and their integral}
+
+TODO: describe the extended real numbers and the conventions used for their operations.
+
+\begin{definition}\label{def:ENNReal}
+  \mathlibok
+  \lean{ENNReal}
+The set of extended non-negative real numbers is $\mathbb{R}_{+,\infty} = \mathbb{R}_{+} \cup \{+\infty\}$.
+\end{definition}
+
+\begin{definition}\label{def:EReal}
+  \mathlibok
+  \lean{EReal}
+The set of extended real numbers is $\overline{\mathbb{R}} = \mathbb{R} \cup \{+\infty, -\infty\}$.
+\end{definition}
+
+TODO: addition and multiplication conventions
+
+\begin{definition}\label{def:ENNReal.log}
+  \uses{def:ENNReal, def:EReal}
+  \mathlibok
+  \lean{ENNReal.log}
+The logarithm as a function from $\mathbb{R}_{+, \infty}$ to $\overline{\mathbb{R}}$ is defined as
+\begin{align*}
+  \log(x)
+  &= \begin{cases}
+    -\infty & \text{if } x = 0 \\
+    \text{the usual logarithm} & \text{if } x \in (0, +\infty) \\
+    +\infty & \text{if } x = +\infty
+  \end{cases}
+\end{align*}
+\end{definition}
+
+A good property of the conventions chosen for addition and multiplication is that the usual properties of logarithm hold.
+In particular, for all $x, y \in \mathbb{R}_{+, \infty}$, $\log(xy) = \log(x) + \log(y)$.
+
+TODO: positive and negative parts of an extended real number
+
+\begin{definition}\label{def:eintegral}
+  \uses{def:EReal}
+  \leanok
+  \lean{MeasureTheory.eintegral}
+For $f : \Omega \to \overline{\mathbb{R}}$ and $\mu$ a measure on $\Omega$, we define the extended integral of $f$ with respect to $\mu$ as
+\begin{align*}
+  \int_{\omega} f (\omega) \, d\mu
+  &:= \int_{\omega} f^{+} (\omega) \, d\mu - \int_{\omega} f^{-} (\omega) \, d\mu
+  \: ,
+\end{align*}
+where $f^{+} = \max(f, 0)$ and $f^{-} = -\min(f, 0)$, and their integrals are Lebesgue integrals, possibly taking the value $+\infty$.
+\end{definition}

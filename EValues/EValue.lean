@@ -53,25 +53,6 @@ def aeSet (S : Set (Measure 𝓧)) : Filter 𝓧 := ⨆ m ∈ S, ae m
 
 lemma mem_aeSet_iff {t : Set 𝓧} : t ∈ aeSet S ↔ ∀ m ∈ S, m tᶜ = 0 := by simp [aeSet, mem_ae_iff]
 
-/-- The pairing function between a signed measure and a real function. -/
-noncomputable
-def pairingFun (s : SignedMeasure 𝓧) (f : 𝓧 → ℝ) : ℝ :=
-  ∫ ω, f ω ∂s.toJordanDecomposition.posPart
-    - ∫ ω, f ω ∂s.toJordanDecomposition.negPart
-
-/-- The set of functions that are integrable against all measures in a given set. -/
-def integrableFunctions (S : Set (Measure 𝓧)) :=
-  {f : 𝓧 → ℝ // Measurable f ∧ ∀ μ ∈ S, Integrable f μ}
-
-/-- The set of measures against which all functions in a given set are integrable. -/
-def integrableMeasures (L : Set (𝓧 → ℝ)) := {μ : Measure 𝓧 // ∀ f ∈ L, Integrable f μ}
-
-/-- The set of signed measures against which all functions in a given set are integrable. -/
-def integrableSignedMeasures (L : Set (𝓧 → ℝ)) :=
-  {s : SignedMeasure 𝓧 // ∀ f ∈ L, Integrable f s.totalVariation}
--- being integrable against `totalVariation` is equivalent to being integrable against both
--- positive and negative parts. That is, both parts are in `integrableMeasures L`.
-
 end MeasureTheory
 
 namespace ProbabilityTheory
@@ -118,8 +99,7 @@ lemma isEVar_one (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasu
 lemma isEVar_fun_one (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
     IsEVar (fun _ ↦ 1) S := isEVar_one S hS
 
-lemma IsEVar.ae_ne_top (hX : IsEVar X S) : ∀ μ ∈ S, ∀ᵐ ω ∂μ, X ω < ⊤ := by
-  intro μ hμ
+lemma IsEVar.ae_lt_top (hX : IsEVar X S) {μ : Measure 𝓧} (hμ : μ ∈ S) : ∀ᵐ ω ∂μ, X ω < ⊤ := by
   by_contra h
   suffices ∫⁻ ω, X ω ∂μ = ⊤ by
     have lintegral_le_one := hX.lintegral_le_one μ hμ
@@ -133,9 +113,8 @@ lemma IsEVar.ae_ne_top (hX : IsEVar X S) : ∀ μ ∈ S, ∀ᵐ ω ∂μ, X ω <
     ext ω
     simp
 
-lemma IsEVar.ae_finite (hX : IsEVar X S) : ∀ μ ∈ S, ∀ᵐ ω ∂μ, X ω ≠ ⊤ := by
-  intro μ hμ
-  filter_upwards [hX.ae_ne_top μ hμ] with ω hω using hω.ne
+lemma IsEVar.ae_ne_top (hX : IsEVar X S) {μ : Measure 𝓧} (hμ : μ ∈ S) : ∀ᵐ ω ∂μ, X ω ≠ ⊤ := by
+  filter_upwards [hX.ae_lt_top hμ] with ω hω using hω.ne
 
 lemma IsEVar.measurable_fsupport (hX : IsEVar X S) :
     MeasurableSet X.fsupport := by

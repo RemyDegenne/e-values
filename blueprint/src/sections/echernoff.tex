@@ -1,24 +1,26 @@
 \chapter{e-Rényi and e-Chernoff divergences}
 
 \begin{definition}\label{def:erenyiDiv}
-  \uses{def:logUtility}
+  \uses{def:maxUtility, def:logUtility}
   \leanok
   \lean{ProbabilityTheory.erenyiDiv}
+The e-Rényi divergence of order $\alpha \in (0,1)$ between two sets of probability measures $\mathcal{P}, \mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ is defined as
 \begin{align*}
   \eR_\alpha(\mathcal{P}, \mathcal{Q})
-  &= \frac{1}{1 - \alpha} \inf_{R \in \mathcal{P}(\mathcal{X})} \left( \alpha \mathcal{U}_{\log}(R, \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(R, \mathcal{Q}) \right)
-  \: .
+  &= \frac{1}{1 - \alpha} \inf_{R \in \mathcal{P}(\mathcal{X})} \left( \alpha \mathcal{U}(R, \mathcal{P}) + (1 - \alpha) \mathcal{U}(R, \mathcal{Q}) \right)
+  \: ,
 \end{align*}
+for $\mathcal{U}_{\log}$ the max-utility corresponding to the logarithmic utility.
 \end{definition}
 
 
 \begin{definition}\label{def:echernoffDiv}
-  \uses{def:logUtility}
+  \uses{def:maxUtility, def:logUtility}
   \leanok
   \lean{ProbabilityTheory.echernoffDiv}
 \begin{align*}
   \eC_\alpha(\mathcal{P}, \mathcal{Q})
-  &= \inf_{R \in \mathcal{P}(\mathcal{X})} \max\left\{\mathcal{U}_{\log}(R, \mathcal{P}), \mathcal{U}_{\log}(R, \mathcal{Q}) \right\}
+  &= \inf_{R \in \mathcal{P}(\mathcal{X})} \max\left\{\mathcal{U}(R, \mathcal{P}), \mathcal{U}_{\log}(R, \mathcal{Q}) \right\}
   \: .
 \end{align*}
 \end{definition}
@@ -38,7 +40,7 @@ Then, for all $\alpha \in (0, 1)$,
 \end{lemma}
 
 \begin{proof}\leanok
-  \uses{lem:logUtility_anti}
+  \uses{lem:maxUtility_anti}
 
 \end{proof}
 
@@ -57,7 +59,7 @@ Then
 \end{lemma}
 
 \begin{proof}\leanok
-  \uses{lem:logUtility_anti}
+  \uses{lem:maxUtility_anti}
 
 \end{proof}
 
@@ -75,7 +77,7 @@ Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
 \end{lemma}
 
 \begin{proof}\leanok
-  \uses{lem:logUtility_comp_le}
+  \uses{lem:maxUtility_comp_le}
 
 \end{proof}
 
@@ -111,7 +113,7 @@ Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be Markov kernel. Then
 \end{lemma}
 
 \begin{proof}\leanok
-  \uses{lem:logUtility_comp_le}
+  \uses{lem:maxUtility_comp_le}
 
 \end{proof}
 
@@ -148,8 +150,8 @@ TODO: can we drop the finiteness assumption?
 \end{lemma}
 
 \begin{proof}
-  \uses{lem:logUtility_eq_top_of_not_acSet}
-If $R$ is not absolutely continuous with respect to $\mathcal{P}$, then $\mathcal{U}_{\log}(R, \mathcal{P}) = \infty$ by Lemma~\ref{lem:logUtility_eq_top_of_not_acSet}.
+  \uses{lem:maxUtility_eq_top_of_not_acSet}
+If $R$ is not absolutely continuous with respect to $\mathcal{P}$, then $\mathcal{U}_{\log}(R, \mathcal{P}) = \infty$ by Lemma~\ref{lem:maxUtility_eq_top_of_not_acSet}.
 Similarly, if $R$ is not absolutely continuous with respect to $\mathcal{Q}$, then $\mathcal{U}_{\log}(R, \mathcal{Q}) = \infty$.
 Hence, in both cases, the term $\alpha \mathcal{U_{\log}(R, \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(R, \mathcal{Q})}$ is infinite and does not contribute to the infimum defining $\eR_\alpha(\mathcal{P}, \mathcal{Q})$.
 \end{proof}
@@ -198,7 +200,7 @@ Since $\phi$ is an embedding, every measure supported on $A$ is of the form $\ph
   &= \frac{1}{1 - \alpha} \inf_{R \in \mathcal{P}(\mathcal{X})} \left( \alpha \mathcal{U}_{\log}(\phi_* R, \phi_* \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(\phi_* R, \phi_* \mathcal{Q}) \right)
   \: .
 \end{align*}
-Using then Lemma~\ref{lem:logUtility_map_eq}, we get
+Using then Lemma~\ref{lem:maxUtility_map_eq}, we get
 \begin{align*}
   \eR_\alpha(\phi_*\mathcal{P}, \phi_*\mathcal{Q})
   &= \frac{1}{1 - \alpha} \inf_{R \in \mathcal{P}(\mathcal{X})} \left( \alpha \mathcal{U}_{\log}(R, \mathcal{P}) + (1 - \alpha) \mathcal{U}_{\log}(R, \mathcal{Q}) \right)
@@ -209,13 +211,13 @@ Using then Lemma~\ref{lem:logUtility_map_eq}, we get
 \end{proof}
 
 
-\begin{lemma}\label{lem:logUtility_prod}
-  \uses{def:logUtility, thm:numeraire_prod}
+\begin{lemma}\label{lem:maxUtility_prod}
+  \uses{def:maxUtility, thm:numeraire_prod}
   \leanok
   \lean{ProbabilityTheory.maxUtility_prod}
 \begin{align*}
-  \mathcal{U}_{\log}(P_1 \otimes P_2, \mathcal{Q}_1 \otimes \mathcal{Q}_2)
-  &= \mathcal{U}_{\log}(P_1, \mathcal{Q}_1) + \mathcal{U}_{\log}(P_2, \mathcal{Q}_2)
+  \mathcal{U}(P_1 \otimes P_2, \mathcal{Q}_1 \otimes \mathcal{Q}_2)
+  &= \mathcal{U}(P_1, \mathcal{Q}_1) + \mathcal{U}(P_2, \mathcal{Q}_2)
   \: .
 \end{align*}
 \end{lemma}
@@ -237,7 +239,7 @@ Using then Lemma~\ref{lem:logUtility_map_eq}, we get
 \end{lemma}
 
 \begin{proof}\leanok
-  \uses{lem:logUtility_prod}
+  \uses{lem:maxUtility_prod}
 
 \end{proof}
 
@@ -254,7 +256,7 @@ Using then Lemma~\ref{lem:logUtility_map_eq}, we get
 \end{lemma}
 
 \begin{proof}\leanok
-  \uses{lem:logUtility_prod}
+  \uses{lem:maxUtility_prod}
 
 \end{proof}
 
@@ -274,9 +276,9 @@ Then
 \end{lemma}
 
 \begin{proof}\leanok
-  \uses{lem:logUtility_map_le, lem:convex_logUtility, lem:logUtility_map_swap}
+  \uses{lem:maxUtility_map_le, lem:convex_maxUtility, lem:maxUtility_map_swap}
 First consider an arbitrary $R \in \mathcal{P}(\mathcal{X})$.
-Then $R' = \frac{1}{2}(R + \phi_* R)$ satisfies $\phi_* R' = R'$ and by convexity (Lemma~\ref{lem:convex_logUtility}) and Lemma~\ref{lem:logUtility_map_swap},
+Then $R' = \frac{1}{2}(R + \phi_* R)$ satisfies $\phi_* R' = R'$ and by convexity (Lemma~\ref{lem:convex_maxUtility}) and Lemma~\ref{lem:maxUtility_map_swap},
 \begin{align*}
   \frac{1}{2} \mathcal{U}_{\log}(R', \mathcal{P}) + \frac{1}{2} \mathcal{U}_{\log}(R', \mathcal{Q})
   &\le \frac{1}{2} \left( \frac{1}{2} \mathcal{U}_{\log}(R, \mathcal{P}) + \frac{1}{2} \mathcal{U}_{\log}(R, \mathcal{Q}) \right)
@@ -287,5 +289,5 @@ Then $R' = \frac{1}{2}(R + \phi_* R)$ satisfies $\phi_* R' = R'$ and by convexit
   \: .
 \end{align*}
 Hence we can restrict the infimum defining $\eR_{1/2}(\mathcal{P}, \mathcal{Q})$ to measures $R$ such that $\phi_* R = R$.
-For such measures, by Lemma~\ref{lem:logUtility_map_swap}, $\mathcal{U}_{\log}(R, \mathcal{Q}) = \mathcal{U}_{\log}(\phi_* R, \mathcal{P}) = \mathcal{U}_{\log}(R, \mathcal{P})$ and we get the result.
+For such measures, by Lemma~\ref{lem:maxUtility_map_swap}, $\mathcal{U}_{\log}(R, \mathcal{Q}) = \mathcal{U}_{\log}(\phi_* R, \mathcal{P}) = \mathcal{U}_{\log}(R, \mathcal{P})$ and we get the result.
 \end{proof}
