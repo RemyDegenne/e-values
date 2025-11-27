@@ -276,7 +276,13 @@ theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
       · exact EReal.ne_bot_of_nonneg (eintegral_nonneg (fun _ ↦ by positivity))
       · simp [Utility.deriv, hX_int_zero, hX_int_top]
       · simp [Utility.deriv, hX_int_zero, hX_int_top]
-      · sorry
+      · refine eintegrable_of_eintegral_ne_bot ?_
+        rw [eintegral_sub']
+        · simp [sub_eq_add_neg, EReal.add_eq_bot_iff, hX_int_top, eintegral_eq_lintegral]
+        · fun_prop
+        · fun_prop
+        · simp [hX_int_top]
+        · simp
       simp only [eintegral_const, measure_univ, EReal.coe_ennreal_one, mul_one, mul_eq_zero]
       rw [eintegral_eq_lintegral, EReal.sub_self (by simpa) (by simp)]
       simp

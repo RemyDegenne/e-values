@@ -117,6 +117,10 @@ lemma eintegral_of_not_eintegrable (hf : ¬ eintegrable f μ) :
   simp only [eintegrable, ne_eq, not_or, Decidable.not_not] at hf
   simp [eintegral, hf]
 
+lemma eintegrable_of_eintegral_ne_bot (hf : ∫ᵉ x, f x ∂μ ≠ ⊥) : eintegrable f μ := by
+  contrapose! hf
+  exact eintegral_of_not_eintegrable hf
+
 @[simp]
 lemma eintegral_zero (μ : Measure α) : ∫ᵉ _, (0 : EReal) ∂μ = 0 := by simp [eintegral]
 
