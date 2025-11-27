@@ -701,6 +701,4 @@ theorem erenyiDiv_ge_of_separated {f : 𝓧 → I} (hf : Measurable f)
       exact hTf ν hνT
   _ ≤ erenyiDiv 2⁻¹ S T := erenyiDiv_map_le hf
 
-#axiom_blame erenyiDiv_ge_of_separated
-
 end ProbabilityTheory

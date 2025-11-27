@@ -117,6 +117,10 @@ lemma eintegral_of_not_eintegrable (hf : ¬ eintegrable f μ) :
   simp only [eintegrable, ne_eq, not_or, Decidable.not_not] at hf
   simp [eintegral, hf]
 
+lemma eintegrable_of_eintegral_ne_bot (hf : ∫ᵉ x, f x ∂μ ≠ ⊥) : eintegrable f μ := by
+  contrapose! hf
+  exact eintegral_of_not_eintegrable hf
+
 @[simp]
 lemma eintegral_zero (μ : Measure α) : ∫ᵉ _, (0 : EReal) ∂μ = 0 := by simp [eintegral]
 
@@ -398,6 +402,13 @@ lemma eintegral_eq_integral_toReal (hf_meas : AEMeasurable f μ) (h_int_bot : �
     rw [EReal.coe_toReal hx_top hx_bot]
   rw [eintegral_congr_ae hf_eq, eintegral_eq_integral]
   exact integrable_toReal hf_meas h_int_bot h_int_top
+
+lemma eintegral_eq_lintegral (f : α → ENNReal) :
+    ∫ᵉ x, f x ∂μ = ∫⁻ x, f x ∂μ := by
+  rw [eintegral_of_nonneg]
+  · simp
+  · intro
+    positivity
 
 lemma eintegral_mul_const_of_nonneg {c : EReal} (hc_bot : c ≠ ⊥) (hc_top : c ≠ ⊤)
     (hf : ∀ x, 0 ≤ f x) :
