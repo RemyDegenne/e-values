@@ -7,6 +7,7 @@ import EValues.EIntegral
 import EValues.Mathlib.Convex
 import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.Analysis.Calculus.ContDiff.Defs
+import Mathlib.Analysis.Convex.Deriv
 import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
 
@@ -51,10 +52,114 @@ lemma Utility.aemeasurable {μ : Measure ℝ≥0∞} (U : Utility) :
 
 lemma Utility.concave (U : Utility) : ConcaveOn ℝ≥0 Set.univ U := U.concave'
 
+lemma Utility.ne_top (U : Utility) {x : ℝ≥0∞} (hx_top : x ≠ ∞) : U x ≠ ⊤ := by
+  by_cases hx0 : x = 0
+  · simp only [hx0, ne_eq]
+    refine ne_top_of_le_ne_top (b := U 1) ?_ ?_
+    · exact (U.eq_coe (by simp) (by simp)).2
+    · exact U.monotone (by simp)
+  · exact (U.eq_coe hx0 hx_top).2
+
+lemma Utility.ne_bot (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) : U x ≠ ⊥ := by
+  by_cases hx_top : x = ∞
+  · simp only [hx_top, ne_eq]
+    refine ne_bot_of_le_ne_bot (b := U 1) ?_ ?_
+    · exact (U.eq_coe (by simp) (by simp)).1
+    · exact U.monotone (by simp)
+  · exact (U.eq_coe hx0 hx_top).1
+
 /-- The real-valued representation of a utility function. -/
 def Utility.real (U : Utility) : ℝ → ℝ := fun x ↦ (U (ENNReal.ofReal x)).toReal
 
+lemma Utility.real_toReal (U : Utility) {x : ℝ≥0∞} (hx_top : x ≠ ∞) :
+    U.real x.toReal = (U x).toReal := by
+  simp only [real]
+  rw [ENNReal.ofReal_toReal hx_top]
+
+lemma Utility.coe_real_toReal' (U : Utility) {x : ℝ≥0∞} (hx0 : U x ≠ ⊥) (hx_top : x ≠ ∞) :
+    (U.real x.toReal : EReal) = U x := by
+  rw [U.real_toReal hx_top, EReal.coe_toReal]
+  · exact U.ne_top hx_top
+  · exact hx0
+
+lemma Utility.coe_real_toReal (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx_top : x ≠ ∞) :
+    (U.real x.toReal : EReal) = U x :=
+  coe_real_toReal' U (U.ne_bot hx0) hx_top
+
 lemma Utility.contDiffOn (U : Utility) : ContDiffOn ℝ 1 U.real (Set.Ioi 0) := U.differentiable'
+
+lemma Utility.differentiableOn (U : Utility) : DifferentiableOn ℝ U.real (Set.Ioi 0) :=
+  U.contDiffOn.differentiableOn le_rfl
+
+lemma Utility.monotoneOn_Ioi_real (U : Utility) : MonotoneOn U.real (Set.Ioi 0) := by
+  intro x hx y hy hxy
+  refine EReal.toReal_le_toReal ?_ ?_ ?_
+  · exact U.monotone (ENNReal.ofReal_le_ofReal hxy)
+  · exact U.ne_bot (by simpa)
+  · exact U.ne_top (by simp)
+
+lemma Utility.monotoneOn_Ici_real (U : Utility) (hU0 : U 0 ≠ ⊥) :
+    MonotoneOn U.real (Set.Ici 0) := by
+  intro x hx y hy hxy
+  refine EReal.toReal_le_toReal ?_ ?_ ?_
+  · exact U.monotone (ENNReal.ofReal_le_ofReal hxy)
+  · by_cases hx0 : x = 0
+    · simpa [hx0]
+    · exact U.ne_bot (by simp [lt_of_le_of_ne (Set.mem_Ici.mp hx) (Ne.symm hx0)])
+  · exact U.ne_top (by simp)
+
+lemma Utility.concaveOn_Ioi_real (U : Utility) : ConcaveOn ℝ (Set.Ioi 0) U.real := by
+  refine ⟨convex_Ioi 0, ?_⟩
+  intro x hx y hy a b ha hb hab
+  have hx_pos : 0 < x := Set.mem_Ioi.mp hx
+  have hy_pos : 0 < y := Set.mem_Ioi.mp hy
+  simp only [smul_eq_mul]
+  have h_ccv := U.concave.2 (Set.mem_univ (ENNReal.ofReal x)) (Set.mem_univ (ENNReal.ofReal y))
+    (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by ext; simp [hab])
+  simp only [EReal.smul_nnreal_eq_mul, NNReal.coe_mk, ENNReal.smul_def, smul_eq_mul] at h_ccv
+  have h_mul (x a : ℝ) (ha : 0 ≤ a) :
+      (ENNReal.ofNNReal (⟨a, ha⟩ : ℝ≥0)) * ENNReal.ofReal x = ENNReal.ofReal (a * x) := by
+    rw [ENNReal.ofReal_mul ha]
+    congr
+    simp [ha]
+  rw [h_mul, h_mul, ← ENNReal.ofReal_add (by positivity) (by positivity)] at h_ccv
+  rw [← U.coe_real_toReal' (U.ne_bot (by simpa)) (by simp),
+    ← U.coe_real_toReal' (U.ne_bot (by simpa)) (by simp),
+    ← U.coe_real_toReal' (U.ne_bot ?_) (by simp)] at h_ccv
+  swap
+  · simp only [ne_eq, ENNReal.ofReal_eq_zero, not_le]
+    by_cases ha_zero : a = 0
+    · suffices hb_pos : 0 < b by simpa [ha_zero, hb_pos] using hy
+      by_contra hb_nonpos
+      linarith
+    · have ha_pos : 0 < a := lt_of_le_of_ne ha (Ne.symm ha_zero)
+      positivity
+  norm_cast at h_ccv
+  rwa [ENNReal.toReal_ofReal (by positivity), ENNReal.toReal_ofReal (by positivity),
+    ENNReal.toReal_ofReal (by positivity)] at h_ccv
+
+lemma Utility.concaveOn_Ici_real (U : Utility) (h0 : U 0 ≠ ⊥) : ConcaveOn ℝ (Set.Ici 0) U.real := by
+  refine ⟨convex_Ici 0, ?_⟩
+  intro x hx y hy a b ha hb hab
+  have hx_nonneg : 0 ≤ x := Set.mem_Ici.mp hx
+  have hy_nonneg : 0 ≤ y := Set.mem_Ici.mp hy
+  have hU_ne_bot x : U x ≠ ⊥ := ne_bot_of_le_ne_bot (b := U 0) h0 (U.monotone zero_le')
+  simp only [smul_eq_mul]
+  have h_ccv := U.concave.2 (Set.mem_univ (ENNReal.ofReal x)) (Set.mem_univ (ENNReal.ofReal y))
+    (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by ext; simp [hab])
+  simp only [EReal.smul_nnreal_eq_mul, NNReal.coe_mk, ENNReal.smul_def, smul_eq_mul] at h_ccv
+  have h_mul (x a : ℝ) (ha : 0 ≤ a) :
+      (ENNReal.ofNNReal (⟨a, ha⟩ : ℝ≥0)) * ENNReal.ofReal x = ENNReal.ofReal (a * x) := by
+    rw [ENNReal.ofReal_mul ha]
+    congr
+    simp [ha]
+  rw [h_mul, h_mul, ← ENNReal.ofReal_add (by positivity) (by positivity)] at h_ccv
+  rw [← U.coe_real_toReal' (hU_ne_bot _) (by simp),
+    ← U.coe_real_toReal' (hU_ne_bot _) (by simp),
+    ← U.coe_real_toReal' (hU_ne_bot _) (by simp)] at h_ccv
+  norm_cast at h_ccv
+  rwa [ENNReal.toReal_ofReal (by positivity), ENNReal.toReal_ofReal (by positivity),
+    ENNReal.toReal_ofReal (by positivity)] at h_ccv
 
 /-- The derivative of a utility function.
 At `x ∈ (0, ∞)`, this is the derivative of the real-valued representation.
@@ -68,11 +173,126 @@ def Utility.deriv (U : Utility) (x : ℝ≥0∞) : EReal :=
   else
     ((deriv U.real x.toReal : ℝ) : EReal)
 
+-- should also be true at 0 and ∞, but we don't need it now
+lemma Utility.deriv_nonneg (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx_top : x ≠ ∞) :
+    0 ≤ U.deriv x := by
+  simp only [Utility.deriv, hx0, ↓reduceIte, hx_top, EReal.coe_nonneg]
+  have h_nonneg := U.monotoneOn_Ioi_real.derivWithin_nonneg (x := x.toReal)
+  refine h_nonneg.trans_eq ?_
+  refine derivWithin_of_mem_nhds ?_
+  refine isOpen_Ioi.mem_nhds ?_
+  simp only [Set.mem_Ioi, ENNReal.toReal_pos_iff]
+  exact ⟨hx0.bot_lt, hx_top.lt_top⟩
+
+lemma _root_.ConcaveOn.le_add_deriv_mul {S : Set ℝ} {f : ℝ → ℝ} {x y : ℝ}
+    (hfc : ConcaveOn ℝ S f) (hx : x ∈ S) (hy : y ∈ S) (hfd : DifferentiableAt ℝ f y) :
+    f x ≤ f y + deriv f y * (x - y) := by
+  rcases lt_trichotomy x y with hxy | rfl | hyx
+  · have h_ccv := hfc.deriv_le_slope hx hy hxy hfd
+    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
+    have : 0 < (y - x) := sub_pos.mpr hxy
+    field_simp at h_ccv
+    linarith
+  · simp
+  · have h_ccv := hfc.slope_le_deriv hy hx hyx hfd
+    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
+    have : 0 < (x - y) := sub_pos.mpr hyx
+    field_simp at h_ccv
+    linarith
+
+lemma Utility.le_add_deriv_mul (U : Utility) {x y : ℝ≥0∞} (hx_top : x ≠ ∞)
+    (hy_zero : y ≠ 0) (hy_top : y ≠ ∞) :
+    U x ≤ U y + U.deriv y * (x - y) := by
+  by_cases h_bot : U x = ⊥
+  · simp [h_bot]
+  have hUx_top : U x ≠ ⊤ := U.ne_top hx_top
+  by_cases hU0 : U 0 = ⊥
+  · by_cases hx0 : x = 0
+    · simp [hx0, hU0]
+    have h_ccv := ConcaveOn.le_add_deriv_mul U.concaveOn_Ioi_real (x := x.toReal) (y := y.toReal)
+      ?_ ?_ ?_
+    rotate_left
+    · simpa [ENNReal.toReal_pos_iff] using ⟨Ne.bot_lt hx0, Ne.lt_top hx_top⟩
+    · simpa [ENNReal.toReal_pos_iff] using ⟨hy_zero.bot_lt, hy_top.lt_top⟩
+    · refine U.differentiableOn.differentiableAt (isOpen_Ioi.mem_nhds ?_)
+      simpa [ENNReal.toReal_pos_iff] using ⟨hy_zero.bot_lt, hy_top.lt_top⟩
+    rw [← U.coe_real_toReal hx0 hx_top, ← U.coe_real_toReal hy_zero hy_top, Utility.deriv]
+    simp only [hy_zero, ↓reduceIte, hy_top, ge_iff_le]
+    nth_rw 2 [← ENNReal.ofReal_toReal hx_top]
+    nth_rw 3 [← ENNReal.ofReal_toReal hy_top]
+    simp only [EReal.coe_ennreal_ofReal, ENNReal.toReal_nonneg, sup_of_le_left]
+    norm_cast
+  · have h_ccv := ConcaveOn.le_add_deriv_mul (U.concaveOn_Ici_real hU0)
+      (x := x.toReal) (y := y.toReal) (by simp) (by simp) ?_
+    swap
+    · refine U.differentiableOn.differentiableAt (isOpen_Ioi.mem_nhds ?_)
+      simpa [ENNReal.toReal_pos_iff] using ⟨hy_zero.bot_lt, hy_top.lt_top⟩
+    rw [← U.coe_real_toReal' h_bot hx_top, ← U.coe_real_toReal hy_zero hy_top, Utility.deriv]
+    simp only [hy_zero, ↓reduceIte, hy_top, ge_iff_le]
+    nth_rw 2 [← ENNReal.ofReal_toReal hx_top]
+    nth_rw 3 [← ENNReal.ofReal_toReal hy_top]
+    simp only [EReal.coe_ennreal_ofReal, ENNReal.toReal_nonneg, sup_of_le_left]
+    norm_cast
+
 /-- Jensen's inequality. -/
 theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
-    {μ : Measure α} (U : Utility) {X : α → ℝ≥0∞} (hX_meas : AEMeasurable X μ) :
+    {μ : Measure α} [IsProbabilityMeasure μ]
+    (U : Utility) {X : α → ℝ≥0∞} (hX_meas : AEMeasurable X μ) :
     ∫ᵉ x, U (X x) ∂μ ≤ U (∫⁻ x, X x ∂μ) := by
-  sorry
+  by_cases h : ∫ᵉ x, U (X x) ∂μ = ⊥
+  · simp [h]
+  have h_ne_bot : ∀ᵐ ω ∂μ, U (X ω) ≠ ⊥ := ae_ne_bot_of_eintegral_ne_bot (by fun_prop) h
+  by_cases hX_int_top : ∫⁻ x, X x ∂μ = ∞
+  · rw [hX_int_top]
+    calc ∫ᵉ x, U (X x) ∂μ
+    _ ≤ ∫ᵉ x, U ∞ ∂μ := eintegral_mono (fun _ ↦ U.monotone (by simp))
+    _ = U ∞ := by simp
+  by_cases hX_int_zero : ∫⁻ x, X x ∂μ = 0
+  · rw [hX_int_zero]
+    rw [lintegral_eq_zero_iff' hX_meas] at hX_int_zero
+    have : ∀ᵐ x ∂μ, U (X x) = U 0 := by
+      filter_upwards [hX_int_zero] with x hx
+      simp [hx]
+    rw [eintegral_congr_ae this]
+    simp
+  have hX_top : ∀ᵐ ω ∂μ, X ω ≠ ∞ := by
+    filter_upwards [ae_lt_top' (by fun_prop) hX_int_top] with x hx using hx.ne
+  have h_ne_top : ∀ᵐ ω ∂μ, U (X ω) ≠ ⊤ := by
+    filter_upwards [hX_top] with x hx using U.ne_top hx
+  have h_ccv : ∀ᵐ x ∂μ, U (X x)
+      ≤ U (∫⁻ y, X y ∂μ) + (U.deriv (∫⁻ y, X y ∂μ)) * (X x - ∫⁻ y, X y ∂μ) := by
+    filter_upwards [h_ne_bot, h_ne_top, hX_top] with x hx_bot hx_top hx_top'
+    exact U.le_add_deriv_mul hx_top' hX_int_zero hX_int_top
+  calc ∫ᵉ x, U (X x) ∂μ
+  _ ≤ ∫ᵉ x, U (∫⁻ y, X y ∂μ) + (U.deriv (∫⁻ y, X y ∂μ)) * (X x - ∫⁻ y, X y ∂μ) ∂μ :=
+    eintegral_mono_ae h_ccv
+  _ = U (∫⁻ y, X y ∂μ) := by
+    have h_int_eq : ∫ᵉ x, U.deriv (∫⁻ y, X y ∂μ) * (X x - ∫⁻ y, X y ∂μ) ∂μ = 0 := by
+      rw [eintegral_mul_const, eintegral_sub']
+      rotate_left
+      · fun_prop
+      · fun_prop
+      · simpa
+      · exact EReal.ne_bot_of_nonneg (eintegral_nonneg (fun _ ↦ by positivity))
+      · simp [Utility.deriv, hX_int_zero, hX_int_top]
+      · simp [Utility.deriv, hX_int_zero, hX_int_top]
+      · refine eintegrable_of_eintegral_ne_bot ?_
+        rw [eintegral_sub']
+        · simp [sub_eq_add_neg, EReal.add_eq_bot_iff, hX_int_top, eintegral_eq_lintegral]
+        · fun_prop
+        · fun_prop
+        · simp [hX_int_top]
+        · simp
+      simp only [eintegral_const, measure_univ, EReal.coe_ennreal_one, mul_one, mul_eq_zero]
+      rw [eintegral_eq_lintegral, EReal.sub_self (by simpa) (by simp)]
+      simp
+    rw [eintegral_add', h_int_eq]
+    rotate_left
+    · fun_prop
+    · fun_prop
+    · simp [h_int_eq]
+    · simp [h_int_eq]
+    simp
 
 section Log
 
