@@ -66,6 +66,7 @@ lemma echernoffDiv_anti {S₁ S₂ T₁ T₂ : Set (Measure 𝓧)} (hS : S₁ �
   · exact EReal.toENNReal_le_toENNReal <| maxUtility_anti hS
   · exact EReal.toENNReal_le_toENNReal <| maxUtility_anti hT
 
+/-- Data processing inequality for the e-Rényi divergence with a Markov kernel. -/
 lemma erenyiDiv_comp_le (κ : Kernel 𝓧 𝓨) [IsMarkovKernel κ] :
     erenyiDiv α {κ ∘ₘ μ | μ ∈ S} {κ ∘ₘ μ | μ ∈ T} ≤ erenyiDiv α S T := by
   unfold erenyiDiv
@@ -86,13 +87,13 @@ lemma erenyiDiv_comp_le (κ : Kernel 𝓧 𝓨) [IsMarkovKernel κ] :
       gcongr 1
       exact EReal.toENNReal_le_toENNReal <| maxUtility_comp_le R κ
 
-
-/-- Data processing inequality for the e-Rényi divergence. -/
+/-- Data processing inequality for the e-Rényi divergence with a measurable function. -/
 lemma erenyiDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
     erenyiDiv α {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} ≤ erenyiDiv α S T := by
   simp_rw [← Measure.deterministic_comp_eq_map hf]
   exact erenyiDiv_comp_le <| Kernel.deterministic f hf
 
+/-- Data processing inequality for the e-Chernoff divergence with a Markov kernel. -/
 lemma echernoffDiv_comp_le (κ : Kernel 𝓧 𝓨) [IsMarkovKernel κ] :
     echernoffDiv {κ ∘ₘ μ | μ ∈ S} {κ ∘ₘ μ | μ ∈ T} ≤ echernoffDiv S T := by
   calc echernoffDiv {κ ∘ₘ μ | μ ∈ S} {κ ∘ₘ μ | μ ∈ T}
@@ -107,7 +108,7 @@ lemma echernoffDiv_comp_le (κ : Kernel 𝓧 𝓨) [IsMarkovKernel κ] :
     refine iInf₂_mono fun R _ ↦ max_le_max ?_ ?_
     all_goals exact EReal.toENNReal_le_toENNReal <| maxUtility_comp_le R κ
 
-/-- Data processing inequality for the e-Chernoff divergence. -/
+/-- Data processing inequality for the e-Chernoff divergence with a measurable function. -/
 lemma echernoffDiv_map_le {f : 𝓧 → 𝓨} (hf : Measurable f) :
     echernoffDiv {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} ≤ echernoffDiv S T := by
   simp_rw [← Measure.deterministic_comp_eq_map hf]
@@ -161,6 +162,38 @@ lemma erenyiDiv_add_eq_sInf {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (M
     rw [erenyiDiv_eq_sInf, erenyiDiv_eq_sInf]
     ring
 
+/-- Auxiliary lemma for `erenyiDiv_prod`. -/
+lemma erenyiDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
+    (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
+    (hT₁ : ∀ μ ∈ T₁, IsProbabilityMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsProbabilityMeasure μ) :
+    erenyiDiv α (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) (Measure.prod.uncurry '' (S₂ ×ˢ T₂))
+      ≤ erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
+  set ST₁ := Measure.prod.uncurry '' (S₁ ×ˢ T₁)
+  set ST₂ := Measure.prod.uncurry '' (S₂ ×ˢ T₂)
+  calc
+  _ ≤ (1 - α)⁻¹ * sInf {y | ∃ R₁ R₂,
+      IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
+      y = α * (maxUtility (R₁.prod R₂) ST₁ logUtility).toENNReal +
+          (1 - α) * (maxUtility (R₁.prod R₂) ST₂ logUtility).toENNReal} := by
+    rw [erenyiDiv_eq_sInf]
+    gcongr 1
+    refine sInf_le_sInf fun y ↦ ?_
+    rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+    exact ⟨R₁.prod R₂, inferInstance, rfl⟩
+  _ = (1 - α)⁻¹ * sInf {y | ∃ R₁ R₂,
+      IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
+      y = α * (maxUtility R₁ S₁ logUtility + maxUtility R₂ T₁ logUtility).toENNReal +
+          (1 - α) * (maxUtility R₁ S₂ logUtility + maxUtility R₂ T₂ logUtility).toENNReal} := by
+    congr with y
+    constructor
+    · rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+      rw [maxUtility_prod _ _ hS₁ hT₁, maxUtility_prod _ _ hS₂ hT₂]
+      exact ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+    · rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+      rw [← maxUtility_prod _ _ hS₁ hT₁, ← maxUtility_prod _ _ hS₂ hT₂]
+      exact ⟨R₁, R₂, hR₁, hR₂, rfl⟩
+  _ = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := erenyiDiv_add_eq_sInf hS₁ hS₂ hT₁ hT₂
+
 lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
     (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
     (hT₁ : ∀ μ ∈ T₁, IsProbabilityMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsProbabilityMeasure μ) :
@@ -168,32 +201,8 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
       = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
   set ST₁ := Measure.prod.uncurry '' (S₁ ×ˢ T₁)
   set ST₂ := Measure.prod.uncurry '' (S₂ ×ˢ T₂)
-  refine le_antisymm ?_ ?_
-  · calc
-    _ ≤ (1 - α)⁻¹ * sInf {y | ∃ R₁ R₂,
-        IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
-        y = α * (maxUtility (R₁.prod R₂) ST₁ logUtility).toENNReal +
-            (1 - α) * (maxUtility (R₁.prod R₂) ST₂ logUtility).toENNReal} := by
-      rw [erenyiDiv_eq_sInf]
-      gcongr 1
-      refine sInf_le_sInf fun y ↦ ?_
-      rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
-      exact ⟨R₁.prod R₂, inferInstance, rfl⟩
-    _ = (1 - α)⁻¹ * sInf {y | ∃ R₁ R₂,
-        IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
-        y = α * (maxUtility R₁ S₁ logUtility + maxUtility R₂ T₁ logUtility).toENNReal +
-            (1 - α) * (maxUtility R₁ S₂ logUtility + maxUtility R₂ T₂ logUtility).toENNReal} := by
-      congr with y
-      constructor
-      · rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
-        rw [maxUtility_prod _ _ hS₁ hT₁, maxUtility_prod _ _ hS₂ hT₂]
-        exact ⟨R₁, R₂, hR₁, hR₂, rfl⟩
-      · rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
-        rw [← maxUtility_prod _ _ hS₁ hT₁, ← maxUtility_prod _ _ hS₂ hT₂]
-        exact ⟨R₁, R₂, hR₁, hR₂, rfl⟩
-    _ = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := erenyiDiv_add_eq_sInf hS₁ hS₂ hT₁ hT₂
-
-  · calc
+  refine le_antisymm (erenyiDiv_prod_le hS₁ hS₂ hT₁ hT₂) ?_
+  calc
     _ ≥ (1 - α)⁻¹ * ⨅ (R : Measure (𝓧 × 𝓨)) (_ : IsProbabilityMeasure R),
         α * (⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞) (_ : IsEVar X S₁) (_ : IsEVar Y T₁),
               ∫ᵉ x, (logUtility ∘ (fun x ↦ X x.1 * Y x.2)) x ∂R).toENNReal +
@@ -410,6 +419,117 @@ lemma erenyiDiv_of_involutive {S T : Set (Measure 𝓧)} {φ : 𝓧 → 𝓧} (h
   simp only [one_div] at h_eq
   simp [h_eq]
 
+lemma echernoffDiv_of_involutive_aux {S T : Set (Measure 𝓧)}
+    {φ : 𝓧 → 𝓧} (hφ : Measurable φ) (hφ_inv : φ ∘ φ = id)
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
+    (hφST : {μ.map φ | μ ∈ S} = T) :
+    echernoffDiv S T =
+      ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R) (_ : R.map φ = R),
+        max (maxUtility R S logUtility).toENNReal (maxUtility R T logUtility).toENNReal := by
+  rw [echernoffDiv, iInf₃_eq_sInf, iInf₂_eq_sInf]
+  apply le_antisymm
+  · refine sInf_le_sInf fun y hy ↦ ?_
+    simp only [Set.mem_setOf_eq] at hy ⊢
+    obtain ⟨R, hR, hRφ, rfl⟩ := hy
+    refine ⟨R, hR, ?_⟩
+    simp
+  · refine sInf_le_sInf_of_isCoinitialFor fun y hy ↦ ?_
+    simp only [Set.mem_setOf_eq] at hy ⊢
+    obtain ⟨R, hR, rfl⟩ := hy
+    let R' := (2 : ℝ≥0∞)⁻¹ • (R + R.map φ)
+    have hR' : IsProbabilityMeasure R' := by
+      constructor
+      have : IsProbabilityMeasure (R.map φ) := R.isProbabilityMeasure_map hφ.aemeasurable
+      simpa [R'] using ENNReal.add_halves 1
+    have hR'φ : R'.map φ = R' := by
+      unfold R'
+      rw [Measure.map_smul, Measure.map_add _ _ (by fun_prop), Measure.map_map hφ hφ,
+        hφ_inv, Measure.map_id, add_comm]
+    refine ⟨max (maxUtility R' S logUtility).toENNReal
+      (maxUtility R' T logUtility).toENNReal, ⟨R', hR', hR'φ, rfl⟩, ?_⟩
+    calc max (maxUtility R' S logUtility).toENNReal (maxUtility R' T logUtility).toENNReal
+    _ ≤ max ((2 : ℝ≥0∞)⁻¹ * maxUtility R S logUtility
+          + (2 : ℝ≥0∞)⁻¹ * maxUtility (R.map φ) S logUtility).toENNReal
+        ((2 : ℝ≥0∞)⁻¹ * maxUtility R T logUtility
+          + (2 : ℝ≥0∞)⁻¹ * maxUtility (R.map φ) T logUtility).toENNReal := by
+      gcongr
+      · refine EReal.toENNReal_le_toENNReal ?_
+        have h_conv := (convexOn_maxUtility S (U := logUtility)).2 (by simp : R ∈ Set.univ)
+          (by simp : R.map φ ∈ Set.univ) (zero_le' : 0 ≤ (2 : ℝ≥0∞)⁻¹) (zero_le' : 0 ≤ (2 : ℝ≥0∞)⁻¹)
+          (by simpa using ENNReal.add_halves 1)
+        unfold R'
+        rwa [smul_add]
+      · refine EReal.toENNReal_le_toENNReal ?_
+        have h_conv := (convexOn_maxUtility T (U := logUtility)).2 (by simp : R ∈ Set.univ)
+          (by simp : R.map φ ∈ Set.univ) (zero_le' : 0 ≤ (2 : ℝ≥0∞)⁻¹) (zero_le' : 0 ≤ (2 : ℝ≥0∞)⁻¹)
+          (by simpa using ENNReal.add_halves 1)
+        unfold R'
+        rwa [smul_add]
+    _ ≤ max ((2 : ℝ≥0∞)⁻¹ * max (maxUtility R S logUtility) (maxUtility R T logUtility)
+          + (2 : ℝ≥0∞)⁻¹ *
+            max (maxUtility (R.map φ) S logUtility) (maxUtility (R.map φ) T logUtility)).toENNReal
+        ((2 : ℝ≥0∞)⁻¹ * max (maxUtility R S logUtility) (maxUtility R T logUtility)
+          + (2 : ℝ≥0∞)⁻¹ *
+            max (maxUtility (R.map φ) S logUtility)
+              (maxUtility (R.map φ) T logUtility)).toENNReal := by
+      gcongr
+      · refine EReal.toENNReal_le_toENNReal ?_
+        gcongr
+        · exact le_max_left _ _
+        · exact le_max_left _ _
+      · refine EReal.toENNReal_le_toENNReal ?_
+        gcongr
+        · exact le_max_right _ _
+        · exact le_max_right _ _
+    _ = ((2 : ℝ≥0∞)⁻¹ * max (maxUtility R S logUtility) (maxUtility R T logUtility)
+          + (2 : ℝ≥0∞)⁻¹ * max (maxUtility (R.map φ) S logUtility)
+            (maxUtility (R.map φ) T logUtility)).toENNReal := by
+      simp
+    _ = ((2 : ℝ≥0∞)⁻¹ * max (maxUtility R S logUtility) (maxUtility R T logUtility)
+          + (2 : ℝ≥0∞)⁻¹ * max (maxUtility R S logUtility)
+            (maxUtility R T logUtility)).toENNReal := by
+      rw [max_comm]
+      congr 4
+      · rw [← maxUtility_involutive _ _ hφ hφ_inv, hφST]
+      · rw [← hφST, maxUtility_involutive _ _ hφ hφ_inv, Measure.map_map hφ hφ, hφ_inv,
+          Measure.map_id]
+    _ = (2 : ℝ≥0∞)⁻¹ * (max (maxUtility R S logUtility) (maxUtility R T logUtility)).toENNReal
+          + (2 : ℝ≥0∞)⁻¹ * (max (maxUtility R S logUtility)
+            (maxUtility R T logUtility)).toENNReal := by
+      have := maxUtility_nonneg R hS
+      have := maxUtility_nonneg R hT
+      rw [EReal.toENNReal_add (by positivity) (by positivity), EReal.toENNReal_mul (by positivity),
+        EReal.toENNReal_coe]
+    _ = (max (maxUtility R S logUtility) (maxUtility R T logUtility)).toENNReal := by
+      rw [← two_mul, ← mul_assoc, ENNReal.mul_inv_cancel (by simp) (by simp), one_mul]
+    _ = max (maxUtility R S logUtility).toENNReal (maxUtility R T logUtility).toENNReal := by
+      rcases le_total (maxUtility R S logUtility) (maxUtility R T logUtility) with hle | hle
+      · simp only [hle, sup_of_le_right, right_eq_sup]
+        exact EReal.toENNReal_le_toENNReal hle
+      · simp only [hle, sup_of_le_left, left_eq_sup]
+        exact EReal.toENNReal_le_toENNReal hle
+
+lemma echernoffDiv_of_involutive {S T : Set (Measure 𝓧)} {φ : 𝓧 → 𝓧} (hφ : Measurable φ)
+    (hφ_inv : φ ∘ φ = id)
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
+    (hφST : {μ.map φ | μ ∈ S} = T) :
+    echernoffDiv S T =
+      ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R) (_ : R.map φ = R),
+        (maxUtility R S logUtility).toENNReal := by
+  rw [echernoffDiv_of_involutive_aux hφ hφ_inv hS hT hφST]
+  congr with R
+  congr with hR
+  congr with hRφ
+  rw [← hφST, maxUtility_involutive _ _ hφ hφ_inv, hRφ, max_self]
+
+lemma erenyiDiv_eq_two_mul_echernoffDiv_of_involutive {S T : Set (Measure 𝓧)} {φ : 𝓧 → 𝓧}
+    (hφ : Measurable φ) (hφ_inv : φ ∘ φ = id)
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
+    (hφST : {μ.map φ | μ ∈ S} = T) :
+    erenyiDiv 2⁻¹ S T = 2 * echernoffDiv S T := by
+  rw [erenyiDiv_of_involutive hφ hφ_inv hS hT hφST,
+    echernoffDiv_of_involutive hφ hφ_inv hS hT hφST]
+
 lemma eq_bernoulli_half_of_map_eq {R : Measure ({0, 1} : Set ℝ)} [IsProbabilityMeasure R]
     (hRφ : Measure.map (fun x ↦ ⟨1 - x.1, by grind⟩) R = R) :
     R = (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨0, by simp⟩ + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩ := by
@@ -447,6 +567,31 @@ lemma map_bernoulli_half_eq :
     rw [Measure.map_dirac (by fun_prop)]
     simp
 
+lemma todo_aux_set (δ : ℝ) :
+    letI φ : ({0, 1} : Set ℝ) → ({0, 1} : Set ℝ) := fun x ↦ ⟨1 - x.1, by grind⟩
+    {x | ∃ μ ∈ {μ | IsProbabilityMeasure μ ∧ ∫ (x : ({0, 1} : Set ℝ)), ↑x ∂μ ≤ δ}, μ.map φ = x} =
+      {μ | IsProbabilityMeasure μ ∧ 1 - δ ≤ ∫ (x : ({0, 1} : Set ℝ)), ↑x ∂μ} := by
+  let φ : ({0, 1} : Set ℝ) → ({0, 1} : Set ℝ) := fun x ↦ ⟨1 - x.1, by grind⟩
+  have hφ_inv : φ ∘ φ = id := by ext; simp [φ]
+  ext μ
+  simp only [Set.mem_setOf_eq, tsub_le_iff_right]
+  constructor
+  · rintro ⟨ν, ⟨⟨hν, h_int⟩, rfl⟩⟩
+    refine ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩
+    rw [integral_map (by fun_prop) (by fun_prop)]
+    simp only [φ]
+    rw [integral_sub (by fun_prop) (by fun_prop)]
+    simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+    linarith
+  · rintro ⟨hμ, h_int⟩
+    refine ⟨μ.map φ, ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩, ?_⟩
+    · rw [integral_map (by fun_prop) (by fun_prop)]
+      simp only [φ]
+      rw [integral_sub (by fun_prop) (by fun_prop)]
+      simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+      linarith
+    · rw [Measure.map_map (by fun_prop) (by fun_prop), hφ_inv, Measure.map_id]
+
 lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
     erenyiDiv 2⁻¹ {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ}
         {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ 1 - δ ≤ ∫ x, (x : ℝ) ∂μ}
@@ -455,24 +600,7 @@ lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
   have hφ_inv : φ ∘ φ = id := by ext; simp [φ]
   rw [erenyiDiv_of_involutive (by fun_prop) hφ_inv (by grind) (by grind)]
   swap
-  · ext μ
-    simp only [Set.mem_setOf_eq, tsub_le_iff_right]
-    constructor
-    · rintro ⟨ν, ⟨⟨hν, h_int⟩, rfl⟩⟩
-      refine ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩
-      rw [integral_map (by fun_prop) (by fun_prop)]
-      simp only [φ]
-      rw [integral_sub (by fun_prop) (by fun_prop)]
-      simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
-      linarith
-    · rintro ⟨hμ, h_int⟩
-      refine ⟨μ.map φ, ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩, ?_⟩
-      · rw [integral_map (by fun_prop) (by fun_prop)]
-        simp only [φ]
-        rw [integral_sub (by fun_prop) (by fun_prop)]
-        simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
-        linarith
-      · rw [Measure.map_map (by fun_prop) (by fun_prop), hφ_inv, Measure.map_id]
+  · exact todo_aux_set δ
   have h_iff R (hR : IsProbabilityMeasure R) :
       R.map φ = R ↔ R =
         (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨0, by simp⟩ + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩ := by
@@ -522,6 +650,17 @@ lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
       rw [this, EReal.toENNReal_inv (by simp)]
       simp
     rw [this, ENNReal.mul_inv_cancel (by simp) (by simp)]
+
+lemma echernoffDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
+    echernoffDiv {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ}
+        {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ 1 - δ ≤ ∫ x, (x : ℝ) ∂μ}
+      = 2⁻¹ * ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ)))) := by
+  let φ : ({0, 1} : Set ℝ) → ({0, 1} : Set ℝ) := fun x ↦ ⟨1 - x.1, by grind⟩
+  have hφ_inv : φ ∘ φ = id := by ext; simp [φ]
+  rw [← erenyiDiv_bernoulli hδ_pos hδ,
+    erenyiDiv_eq_two_mul_echernoffDiv_of_involutive (by fun_prop) hφ_inv (by grind) (by grind),
+    ← mul_assoc, ENNReal.inv_mul_cancel (by simp) (by simp), one_mul]
+  exact todo_aux_set δ
 
 open unitInterval in
 lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
@@ -676,6 +815,37 @@ lemma erenyiDiv_bounded {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
   rw [erenyiDiv_bounded_eq_erenyiDiv_bernoulli, erenyiDiv_bernoulli hδ_pos hδ]
 
 open unitInterval in
+lemma echernoffDiv_bounded {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
+    echernoffDiv {μ : Measure I | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ}
+        {μ : Measure I | IsProbabilityMeasure μ ∧ 1 - δ ≤ ∫ x, (x : ℝ) ∂μ} =
+      2⁻¹ * ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ)))) := by
+  let φ : I → I := fun x ↦ ⟨1 - x.1, by grind⟩
+  have hφ_inv : φ ∘ φ = id := by ext; simp [φ]
+  rw [← erenyiDiv_bounded hδ_pos hδ,
+    erenyiDiv_eq_two_mul_echernoffDiv_of_involutive (by fun_prop) hφ_inv (by grind) (by grind),
+    ← mul_assoc, ENNReal.inv_mul_cancel (by simp) (by simp), one_mul]
+  ext μ
+  simp only [Set.mem_setOf_eq]
+  have h_int (μ : Measure I) [IsFiniteMeasure μ] : Integrable (Subtype.val : I → ℝ) μ := by
+    sorry
+  constructor
+  · rintro ⟨ν, ⟨⟨hν, h_int⟩, rfl⟩⟩
+    refine ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩
+    rw [integral_map (by fun_prop) (by fun_prop)]
+    simp only [φ]
+    rw [integral_sub (by fun_prop) (by fun_prop)]
+    simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+    linarith
+  · rintro ⟨hμ, h_int⟩
+    refine ⟨μ.map φ, ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩, ?_⟩
+    · rw [integral_map (by fun_prop) (by fun_prop)]
+      simp only [φ]
+      rw [integral_sub (by fun_prop) (by fun_prop)]
+      simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+      linarith
+    · rw [Measure.map_map (by fun_prop) (by fun_prop), hφ_inv, Measure.map_id]
+
+open unitInterval in
 theorem erenyiDiv_ge_of_separated {f : 𝓧 → I} (hf : Measurable f)
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
     {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹)
@@ -700,5 +870,31 @@ theorem erenyiDiv_ge_of_separated {f : 𝓧 → I} (hf : Measurable f)
       rw [integral_map (hf.aemeasurable) (by fun_prop)]
       exact hTf ν hνT
   _ ≤ erenyiDiv 2⁻¹ S T := erenyiDiv_map_le hf
+
+open unitInterval in
+theorem echernoffDiv_ge_of_separated {f : 𝓧 → I} (hf : Measurable f)
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
+    {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹)
+    (hSf : ∀ μ ∈ S, ∫ ω, (f ω : ℝ) ∂μ ≤ δ) (hTf : ∀ ν ∈ T, 1 - δ ≤ ∫ ω, (f ω : ℝ) ∂ν) :
+    2⁻¹ * ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ)))) ≤ echernoffDiv S T :=
+  calc 2⁻¹ * ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ))))
+  _ = echernoffDiv {μ : Measure I | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ}
+        {μ : Measure I | IsProbabilityMeasure μ ∧ 1 - δ ≤ ∫ x, (x : ℝ) ∂μ} := by
+    rw [← echernoffDiv_bounded hδ_pos hδ]
+  _ ≤ echernoffDiv {μ.map f | μ ∈ S} {μ.map f | μ ∈ T} := by
+    refine echernoffDiv_anti ?_ ?_
+    · rintro μ ⟨ν, hνS, rfl⟩
+      constructor
+      · have := hS ν hνS
+        exact Measure.isProbabilityMeasure_map (hf.aemeasurable)
+      rw [integral_map (hf.aemeasurable) (by fun_prop)]
+      exact hSf ν hνS
+    · rintro μ ⟨ν, hνT, rfl⟩
+      constructor
+      · have := hT ν hνT
+        exact Measure.isProbabilityMeasure_map (hf.aemeasurable)
+      rw [integral_map (hf.aemeasurable) (by fun_prop)]
+      exact hTf ν hνT
+  _ ≤ echernoffDiv S T := echernoffDiv_map_le hf
 
 end ProbabilityTheory
