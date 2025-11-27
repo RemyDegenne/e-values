@@ -149,7 +149,24 @@ lemma Utility.deriv_nonneg (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx_to
   simp only [Set.mem_Ioi, ENNReal.toReal_pos_iff]
   exact ⟨hx0.bot_lt, hx_top.lt_top⟩
 
-lemma Utility.todo (U : Utility) (x y : ℝ≥0∞) (hx_top : x ≠ ∞) (hy_zero : y ≠ 0) (hy_top : y ≠ ∞) :
+lemma _root_.ConcaveOn.le_add_deriv_mul {S : Set ℝ} {f : ℝ → ℝ} {x y : ℝ}
+    (hfc : ConcaveOn ℝ S f) (hx : x ∈ S) (hy : y ∈ S) (hfd : DifferentiableAt ℝ f y) :
+    f x ≤ f y + deriv f y * (x - y) := by
+  rcases lt_trichotomy x y with hxy | rfl | hyx
+  · have h_ccv := hfc.deriv_le_slope hx hy hxy hfd
+    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
+    have : 0 < (y - x) := sub_pos.mpr hxy
+    field_simp at h_ccv
+    linarith
+  · simp
+  · have h_ccv := hfc.slope_le_deriv hy hx hyx hfd
+    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
+    have : 0 < (x - y) := sub_pos.mpr hyx
+    field_simp at h_ccv
+    linarith
+
+lemma Utility.le_add_deriv_mul (U : Utility) {x y : ℝ≥0∞} (hx_top : x ≠ ∞)
+    (hy_zero : y ≠ 0) (hy_top : y ≠ ∞) :
     U x ≤ U y + U.deriv y * (x - y) := by
   by_cases h_bot : U x = ⊥
   · simp [h_bot]
@@ -157,84 +174,30 @@ lemma Utility.todo (U : Utility) (x y : ℝ≥0∞) (hx_top : x ≠ ∞) (hy_zer
   by_cases hU0 : U 0 = ⊥
   · by_cases hx0 : x = 0
     · simp [hx0, hU0]
-    rcases lt_trichotomy x y with hxy | rfl | hyx
-    · have h_ccv := ConcaveOn.deriv_le_slope U.concaveOn_Ioi_real (x := x.toReal) (y := y.toReal)
-        ?_ ?_ ?_ ?_
-      rotate_left
-      · simpa [ENNReal.toReal_pos_iff] using ⟨Ne.bot_lt hx0, Ne.lt_top hx_top⟩
-      · simpa [ENNReal.toReal_pos_iff] using ⟨hy_zero.bot_lt, hy_top.lt_top⟩
-      · exact (ENNReal.toReal_lt_toReal hx_top hy_top).mpr hxy
-      · refine U.differentiableOn.differentiableAt (isOpen_Ioi.mem_nhds ?_)
-        simpa [ENNReal.toReal_pos_iff] using ⟨hy_zero.bot_lt, hy_top.lt_top⟩
-      simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
-      rw [← U.coe_real_toReal hx0 hx_top, ← U.coe_real_toReal hy_zero hy_top, Utility.deriv]
-      simp only [hy_zero, ↓reduceIte, hy_top, ge_iff_le]
-      nth_rw 2 [← ENNReal.ofReal_toReal hx_top]
-      nth_rw 3 [← ENNReal.ofReal_toReal hy_top]
-      simp only [EReal.coe_ennreal_ofReal, ENNReal.toReal_nonneg, sup_of_le_left]
-      norm_cast
-      have : 0 < (y.toReal - x.toReal) :=
-        sub_pos.mpr ((ENNReal.toReal_lt_toReal hx_top hy_top).mpr hxy)
-      field_simp at h_ccv
-      linarith
-    · rw [EReal.sub_self (by simpa) (by simp)]
-      simp
-    · have h_ccv := ConcaveOn.slope_le_deriv U.concaveOn_Ioi_real (x := y.toReal) (y := x.toReal)
-        ?_ ?_ ?_ ?_
-      rotate_left
-      · simpa [ENNReal.toReal_pos_iff] using ⟨hy_zero.bot_lt, hy_top.lt_top⟩
-      · simpa [ENNReal.toReal_pos_iff] using ⟨Ne.bot_lt hx0, Ne.lt_top hx_top⟩
-      · exact (ENNReal.toReal_lt_toReal hy_top hx_top).mpr hyx
-      · refine U.differentiableOn.differentiableAt (isOpen_Ioi.mem_nhds ?_)
-        simpa [ENNReal.toReal_pos_iff] using ⟨hy_zero.bot_lt, hy_top.lt_top⟩
-      simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
-      rw [← U.coe_real_toReal hx0 hx_top, ← U.coe_real_toReal hy_zero hy_top, Utility.deriv]
-      simp only [hy_zero, ↓reduceIte, hy_top, ge_iff_le]
-      nth_rw 2 [← ENNReal.ofReal_toReal hx_top]
-      nth_rw 3 [← ENNReal.ofReal_toReal hy_top]
-      simp only [EReal.coe_ennreal_ofReal, ENNReal.toReal_nonneg, sup_of_le_left]
-      norm_cast
-      have : 0 < (x.toReal - y.toReal) :=
-        sub_pos.mpr ((ENNReal.toReal_lt_toReal hy_top hx_top).mpr hyx)
-      field_simp at h_ccv
-      linarith
-  · rcases lt_trichotomy x y with hxy | rfl | hyx
-    · have h_ccv := ConcaveOn.deriv_le_slope (U.concaveOn_Ici_real hU0)
-        (x := x.toReal) (y := y.toReal) (by simp) (by simp) ?_ ?_
-      rotate_left
-      · exact (ENNReal.toReal_lt_toReal hx_top hy_top).mpr hxy
-      · refine U.differentiableOn.differentiableAt (isOpen_Ioi.mem_nhds ?_)
-        simpa [ENNReal.toReal_pos_iff] using ⟨hy_zero.bot_lt, hy_top.lt_top⟩
-      simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
-      rw [← U.coe_real_toReal' h_bot hx_top, ← U.coe_real_toReal hy_zero hy_top, Utility.deriv]
-      simp only [hy_zero, ↓reduceIte, hy_top, ge_iff_le]
-      nth_rw 2 [← ENNReal.ofReal_toReal hx_top]
-      nth_rw 3 [← ENNReal.ofReal_toReal hy_top]
-      simp only [EReal.coe_ennreal_ofReal, ENNReal.toReal_nonneg, sup_of_le_left]
-      norm_cast
-      have : 0 < (y.toReal - x.toReal) :=
-        sub_pos.mpr ((ENNReal.toReal_lt_toReal hx_top hy_top).mpr hxy)
-      field_simp at h_ccv
-      linarith
-    · rw [EReal.sub_self (by simpa) (by simp)]
-      simp
-    · have h_ccv := ConcaveOn.slope_le_deriv (U.concaveOn_Ici_real hU0)
-        (x := y.toReal) (y := x.toReal) (by simp) (by simp) ?_ ?_
-      rotate_left
-      · exact (ENNReal.toReal_lt_toReal hy_top hx_top).mpr hyx
-      · refine U.differentiableOn.differentiableAt (isOpen_Ioi.mem_nhds ?_)
-        simpa [ENNReal.toReal_pos_iff] using ⟨hy_zero.bot_lt, hy_top.lt_top⟩
-      simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
-      rw [← U.coe_real_toReal' h_bot hx_top, ← U.coe_real_toReal hy_zero hy_top, Utility.deriv]
-      simp only [hy_zero, ↓reduceIte, hy_top, ge_iff_le]
-      nth_rw 2 [← ENNReal.ofReal_toReal hx_top]
-      nth_rw 3 [← ENNReal.ofReal_toReal hy_top]
-      simp only [EReal.coe_ennreal_ofReal, ENNReal.toReal_nonneg, sup_of_le_left]
-      norm_cast
-      have : 0 < (x.toReal - y.toReal) :=
-        sub_pos.mpr ((ENNReal.toReal_lt_toReal hy_top hx_top).mpr hyx)
-      field_simp at h_ccv
-      linarith
+    have h_ccv := ConcaveOn.le_add_deriv_mul U.concaveOn_Ioi_real (x := x.toReal) (y := y.toReal)
+      ?_ ?_ ?_
+    rotate_left
+    · simpa [ENNReal.toReal_pos_iff] using ⟨Ne.bot_lt hx0, Ne.lt_top hx_top⟩
+    · simpa [ENNReal.toReal_pos_iff] using ⟨hy_zero.bot_lt, hy_top.lt_top⟩
+    · refine U.differentiableOn.differentiableAt (isOpen_Ioi.mem_nhds ?_)
+      simpa [ENNReal.toReal_pos_iff] using ⟨hy_zero.bot_lt, hy_top.lt_top⟩
+    rw [← U.coe_real_toReal hx0 hx_top, ← U.coe_real_toReal hy_zero hy_top, Utility.deriv]
+    simp only [hy_zero, ↓reduceIte, hy_top, ge_iff_le]
+    nth_rw 2 [← ENNReal.ofReal_toReal hx_top]
+    nth_rw 3 [← ENNReal.ofReal_toReal hy_top]
+    simp only [EReal.coe_ennreal_ofReal, ENNReal.toReal_nonneg, sup_of_le_left]
+    norm_cast
+  · have h_ccv := ConcaveOn.le_add_deriv_mul (U.concaveOn_Ici_real hU0)
+      (x := x.toReal) (y := y.toReal) (by simp) (by simp) ?_
+    swap
+    · refine U.differentiableOn.differentiableAt (isOpen_Ioi.mem_nhds ?_)
+      simpa [ENNReal.toReal_pos_iff] using ⟨hy_zero.bot_lt, hy_top.lt_top⟩
+    rw [← U.coe_real_toReal' h_bot hx_top, ← U.coe_real_toReal hy_zero hy_top, Utility.deriv]
+    simp only [hy_zero, ↓reduceIte, hy_top, ge_iff_le]
+    nth_rw 2 [← ENNReal.ofReal_toReal hx_top]
+    nth_rw 3 [← ENNReal.ofReal_toReal hy_top]
+    simp only [EReal.coe_ennreal_ofReal, ENNReal.toReal_nonneg, sup_of_le_left]
+    norm_cast
 
 /-- Jensen's inequality. -/
 theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
@@ -264,7 +227,7 @@ theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
   have h_ccv : ∀ᵐ x ∂μ, U (X x)
       ≤ U (∫⁻ y, X y ∂μ) + (U.deriv (∫⁻ y, X y ∂μ)) * (X x - ∫⁻ y, X y ∂μ) := by
     filter_upwards [h_ne_bot, h_ne_top, hX_top] with x hx_bot hx_top hx_top'
-    exact U.todo _ _ hx_top' hX_int_zero hX_int_top
+    exact U.le_add_deriv_mul hx_top' hX_int_zero hX_int_top
   calc ∫ᵉ x, U (X x) ∂μ
   _ ≤ ∫ᵉ x, U (∫⁻ y, X y ∂μ) + (U.deriv (∫⁻ y, X y ∂μ)) * (X x - ∫⁻ y, X y ∂μ) ∂μ :=
     eintegral_mono_ae h_ccv
