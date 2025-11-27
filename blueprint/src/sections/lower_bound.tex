@@ -77,8 +77,8 @@ We need to check that we also have $f(0) \le 1 + \lambda (0 - \delta)$, but the 
 \end{proof}
 
 
-\begin{lemma}\label{lem:logUtility_bernoulli_half_le}
-  \uses{def:logUtility}
+\begin{lemma}\label{lem:maxUtility_bernoulli_half_le}
+  \uses{def:maxUtility, def:logUtility}
   \leanok
   \lean{ProbabilityTheory.maxUtility_bernoulli_half_le}
 Let $\delta \in [0,1/2]$ and let $B_{\le \delta} = \{\Ber(p) \mid p \le \delta\}$.
@@ -121,7 +121,7 @@ Then
 \end{lemma}
 
 \begin{proof}\leanok
-  \uses{lem:erenyiDiv_map_swap, lem:logUtility_bernoulli_half_le}
+  \uses{lem:erenyiDiv_map_swap, lem:maxUtility_bernoulli_half_le}
 By Lemma \ref{lem:erenyiDiv_map_swap} for the map $\phi : \{0,1\} \to \{0,1\}$ defined by $\phi(0) = 1$ and $\phi(1) = 0$, we have
 \begin{align*}
   \eR_{1/2}(B_{\le \delta}, B_{\ge 1 - \delta})
@@ -130,7 +130,7 @@ By Lemma \ref{lem:erenyiDiv_map_swap} for the map $\phi : \{0,1\} \to \{0,1\}$ d
   &= 2 \mathcal{U}_{\log}\left(\Ber(1/2), B_{\le \delta}\right)
   \: .
 \end{align*}
-We now use Lemma~\ref{lem:logUtility_bernoulli_half_le} to conclude.
+We now use Lemma~\ref{lem:maxUtility_bernoulli_half_le} to conclude.
 \end{proof}
 
 

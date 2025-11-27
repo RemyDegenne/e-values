@@ -56,36 +56,6 @@ A Markov kernel $\eta : \mathcal{X} \rightsquigarrow \mathbb{R}_{+,\infty}$ is a
 \end{proof}
 
 
-The next lemma shows that the larger set of randomized E-variables does not allow to achieve a larger expected utility than the set of E-variables.
-
-\begin{lemma}\label{lem:sup_randEVar}
-  \uses{def:eVar, def:randEVar}
-  \leanok
-  \lean{ProbabilityTheory.maxRandUtility_eq_maxUtility}
-Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ be a concave function and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ a set of probability measures.
-Let $P \in \mathcal{P}(\mathcal{X})$. Then
-\begin{align*}
-  \sup_{\eta \in \mathcal{E}^R_{\mathcal{Q}}} (\eta \circ P)[U]
-  &= \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U \circ f]
-  \: .
-\end{align*}
-\end{lemma}
-
-\begin{proof}\leanok
-Since $\mathcal{E}_{\mathcal{Q}} \subseteq \mathcal{E}^R_{\mathcal{Q}}$, the left hand side is greater than or equal to the right hand side.
-
-For the other direction, let $\eta \in \mathcal{E}^R_{\mathcal{Q}}$ be a randomized E-variable.
-By concavity of $U$,
-\begin{align*}
-  (\eta \circ P)[U]
-  &= P[x \mapsto \eta(x)[U]]
-  \le P[x \mapsto U(\eta(x)[\id])]
-\end{align*}
-The function $x \mapsto \eta(x)[\id]$ is a measurable function and belongs to $\mathcal{E}_{\mathcal{Q}}$.
-\end{proof}
-
-
-
 
 
 \section{Almost everywhere with respect to a set of measures}
@@ -255,28 +225,59 @@ Thus $f^*$ is a numeraire for $(P, \mathcal{Q}_2)$.
 \end{proof}
 
 
-\begin{definition}\label{def:logUtility}
-  \uses{def:eVar}
+\begin{definition}\label{def:Utility}
+  \uses{def:ENNReal, def:EReal}
   \leanok
-  \lean{ProbabilityTheory.maxUtility} % for U = logUtility
-The maximal logarithmic utility for $(P, \mathcal{Q})$ is defined as
-\begin{align*}
-  \mathcal{U}_{\log}(P, \mathcal{Q})
-  &= \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[\log f]
-  \: .
-\end{align*}
+  \lean{ProbabilityTheory.Utility}
+We call utility a function $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ which is non-decreasing, concave, finite except perhaps at 0 and $\infty$, continuous, and continuously differentiable on $(0, \infty)$.
 \end{definition}
 
 
-\begin{lemma}\label{lem:logUtility_anti}
-  \uses{def:logUtility}
+\begin{definition}\label{def:logUtility}
+  \uses{def:Utility, def:ENNReal.log}
+  \leanok
+  \lean{ProbabilityTheory.logUtility}
+The logarithm satisfies the properties of a utility function and we call it logarithmic utility.
+\end{definition}
+
+
+\begin{definition}\label{def:maxUtility}
+  \uses{def:eVar, def:Utility, def:eintegral}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility}
+For a utility function $U$, the maximal utility for $(P, \mathcal{Q})$ is defined as
+\begin{align*}
+  \mathcal{U}(P, \mathcal{Q})
+  &= \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U(f)]
+  \: ,
+\end{align*}
+in which the expectation is the extended integral defined in Definition~\ref{def:eintegral}.
+\end{definition}
+
+
+\begin{definition}\label{def:maxRandUtility}
+  \uses{def:eRandVar, def:Utility, def:eintegral}
+  \leanok
+  \lean{ProbabilityTheory.maxRandUtility}
+For a utility function $U$, the maximal randomized utility for $(P, \mathcal{Q})$ is defined as
+\begin{align*}
+  \mathcal{U}^R(P, \mathcal{Q})
+  &= \sup_{\eta \in \mathcal{E}^R_{\mathcal{Q}}} (\eta \circ P)[U]
+  \: ,
+\end{align*}
+in which the expectation is the extended integral defined in Definition~\ref{def:eintegral}.
+\end{definition}
+
+
+\begin{lemma}\label{lem:maxUtility_anti}
+  \uses{def:maxUtility}
   \leanok
   \lean{ProbabilityTheory.maxUtility_anti}
 Let $\mathcal{Q}' \subseteq \mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
 Then
 \begin{align*}
-  \mathcal{U}_{\log}(P, \mathcal{Q}')
-  &\ge \mathcal{U}_{\log}(P, \mathcal{Q})
+  \mathcal{U}(P, \mathcal{Q}')
+  &\ge \mathcal{U}(P, \mathcal{Q})
   \: .
 \end{align*}
 \end{lemma}
@@ -287,15 +288,15 @@ Then
 \end{proof}
 
 
-\begin{lemma}\label{lem:logUtility_comp_le}
-  \uses{def:logUtility}
+\begin{lemma}\label{lem:maxUtility_comp_le}
+  \uses{def:maxUtility}
   \leanok
   \lean{ProbabilityTheory.maxUtility_comp_le}
 Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be a Markov kernel, $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
 Then
 \begin{align*}
-  \mathcal{U}_{\log}(\kappa \circ P, \kappa \circ \mathcal{Q})
-  &\le \mathcal{U}_{\log}(P, \mathcal{Q})
+  \mathcal{U}(\kappa \circ P, \kappa \circ \mathcal{Q})
+  &\le \mathcal{U}(P, \mathcal{Q})
   \: .
 \end{align*}
 \end{lemma}
@@ -306,48 +307,77 @@ Then
 \end{proof}
 
 
-\begin{lemma}\label{lem:logUtility_map_le}
-  \uses{def:logUtility}
+\begin{lemma}\label{lem:maxUtility_map_le}
+  \uses{def:maxUtility}
   \leanok
   \lean{ProbabilityTheory.maxUtility_map_le}
 Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable function, $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
 Then
 \begin{align*}
-  \mathcal{U}_{\log}(f_*P, f_* \mathcal{Q})
-  &\le \mathcal{U}_{\log}(P, \mathcal{Q})
+  \mathcal{U}(f_*P, f_* \mathcal{Q})
+  &\le \mathcal{U}(P, \mathcal{Q})
   \: .
 \end{align*}
 \end{lemma}
 
 \begin{proof}\leanok
-  \uses{lem:logUtility_comp_le}
+  \uses{lem:maxUtility_comp_le}
 
 \end{proof}
 
 
-\begin{lemma}\label{lem:logUtility_map_eq}
-  \uses{def:logUtility}
+\begin{lemma}\label{lem:maxUtility_map_eq}
+  \uses{def:maxUtility}
 Let $\phi : \mathcal{X} \to \mathcal{Y}$ be a measurable embedding, $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
 Then
 \begin{align*}
-  \mathcal{U}_{\log}(\phi_* P, \phi_* \mathcal{Q})
-  &= \mathcal{U}_{\log}(P, \mathcal{Q})
+  \mathcal{U}(\phi_* P, \phi_* \mathcal{Q})
+  &= \mathcal{U}(P, \mathcal{Q})
   \: .
 \end{align*}
 \end{lemma}
 
 \begin{proof}
-  \uses{lem:logUtility_map_le}
+  \uses{lem:maxUtility_map_le}
 
 \end{proof}
 
 
-\begin{lemma}\label{lem:logUtility_eq_top_of_not_acSet}
-  \uses{def:logUtility, def:acSet}
+The next lemma shows that the larger set of randomized E-variables does not allow to achieve a larger expected utility than the set of E-variables.
+
+\begin{lemma}\label{lem:maxRandUtility_eq_maxUtility}
+  \uses{def:eVar, def:randEVar, def:maxUtility, def:maxRandUtility}
+  \leanok
+  \lean{ProbabilityTheory.maxRandUtility_eq_maxUtility}
+Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ be a utility function and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ a set of probability measures.
+Let $P \in \mathcal{P}(\mathcal{X})$. Then
+\begin{align*}
+  \mathcal{U}^R(P, \mathcal{Q})
+  &= \mathcal{U}(P, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+Since $\mathcal{E}_{\mathcal{Q}} \subseteq \mathcal{E}^R_{\mathcal{Q}}$, the left hand side is greater than or equal to the right hand side.
+
+For the other direction, let $\eta \in \mathcal{E}^R_{\mathcal{Q}}$ be a randomized E-variable.
+By concavity of $U$,
+\begin{align*}
+  (\eta \circ P)[U]
+  &= P[x \mapsto \eta(x)[U]]
+  \le P[x \mapsto U(\eta(x)[\id])]
+\end{align*}
+The function $x \mapsto \eta(x)[\id]$ is a measurable function and belongs to $\mathcal{E}_{\mathcal{Q}}$.
+\end{proof}
+
+
+\begin{lemma}\label{lem:maxUtility_eq_top_of_not_acSet}
+  \uses{def:maxUtility, def:acSet}
 Suppose that there exists an event $A$ such that $P(A) > 0$ and $Q(A) = 0$ for all $Q \in \mathcal{Q}$. That is, we don't have $P \ll \mathcal{Q}$.
 Then
 \begin{align*}
-  \mathcal{U}_{\log}(P, \mathcal{Q})
+  \mathcal{U}(P, \mathcal{Q})
   &= +\infty
   \: .
 \end{align*}
@@ -356,7 +386,7 @@ Then
 \begin{proof}
 The function $f : \mathcal{X} \to \mathbb{R}_{+,\infty}$ defined by $f(x) = +\infty$ if $x \in A$ and $f(x) = 0$ otherwise is an E-variable for $\mathcal{Q}$ since $Q[f] = 0$ for all $Q \in \mathcal{Q}$.
 \begin{align*}
-  \mathcal{U}_{\log}(P, \mathcal{Q})
+  \mathcal{U}(P, \mathcal{Q})
   &\ge P[\log f]
   = P(A) \cdot (+\infty)
   = +\infty
@@ -365,15 +395,15 @@ The function $f : \mathcal{X} \to \mathbb{R}_{+,\infty}$ defined by $f(x) = +\in
 \end{proof}
 
 
-\begin{lemma}\label{lem:logUtility_eq_integral}
-  \uses{def:logUtility, def:IsNumeraire}
+\begin{lemma}\label{lem:maxUtility_eq_integral}
+  \uses{def:maxUtility, def:IsNumeraire}
   \leanok
   \lean{ProbabilityTheory.IsNumeraire.maxUtility_eq_integral}
 Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
 If $f^*$ is a numeraire for $(P, \mathcal{Q})$ then
 \begin{align*}
-  \mathcal{U}_{\log}(P, \mathcal{Q})
-  &= P[\log f^*]
+  \mathcal{U}(P, \mathcal{Q})
+  &= P[U(f^*)]
   \: .
 \end{align*}
 \end{lemma}
@@ -383,58 +413,58 @@ If $f^*$ is a numeraire for $(P, \mathcal{Q})$ then
 \end{proof}
 
 
-\begin{lemma}\label{lem:convex_logUtility}
-  \uses{def:logUtility}
+\begin{lemma}\label{lem:convex_maxUtility}
+  \uses{def:maxUtility}
   \leanok
   \lean{ProbabilityTheory.convexOn_maxUtility}
-The function $R \mapsto \mathcal{U}_{\log}(R, \mathcal{P})$ is convex.
+The function $R \mapsto \mathcal{U}(R, \mathcal{P})$ is convex.
 \end{lemma}
 
 \begin{proof}\leanok
 Let $R_1, R_2 \in \mathcal{P}(\mathcal{X})$ and let $\theta \in [0,1]$.
 \begin{align*}
-  \mathcal{U}_{\log}(\theta R_1 + (1 - \theta) R_2, \mathcal{P})
+  \mathcal{U}(\theta R_1 + (1 - \theta) R_2, \mathcal{P})
   &= \sup_{f \in \mathcal{E}_{\mathcal{P}}} (\theta R_1 + (1 - \theta) R_2)\left[\log f\right]
   \\
   &= \sup_{f \in \mathcal{E}_{\mathcal{P}}} \left\{\theta R_1[\log f] + (1 - \theta) R_2[\log f]\right\}
   \\
   &\le \theta \sup_{f \in \mathcal{E}_{\mathcal{P}}} R_1[\log f] + (1 - \theta) \sup_{f \in \mathcal{E}_{\mathcal{P}}} R_2[\log f]
   \\
-  &= \theta \mathcal{U}_{\log}(R_1, \mathcal{P}) + (1 - \theta) \mathcal{U}_{\log}(R_2, \mathcal{P})
+  &= \theta \mathcal{U}(R_1, \mathcal{P}) + (1 - \theta) \mathcal{U}(R_2, \mathcal{P})
   \: .
 \end{align*}
 \end{proof}
 
 
-\begin{lemma}\label{lem:logUtility_map_swap}
-  \uses{def:logUtility}
+\begin{lemma}\label{lem:maxUtility_map_swap}
+  \uses{def:maxUtility}
   \leanok
   \lean{ProbabilityTheory.maxUtility_involutive}
 Let $R \in \mathcal{P}(\mathcal{X})$, $\mathcal{P} \subseteq \mathcal{P}(\mathcal{X})$ and let $\phi : \mathcal{X} \to \mathcal{X}$ be a measurable map such that $\phi \circ \phi = \id$.
 Then
 \begin{align*}
-  \mathcal{U}_{\log}(R, \phi_* \mathcal{P})
-  &= \mathcal{U}_{\log}(\phi_* R, \mathcal{P})
+  \mathcal{U}(R, \phi_* \mathcal{P})
+  &= \mathcal{U}(\phi_* R, \mathcal{P})
   \: .
 \end{align*}
 \end{lemma}
 
 \begin{proof}\leanok
-  \uses{lem:logUtility_map_le}
-To prove the first inequality, we use Lemma~\ref{lem:logUtility_map_le}:
+  \uses{lem:maxUtility_map_le}
+To prove the first inequality, we use Lemma~\ref{lem:maxUtility_map_le}:
 \begin{align*}
-  \mathcal{U}_{\log}(R, \phi_* \mathcal{P})
-  &= \mathcal{U}_{\log}(\phi_* (\phi_* R), \phi_* \mathcal{P})
+  \mathcal{U}(R, \phi_* \mathcal{P})
+  &= \mathcal{U}(\phi_* (\phi_* R), \phi_* \mathcal{P})
   \\
-  &\le \mathcal{U}_{\log}(\phi_* R, \mathcal{P})
+  &\le \mathcal{U}(\phi_* R, \mathcal{P})
   \: .
 \end{align*}
 For the reverse inequality,
 \begin{align*}
-  \mathcal{U}_{\log}(\phi_* R, \mathcal{P})
-  &= \mathcal{U}_{\log}(\phi_* R, \phi_* (\phi_* \mathcal{P}))
+  \mathcal{U}(\phi_* R, \mathcal{P})
+  &= \mathcal{U}(\phi_* R, \phi_* (\phi_* \mathcal{P}))
   \\
-  &\le \mathcal{U}_{\log}(R, \phi_* \mathcal{P})
+  &\le \mathcal{U}(R, \phi_* \mathcal{P})
   \: .
 \end{align*}
 \end{proof}

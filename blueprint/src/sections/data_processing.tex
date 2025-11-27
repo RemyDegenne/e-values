@@ -58,7 +58,7 @@ For $\phi$ a measurable embedding, the inequalities are equalities.
 \end{theorem}
 
 \begin{proof}\leanok
-  \uses{lem:randEVar_comp, lem:sup_randEVar}
+  \uses{lem:randEVar_comp, lem:maxRandUtility_eq_maxUtility}
 By Lemma~\ref{lem:randEVar_comp}, $\{\xi \circ \kappa \mid \xi \in \mathcal{E}^R_{\kappa \circ \mathcal{Q}}\} \subseteq \mathcal{E}^R_{\mathcal{Q}}$, hence
 \begin{align*}
   \sup_{\eta \in \mathcal{E}^R_{\mathcal{Q}}} (\eta \circ P)[U]
@@ -68,7 +68,7 @@ By Lemma~\ref{lem:randEVar_comp}, $\{\xi \circ \kappa \mid \xi \in \mathcal{E}^R
 \end{align*}
 The argument for the first inequality is similar.
 
-If $U$ is concave, we can use Lemma~\ref{lem:sup_randEVar} to obtain the data-processing with a Markov kernel for e-variables from the result for randomized e-variables.
+If $U$ is concave, we can use Lemma~\ref{lem:maxRandUtility_eq_maxUtility} to obtain the data-processing with a Markov kernel for e-variables from the result for randomized e-variables.
 \end{proof}
 
 \paragraph{KL data processing from e-variables}
