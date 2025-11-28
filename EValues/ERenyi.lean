@@ -567,7 +567,7 @@ lemma map_bernoulli_half_eq :
     rw [Measure.map_dirac (by fun_prop)]
     simp
 
-lemma todo_aux_set (δ : ℝ) :
+lemma map_bernoulli_le_eq_bernoulli_ge (δ : ℝ) :
     letI φ : ({0, 1} : Set ℝ) → ({0, 1} : Set ℝ) := fun x ↦ ⟨1 - x.1, by grind⟩
     {x | ∃ μ ∈ {μ | IsProbabilityMeasure μ ∧ ∫ (x : ({0, 1} : Set ℝ)), ↑x ∂μ ≤ δ}, μ.map φ = x} =
       {μ | IsProbabilityMeasure μ ∧ 1 - δ ≤ ∫ (x : ({0, 1} : Set ℝ)), ↑x ∂μ} := by
@@ -598,7 +598,7 @@ lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
   have hφ_inv : φ ∘ φ = id := by ext; simp [φ]
   rw [erenyiDiv_of_involutive (by fun_prop) hφ_inv (by grind) (by grind)]
   swap
-  · exact todo_aux_set δ
+  · exact map_bernoulli_le_eq_bernoulli_ge δ
   have h_iff R (hR : IsProbabilityMeasure R) :
       R.map φ = R ↔ R =
         (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨0, by simp⟩ + (2 : ℝ≥0∞)⁻¹ • Measure.dirac ⟨1, by simp⟩ := by
@@ -658,7 +658,7 @@ lemma echernoffDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹)
   rw [← erenyiDiv_bernoulli hδ_pos hδ,
     erenyiDiv_eq_two_mul_echernoffDiv_of_involutive (by fun_prop) hφ_inv (by grind) (by grind),
     ← mul_assoc, ENNReal.inv_mul_cancel (by simp) (by simp), one_mul]
-  exact todo_aux_set δ
+  exact map_bernoulli_le_eq_bernoulli_ge δ
 
 open unitInterval in
 lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
