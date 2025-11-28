@@ -702,7 +702,7 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
     have κ_comp (μ : Measure ({0, 1} : Set ℝ)) (hμ : IsProbabilityMeasure μ) :
         κ ∘ₘ (μ.map doubleton) = μ := by
       refine Measure.ext_of_singleton fun x ↦ ?_
-      rw [ Measure.bind_apply (measurableSet_singleton _) (by fun_prop),
+      rw [Measure.bind_apply (measurableSet_singleton _) (by fun_prop),
         lintegral_map (κ.measurable_coe (MeasurableSet.singleton _)) (by fun_prop)]
       by_cases hx0 : x = ⟨0, by simp⟩
       · rw [hx0]
