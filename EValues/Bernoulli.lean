@@ -36,6 +36,157 @@ lemma lintegral_ber {f : ({0, 1} : Set ℝ) → ℝ≥0∞} :
 
 instance : IsProbabilityMeasure (Ber p) := ⟨by simp [Ber]⟩
 
+lemma apply_zero_add_apply_one_eq_one (R : Measure ({0, 1} : Set ℝ)) [IsProbabilityMeasure R] :
+    R {⟨0, by simp⟩} + R {⟨1, by simp⟩} = 1 := by
+  have h_univ : R Set.univ = 1 := measure_univ
+  rw [measure_doubleton_eq_add R] at h_univ
+  simpa using h_univ
+
+@[simp]
+lemma one_sub_apply_one (R : Measure ({0, 1} : Set ℝ)) [IsProbabilityMeasure R] :
+    1 - R {⟨1, by simp⟩} = R {⟨0, by simp⟩} := by
+  have h_add := apply_zero_add_apply_one_eq_one R
+  symm
+  exact ENNReal.eq_sub_of_add_eq (by simp) h_add
+
+@[simp]
+lemma one_sub_apply_zero (R : Measure ({0, 1} : Set ℝ)) [IsProbabilityMeasure R] :
+    1 - R {⟨0, by simp⟩} = R {⟨1, by simp⟩}  := by
+  have h_add := apply_zero_add_apply_one_eq_one R
+  rw [add_comm] at h_add
+  symm
+  exact ENNReal.eq_sub_of_add_eq (by simp) h_add
+
+@[simp]
+lemma one_sub_one_sub_measure_apply (R : Measure ({0, 1} : Set ℝ)) [IsProbabilityMeasure R]
+    (s : Set ({0, 1} : Set ℝ)) :
+    1 - (1 - R s) = R s := by
+  rw [ENNReal.sub_sub_cancel (by simp) prob_le_one]
+
+lemma eq_ber_lintegral (R : Measure ({0, 1} : Set ℝ)) [IsProbabilityMeasure R] :
+    R = Ber (∫⁻ x, ENNReal.ofReal x ∂R) := by
+  have hR_eq : R = R {⟨0, by simp⟩} • Measure.dirac ⟨0, by simp⟩ +
+      R {⟨1, by simp⟩} • Measure.dirac ⟨1, by simp⟩ := measure_doubleton_eq_add R
+  rw [hR_eq]
+  refine Measure.ext_of_singleton fun x ↦ ?_
+  by_cases hx0 : x = ⟨0, by simp⟩
+  · simp [hx0]
+  · have hx1 : x = ⟨1, by simp⟩ := by grind
+    simp [hx1]
+
+/-- The e-variables for Bernoulli measures with mean at most `δ` are the functions `f` that satisfy
+`f x ≤ 1 + u * (x - δ)` for `u ∈ [0, δ⁻¹]`. -/
+lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
+    (X : ({0, 1} : Set ℝ) → ℝ≥0∞) :
+    IsEVar X {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} ↔
+      ∃ (u : ℝ) (_ : 0 ≤ u) (_ : u ≤ δ⁻¹),
+        ∀ x, X x ≤ ENNReal.ofReal (1 + u * ((x : ℝ) - δ)) := by
+  refine ⟨fun h_evar ↦ ?_, ?_⟩
+  · have h_le := h_evar.lintegral_le_one
+    simp only [Set.mem_setOf_eq, lintegral_fintype, and_imp] at h_le
+    classical
+    have h_le_zero := h_le (Measure.dirac ⟨0, by simp⟩) inferInstance
+    simp only [integral_dirac, hδ_pos.le, MeasurableSet.singleton, Measure.dirac_apply',
+      Set.indicator_apply, Set.mem_singleton_iff, Pi.one_apply, mul_ite, mul_one, mul_zero,
+      Finset.sum_ite_eq, Finset.mem_univ, ↓reduceIte, forall_const] at h_le_zero
+    have h_le_delta := h_le ((ENNReal.ofReal (1 - δ)) • Measure.dirac ⟨0, by simp⟩ +
+      (ENNReal.ofReal δ) • Measure.dirac ⟨1, by simp⟩) ?_ ?_
+    rotate_left
+    · constructor
+      simp only [Measure.coe_add, Measure.coe_smul, Pi.add_apply, Pi.smul_apply, measure_univ,
+        smul_eq_mul, mul_one]
+      rw [← ENNReal.ofReal_add (by grind) (by grind)]
+      simp
+    · rw [integral_add_measure]
+      · simp only [integral_smul_measure, integral_dirac, smul_eq_mul, mul_zero, mul_one, zero_add]
+        rw [ENNReal.toReal_ofReal hδ_pos.le]
+      · by_cases hδ : δ = 1
+        · simp [hδ]
+        rw [integrable_smul_measure (by simp; grind) (by simp)]
+        simp
+      · rw [integrable_smul_measure (by simp; grind) (by simp)]
+        simp
+    simp only [Measure.coe_add, Measure.coe_smul, Pi.add_apply, Pi.smul_apply,
+      MeasurableSet.singleton, Measure.dirac_apply', Set.indicator_apply, Set.mem_singleton_iff,
+      Pi.one_apply, smul_eq_mul, mul_ite, mul_one, mul_zero] at h_le_delta
+    simp_rw [mul_add] at h_le_delta
+    simp only [mul_ite, mul_zero, Finset.sum_add_distrib, Finset.sum_ite_eq, Finset.mem_univ,
+      ↓reduceIte] at h_le_delta
+    refine ⟨δ⁻¹ * (1 - (X ⟨0, by simp⟩).toReal), ?_, ?_, fun ω ↦ ?_⟩
+    · refine mul_nonneg (by positivity) (sub_nonneg.mpr ?_)
+      refine ENNReal.toReal_le_of_le_ofReal (by simp) ?_
+      simpa
+    · conv_rhs => rw [← mul_one δ⁻¹]
+      gcongr
+      simp
+    · have hX_ne_top : X ⟨0, by simp⟩ ≠ ⊤ := ne_top_of_le_ne_top (by simp) h_le_zero
+      by_cases hω : ω = ⟨0, by simp⟩
+      · simp only [hω, zero_sub, mul_neg]
+        by_cases hδ_zero : δ = 0
+        · simpa [hδ_zero]
+        ring_nf
+        rw [mul_inv_cancel₀ hδ_zero]
+        ring_nf
+        rw [ENNReal.ofReal_toReal hX_ne_top]
+      have hω' : ω = ⟨1, by simp⟩ := by grind
+      simp only [hω', ge_iff_le]
+      have : 0 ≤ 1 - δ := sub_nonneg.mpr hδ
+      have : 0 ≤ 1 - (X ⟨0, by simp⟩).toReal := by
+        simp only [sub_nonneg]
+        exact ENNReal.toReal_le_of_le_ofReal (by simp) (by simpa)
+      rw [ENNReal.ofReal_add (by simp) (by positivity)]
+      simp only [ENNReal.ofReal_one]
+      rw [ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_mul (by positivity),
+        ENNReal.ofReal_inv_of_pos hδ_pos, ENNReal.ofReal_sub _ (by simp)]
+      simp only [ENNReal.ofReal_one]
+      suffices ENNReal.ofReal δ * X ⟨1, by simp⟩
+          ≤ ENNReal.ofReal δ
+            * (1 + (ENNReal.ofReal δ)⁻¹ * (1 - ENNReal.ofReal (X ⟨0, by simp⟩).toReal)
+              * ENNReal.ofReal (1 - δ)) by
+        rwa [ENNReal.mul_le_mul_left (by simp [hδ_pos]) (by simp)] at this
+      ring_nf
+      rw [ENNReal.mul_inv_cancel (by simp [hδ_pos]) (by simp), one_mul, mul_comm (1 - _),
+        ENNReal.mul_sub (by simp), mul_one, add_comm, ENNReal.sub_add_eq_add_sub _ (by finiteness),
+        ENNReal.ofReal_toReal hX_ne_top]
+      swap
+      · conv_rhs => rw [← mul_one (ENNReal.ofReal (1 - δ))]
+        gcongr
+        rwa [ENNReal.ofReal_toReal hX_ne_top]
+      rw [← ENNReal.ofReal_add (by positivity) (by positivity)]
+      simp only [sub_add_cancel, ENNReal.ofReal_one]
+      rwa [ENNReal.le_sub_iff_add_le_left, mul_comm (ENNReal.ofReal δ), mul_comm (ENNReal.ofReal _)]
+      · finiteness
+      · conv_rhs => rw [← mul_one 1]
+        gcongr
+        simp [hδ_pos.le]
+  · rintro ⟨u, hu_nonneg, hu, hX_le⟩
+    refine ⟨by fun_prop, fun μ ⟨hμ, hμ'⟩ ↦ ?_⟩
+    calc ∫⁻ ω, X ω ∂μ
+    _ ≤ ∫⁻ ω, ENNReal.ofReal (1 + u * (ω - δ)) ∂μ := lintegral_mono hX_le
+    _ = ENNReal.ofReal (1 + u * (∫ ω, (ω : ℝ) ∂μ - δ)) := by
+      rw [← ofReal_integral_eq_lintegral_ofReal (by fun_prop)]
+      swap
+      · filter_upwards [] with ω
+        simp only [Pi.zero_apply]
+        by_cases hω : ω = ⟨0, by simp⟩
+        · simp only [hω, zero_sub, mul_neg, le_add_neg_iff_add_le, zero_add]
+          calc u * δ ≤ δ⁻¹ * δ := by gcongr
+          _ = 1 := by rw [inv_mul_cancel₀ hδ_pos.ne']
+        have hω' : ω = ⟨1, by simp⟩ := by grind
+        simp only [hω', ge_iff_le]
+        exact add_nonneg (by simp) (mul_nonneg hu_nonneg (sub_nonneg.mpr hδ))
+      congr
+      rw [integral_add (by fun_prop) (by fun_prop), integral_const_mul]
+      simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one, add_right_inj,
+        mul_eq_mul_left_iff]
+      rw [integral_sub (by fun_prop) (by fun_prop)]
+      simp
+    _ ≤ 1 := by
+      conv_rhs => rw [← ENNReal.ofReal_one, ← add_zero 1]
+      gcongr
+      refine mul_nonpos_of_nonneg_of_nonpos hu_nonneg ?_
+      simpa
+
 lemma quadratic_inequality {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt_one : δ < 1) (u : ℝ) :
     (1 - u * δ) * (1 + u * (1 - δ)) ≤ (1 - δ)⁻¹ * (δ⁻¹ * 4⁻¹) := by
   have : 0 ≤ (u - (δ⁻¹ - (1-δ)⁻¹)/2)^2 := by positivity -- complete square
@@ -47,6 +198,21 @@ lemma four_le_mul_inv {δ : ℝ} (hδ_pos : 0 < δ) (hδ_lt : δ < 1) :
   have : 0 < 1 - δ := by linarith
   have : (1 - δ) * δ ≤ 1 / 4 := by linarith [sq_nonneg (1 / 2 - δ)]
   rwa [← mul_inv, le_inv_comm₀ (by simp) (by positivity), ← one_div]
+
+/-- Kullback-Leibler divergence between two Bernoulli distributions.
+Meaningful only if `p, q ≤ 1`. -/
+noncomputable
+def klBer (p q : ℝ≥0∞) : ℝ≥0∞ :=
+  ((p * ENNReal.log (p / q)) + ((1 - p) * ENNReal.log ((1 - p) / (1 - q)))).toENNReal
+
+lemma klBer_half (δ : ℝ) (hδ_pos : 0 < δ) (hδ_lt : δ < 1) :
+    klBer 2⁻¹ (ENNReal.ofReal δ) = ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ)))) := by
+  sorry
+
+lemma maxUtility_bernoulli_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) (hp : ENNReal.ofReal δ ≤ p) :
+    maxUtility (Ber p) {Ber q | q ≤ ENNReal.ofReal δ} logUtility
+      = 2⁻¹ * klBer p (ENNReal.ofReal δ) := by
+  sorry
 
 lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
     maxUtility (Ber 2⁻¹)
