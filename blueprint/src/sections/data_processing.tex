@@ -1,29 +1,34 @@
-\chapter{Data processing inequality with E-variables}
 
-
-\section{Data-processing inequality for e-variables}
-\label{sec:data_processing_eVar}
-
-
-\begin{lemma}\label{lem:randEVar_comp}
-  \uses{def:randEVar}
+\begin{lemma}\label{lem:eVar_comp}
+  \uses{def:eVar}
   \leanok
-  \lean{ProbabilityTheory.IsEVar.comp, ProbabilityTheory.IsRandEVar.comp}
-Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and let $\phi : \mathcal{X} \to \mathcal{Y}$ be a measurable function and $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be a Markov kernel.
-Then
-\begin{enumerate}
-  \item for all $g \in \mathcal{E}_{\phi \circ \mathcal{Q}}$, $g \circ \phi \in \mathcal{E}_{\mathcal{Q}}$,
-  \item for all $\xi \in \mathcal{E}_{\kappa \circ \mathcal{Q}}^R$, $\xi \circ \kappa \in \mathcal{E}^R_{\mathcal{Q}}$.
-\end{enumerate}
+  \lean{ProbabilityTheory.IsEVar.comp}
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and let $\phi : \mathcal{X} \to \mathcal{Y}$ be a measurable function.
+Then for all $g \in \mathcal{E}_{\phi_* \mathcal{Q}}$, $g \circ \phi \in \mathcal{E}_{\mathcal{Q}}$.
 \end{lemma}
 
 \begin{proof}\leanok
 For $Q \in \mathcal{Q}$,
 \begin{align*}
   Q[g \circ \phi]
-  &= (\phi \circ Q)[g]
+  &= (\phi_* Q)[g]
   \le 1
-  \: , \\
+  \: .
+\end{align*}
+\end{proof}
+
+
+\begin{lemma}\label{lem:randEVar_comp}
+  \uses{def:randEVar}
+  \leanok
+  \lean{ProbabilityTheory.IsRandEVar.comp}
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be a Markov kernel.
+Then for all $\xi \in \mathcal{E}_{\kappa \circ \mathcal{Q}}^R$, $\xi \circ \kappa \in \mathcal{E}^R_{\mathcal{Q}}$.
+\end{lemma}
+
+\begin{proof}\leanok
+For $Q \in \mathcal{Q}$,
+\begin{align*}
   ((\xi \circ \kappa) \circ Q)[\id]
   &= (\xi \circ (\kappa \circ Q))[\id]
   \le 1
@@ -32,33 +37,22 @@ For $Q \in \mathcal{Q}$,
 \end{proof}
 
 
-\begin{theorem}[Data processing inequality with e-variables]\label{thm:dataprocessing}
-  \uses{def:eVar}
+\begin{theorem}[Data processing inequality with randomized e-variables]\label{thm:maxRandUtility_comp_le}
+  \uses{def:maxRandUtility}
   \leanok
-  \lean{ProbabilityTheory.maxUtility_map_le, ProbabilityTheory.maxRandUtility_comp_le,
-    ProbabilityTheory.maxUtility_comp_le}
+  \lean{ProbabilityTheory.maxRandUtility_comp_le}
 Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and $P \in \mathcal{P}(\mathcal{X})$.
-Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$.
-Then for all measurable functions $\phi : \mathcal{X} \to \mathcal{Y}$ and all Markov kernels $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$,
+Let $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ be a utility function.
+Then for all Markov kernels $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$,
 \begin{align*}
-  \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U \circ f]
-  &\ge \sup_{g \in \mathcal{E}_{\phi \circ \mathcal{Q}}} (\phi \circ P)[U \circ g]
-  \: , \\
-  \sup_{\eta \in \mathcal{E}^R_{\mathcal{Q}}} (\eta \circ P)[U]
-  &\ge \sup_{\xi \in \mathcal{E}^R_{\kappa \circ \mathcal{Q}}} (\xi \circ \kappa \circ P)[U]
+  \mathcal{U}^R(P, \mathcal{Q})
+  &\ge \mathcal{U}^R(\kappa \circ P, \kappa \circ \mathcal{Q})
   \: .
 \end{align*}
-Furthermore, if $U$ is concave, then for all Markov kernels $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$,
-\begin{align*}
-  \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U \circ f]
-  &\ge \sup_{g \in \mathcal{E}_{\kappa \circ \mathcal{Q}}} (\kappa \circ P)[U \circ g]
-  \: .
-\end{align*}
-For $\phi$ a measurable embedding, the inequalities are equalities.
 \end{theorem}
 
 \begin{proof}\leanok
-  \uses{lem:randEVar_comp, lem:maxRandUtility_eq_maxUtility}
+  \uses{lem:randEVar_comp}
 By Lemma~\ref{lem:randEVar_comp}, $\{\xi \circ \kappa \mid \xi \in \mathcal{E}^R_{\kappa \circ \mathcal{Q}}\} \subseteq \mathcal{E}^R_{\mathcal{Q}}$, hence
 \begin{align*}
   \sup_{\eta \in \mathcal{E}^R_{\mathcal{Q}}} (\eta \circ P)[U]
@@ -66,34 +60,95 @@ By Lemma~\ref{lem:randEVar_comp}, $\{\xi \circ \kappa \mid \xi \in \mathcal{E}^R
   = \sup_{\xi \in \mathcal{E}^R_{\kappa \circ \mathcal{Q}}} (\xi \circ \kappa \circ P)[U]
   \: .
 \end{align*}
-The argument for the first inequality is similar.
-
-If $U$ is concave, we can use Lemma~\ref{lem:maxRandUtility_eq_maxUtility} to obtain the data-processing with a Markov kernel for e-variables from the result for randomized e-variables.
 \end{proof}
 
-\paragraph{KL data processing from e-variables}
 
-The data processing inequality for the numeraire utility implies the data processing inequality for KL divergences.
-
-\begin{theorem}\label{thm:dataprocessing_kl}
-  \uses{def:eVar}
-  Let $P, Q \in \mathcal{P}(\mathcal{X})$.
-  Then for all Markov kernels $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$,
-  \begin{align*}
-    \KL(P, Q)
-    &\ge \KL(\kappa \circ P, \kappa \circ Q)
-    \: .
-  \end{align*}
-\end{theorem}
-
-\begin{proof}
-  \uses{lem:sup_eVar_singleton, thm:dataprocessing}
-By Lemma~\ref{lem:sup_eVar_singleton}, $\KL(P, Q) = \sup_{f \in \mathcal{E}_{\{Q\}}} P[\log f]$.
-Then by Theorem~\ref{thm:dataprocessing}, we have
+\begin{lemma}[Data processing inequality with e-variables]\label{lem:maxUtility_comp_le}
+  \uses{def:maxUtility}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility_comp_le}
+Let $\kappa : \mathcal{X} \rightsquigarrow \mathcal{Y}$ be a Markov kernel, $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
+Then
 \begin{align*}
-  \sup_{f \in \mathcal{E}_{\{Q\}}} P[\log f]
-  &\ge \sup_{g \in \mathcal{E}_{\{\kappa \circ Q\}}} (\kappa \circ P)[\log g]
+  \mathcal{U}(\kappa \circ P, \kappa \circ \mathcal{Q})
+  &\le \mathcal{U}(P, \mathcal{Q})
   \: .
 \end{align*}
-And that last term is $\KL(\kappa \circ P, \kappa \circ Q)$, again by Lemma~\ref{lem:sup_eVar_singleton}.
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:maxRandUtility_eq_maxUtility, thm:maxRandUtility_comp_le}
+We can use Lemma~\ref{lem:maxRandUtility_eq_maxUtility} to obtain the data-processing with a Markov kernel for e-variables from the result for randomized e-variables (Theorem~\ref{thm:maxRandUtility_comp_le}).
+\end{proof}
+
+
+\begin{lemma}[Data processing inequality with e-variables]\label{lem:maxUtility_map_le}
+  \uses{def:maxUtility}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility_map_le}
+Let $f : \mathcal{X} \to \mathcal{Y}$ be a measurable function, $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
+Then
+\begin{align*}
+  \mathcal{U}(f_*P, f_* \mathcal{Q})
+  &\le \mathcal{U}(P, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:maxUtility_comp_le}
+Use Lemma~\ref{lem:maxUtility_comp_le} with the deterministic Markov kernel given by $f$.
+\end{proof}
+
+
+\begin{lemma}\label{lem:maxUtility_map_eq}
+  \uses{def:maxUtility}
+  \leanok
+  \lean{MeasurableEmbedding.maxUtility_map_eq}
+Let $\phi : \mathcal{X} \to \mathcal{Y}$ be a measurable embedding, $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
+Then
+\begin{align*}
+  \mathcal{U}(\phi_* P, \phi_* \mathcal{Q})
+  &= \mathcal{U}(P, \mathcal{Q})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:maxUtility_map_le}
+
+\end{proof}
+
+
+\begin{lemma}\label{lem:maxUtility_map_swap}
+  \uses{def:maxUtility}
+  \leanok
+  \lean{ProbabilityTheory.maxUtility_involutive}
+Let $R \in \mathcal{P}(\mathcal{X})$, $\mathcal{P} \subseteq \mathcal{P}(\mathcal{X})$ and let $\phi : \mathcal{X} \to \mathcal{X}$ be a measurable map such that $\phi \circ \phi = \id$.
+Then
+\begin{align*}
+  \mathcal{U}(R, \phi_* \mathcal{P})
+  &= \mathcal{U}(\phi_* R, \mathcal{P})
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:maxUtility_map_le}
+To prove the first inequality, we use Lemma~\ref{lem:maxUtility_map_le}:
+\begin{align*}
+  \mathcal{U}(R, \phi_* \mathcal{P})
+  &= \mathcal{U}(\phi_* (\phi_* R), \phi_* \mathcal{P})
+  \\
+  &\le \mathcal{U}(\phi_* R, \mathcal{P})
+  \: .
+\end{align*}
+For the reverse inequality,
+\begin{align*}
+  \mathcal{U}(\phi_* R, \mathcal{P})
+  &= \mathcal{U}(\phi_* R, \phi_* (\phi_* \mathcal{P}))
+  \\
+  &\le \mathcal{U}(R, \phi_* \mathcal{P})
+  \: .
+\end{align*}
 \end{proof}
