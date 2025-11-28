@@ -134,6 +134,32 @@ We now use Lemma~\ref{lem:maxUtility_bernoulli_half_le} to conclude.
 \end{proof}
 
 
+\begin{lemma}\label{lem:echernoffDiv_bernoulli}
+  \uses{def:echernoffDiv}
+  \leanok
+  \lean{ProbabilityTheory.echernoffDiv_bernoulli}
+Let $\delta \in [0,1/2]$.
+Let $B_{\le \delta} = \{\Ber(p) \mid p \le \delta\}$ and $B_{\ge 1 - \delta} = \{\Ber(p) \mid p \ge 1 - \delta\}$ be sets of Bernoulli distributions with mean constraints.
+Then
+\begin{align*}
+  \eC(B_{\le \delta}, B_{\ge 1 - \delta})
+  &= \frac{1}{2} \log \frac{1}{4 \delta (1 - \delta)}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:erenyiDiv_eq_two_mul_echernoffDiv, lem:erenyiDiv_bernoulli}
+By Lemma~\ref{lem:erenyiDiv_eq_two_mul_echernoffDiv}, we have
+\begin{align*}
+  \eC(B_{\le \delta}, B_{\ge 1 - \delta})
+  &= \frac{1}{2} \eR_{1/2}(B_{\le \delta}, B_{\ge 1 - \delta})
+  \: .
+\end{align*}
+We now use Lemma~\ref{lem:erenyiDiv_bernoulli} to conclude.
+\end{proof}
+
+
 \begin{lemma}\label{lem:erenyiDiv_bounded}
   \uses{def:erenyiDiv}
   \lean{ProbabilityTheory.erenyiDiv_bounded}
@@ -157,6 +183,32 @@ By Lemma~\ref{lem:erenyiDiv_bounded_eq_erenyiDiv_bernoulli}, we have
   \: .
 \end{align*}
 We now use Lemma~\ref{lem:erenyiDiv_bernoulli} to conclude.
+\end{proof}
+
+
+\begin{lemma}\label{lem:echernoffDiv_bounded}
+  \uses{def:echernoffDiv}
+  \leanok
+  \lean{ProbabilityTheory.echernoffDiv_bounded}
+Let $\delta \in [0,1/2]$.
+Let $\mathcal{D}_{\le \delta} = \{P \in \mathcal{P}([0,1]) \mid P[\id] \le \delta\}$ and $\mathcal{D}_{\ge 1 - \delta} = \{P \in \mathcal{P}([0,1]) \mid P[\id] \ge 1 - \delta\}$ be sets of distributions on $[0,1]$ with mean constraints.
+Then
+\begin{align*}
+  \eC(\mathcal{D}_{\le \delta}, \mathcal{D}_{\ge 1 - \delta})
+  &= \frac{1}{2} \log \frac{1}{4 \delta (1 - \delta)}
+  \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}\leanok
+  \uses{lem:erenyiDiv_eq_two_mul_echernoffDiv, lem:erenyiDiv_bounded}
+By Lemma~\ref{lem:erenyiDiv_eq_two_mul_echernoffDiv}, we have
+\begin{align*}
+  \eC(\mathcal{D}_{\le \delta}, \mathcal{D}_{\ge 1 - \delta})
+  &= \frac{1}{2} \eR_{1/2}(\mathcal{D}_{\le \delta}, \mathcal{D}_{\ge 1 - \delta})
+  \: .
+\end{align*}
+We now use Lemma~\ref{lem:erenyiDiv_bounded} to conclude.
 \end{proof}
 
 
@@ -198,6 +250,44 @@ By Lemma~\ref{lem:erenyiDiv_anti}, we thus have
 We now use Lemma~\ref{lem:erenyiDiv_bounded} to conclude.
 \end{proof}
 
+
+\begin{theorem}\label{thm:echernoffDiv_lower_bound}
+  \uses{def:echernoffDiv}
+  \leanok
+  \lean{ProbabilityTheory.echernoffDiv_ge_of_separated}
+Let $\mathcal{P},\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be two sets of probability measures.
+Suppose that there exists a measurable function $f_0 : \mathcal{X} \to \mathbb{R}_{+,\infty}$ which is less than 1 and $\delta \in [0,1/2]$ such that
+\begin{align*}
+  \forall P \in \mathcal{P}, \: P[f_0] &\le \delta
+  \: , \\
+  \forall Q \in \mathcal{Q}, \: Q[f_0] &\ge 1 - \delta
+  \: .
+\end{align*}
+Then
+\begin{align*}
+  \eC(\mathcal{P}, \mathcal{Q})
+  &\ge \frac{1}{2} \log \frac{1}{4\delta(1 - \delta)}
+  \: .
+\end{align*}
+\end{theorem}
+
+\begin{proof}\leanok
+  \uses{lem:echernoffDiv_bounded, lem:echernoffDiv_map_le, lem:echernoffDiv_anti}
+By Lemma~\ref{lem:echernoffDiv_map_le} for the function $f_0$, we have
+\begin{align*}
+  \eC(\mathcal{P}, \mathcal{Q})
+  &\ge \eC(f_0 \circ \mathcal{P}, f_0 \circ \mathcal{Q})
+  \: .
+\end{align*}
+$f_0 \circ \mathcal{P} \subseteq \{P \in \mathcal{P}([0,1]) \mid P[\id] \le \delta\}$ and $f_0 \circ \mathcal{Q} \subseteq \{P \in \mathcal{P}([0,1]) \mid P[\id] \ge 1 - \delta\}$.
+By Lemma~\ref{lem:echernoffDiv_anti}, we thus have
+\begin{align*}
+  \eC(f_0 \circ \mathcal{P}, f_0 \circ \mathcal{Q})
+  &\ge \eC(\mathcal{D}_{\le \delta}, \mathcal{D}_{\ge 1 - \delta})
+  \: .
+\end{align*}
+We now use Lemma~\ref{lem:echernoffDiv_bounded} to conclude.
+\end{proof}
 
 
 \section{Data processing inequality through KL duality}

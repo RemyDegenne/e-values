@@ -328,6 +328,8 @@ Then
 
 \begin{lemma}\label{lem:maxUtility_map_eq}
   \uses{def:maxUtility}
+  \leanok
+  \lean{MeasurableEmbedding.maxUtility_map_eq}
 Let $\phi : \mathcal{X} \to \mathcal{Y}$ be a measurable embedding, $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
 Then
 \begin{align*}
@@ -337,7 +339,7 @@ Then
 \end{align*}
 \end{lemma}
 
-\begin{proof}
+\begin{proof}\leanok
   \uses{lem:maxUtility_map_le}
 
 \end{proof}
