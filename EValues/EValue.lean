@@ -37,6 +37,7 @@ variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableS
 
 namespace MeasureTheory
 
+-- was added to Mathlib. Remove in a future bump.
 lemma Measure.integrable_comp_iff
     {α β E : Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β}
     [NormedAddCommGroup E] {κ : Kernel α β} {μ : Measure α} {f : β → E}
@@ -71,6 +72,8 @@ structure IsRandEVar (κ : Kernel 𝓧 ℝ≥0∞) (S : Set (Measure 𝓧)) : Pr
 
 variable {X Y : 𝓧 → ℝ≥0∞} {κ η : Kernel 𝓧 ℝ≥0∞} [IsMarkovKernel κ] {S T : Set (Measure 𝓧)}
 
+/-- A kernel `κ` is a randomized e-variable iff its mean function `x ↦ ∫⁻ y, y ∂κ x` is an
+e-variable. -/
 lemma isRandEVar_iff_isEVar : IsRandEVar κ S ↔ IsEVar (fun x ↦ ∫⁻ y, y ∂κ x) S := by
   refine ⟨fun h ↦ ⟨by fun_prop, fun μ hμ ↦ ?_⟩, fun h ↦ ⟨fun μ hμ ↦ ?_⟩⟩
   · have h' := h.lintegral_le_one μ hμ
@@ -169,6 +172,8 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
     have h' := h.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
     rwa [Measure.comp_assoc] at h'
 
+/-- The e-variables for Bernoulli measures with mean at most `δ` are the functions `f` that satisfy
+`f x ≤ 1 + u * (x - δ)` for `u ∈ [0, δ⁻¹]`. -/
 lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
     (X : ({0, 1} : Set ℝ) → ℝ≥0∞) :
     IsEVar X {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} ↔
