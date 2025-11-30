@@ -96,9 +96,7 @@ lemma maxUtility_eq_restrict_eintegrable : maxUtility P S U =
       by_contra! h
       replace h : IsIntegrableEVar X P S U := ⟨hX, h⟩
       contradiction
-  · have hX_int : ¬IsIntegrableEVar X P S U := by
-      intro h
-      exact hX h.toIsEVar
+  · have hX_int : ¬IsIntegrableEVar X P S U := fun h ↦ hX h.toIsEVar
     simp [hX, hX_int]
 
 /-- Data processing inequality for the maximum randomized utility and a Markov kernel. -/
