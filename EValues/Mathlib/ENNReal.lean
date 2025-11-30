@@ -25,8 +25,7 @@ lemma fsupport_compl_disjoint {α β : Type*} [Top β] [Zero β] (X : α → β)
   rw [Set.disjoint_iff_inter_eq_empty]
   ext ω
   simp only [Set.mem_inter_iff, Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false, not_and_or]
-  by_contra h'
-  push_neg at h'
+  by_contra! h'
   rw [h'.1] at h'
   exact h.symm h'.2
 

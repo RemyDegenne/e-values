@@ -27,8 +27,7 @@ lemma EReal.mul_add_ENNReal {a : ℝ≥0∞} {b c : EReal} (hb₀ : 0 ≤ b) (hc
     · simp [ha₀]
     · simp_all only [toENNReal_top, ne_eq, not_false_eq_true, mul_top]
       have : b = ⊤ ∨ c = ⊤ := by
-        by_contra h
-        push_neg at h
+        by_contra! h
         exact add_ne_top h.1 h.2 hₜ
       cases this with
       | inl hbₜ =>
