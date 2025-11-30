@@ -12,6 +12,7 @@ import Mathlib.Probability.Kernel.Composition.IntegralCompProd
 import Mathlib.Probability.Notation
 import EValues.Mathlib.ENNReal
 import EValues.Mathlib.unitInterval
+import EValues.Utility
 
 /-!
 # E-variables
@@ -171,5 +172,10 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
   lintegral_le_one μ hμ := by
     have h' := h.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
     rwa [Measure.comp_assoc] at h'
+
+/-- An e-variable for which the composition with a utility function is eintegrable. -/
+structure IsIntegrableEVar (X : 𝓧 → ℝ≥0∞) (P : Measure 𝓧)
+    (S : Set (Measure 𝓧)) (U : Utility) : Prop extends IsEVar X S where
+  eintegrable : eintegrable (U ∘ X) P
 
 end ProbabilityTheory

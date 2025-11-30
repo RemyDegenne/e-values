@@ -204,9 +204,13 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
   refine le_antisymm (erenyiDiv_prod_le hS₁ hS₂ hT₁ hT₂) ?_
   calc
     _ ≥ (1 - α)⁻¹ * ⨅ (R : Measure (𝓧 × 𝓨)) (_ : IsProbabilityMeasure R),
-        α * (⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞) (_ : IsEVar X S₁) (_ : IsEVar Y T₁),
+        α * (⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞)
+            (_ : IsIntegrableEVar X (R.map Prod.fst) S₁ logUtility)
+            (_ : IsIntegrableEVar Y (R.map Prod.snd) T₁ logUtility),
               ∫ᵉ x, (logUtility ∘ (fun x ↦ X x.1 * Y x.2)) x ∂R).toENNReal +
-          (1 - α) * (⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞) (_ : IsEVar X S₂) (_ : IsEVar Y T₂),
+          (1 - α) * (⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞)
+          (_ : IsIntegrableEVar X (R.map Prod.fst) S₂ logUtility)
+          (_ : IsIntegrableEVar Y (R.map Prod.snd) T₂ logUtility),
               ∫ᵉ x, (logUtility ∘ (fun x ↦ X x.1 * Y x.2)) x ∂R).toENNReal := by
       unfold erenyiDiv
       gcongr 1
@@ -224,13 +228,16 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
       congr with hR
       set R₁ := R.map Prod.fst
       set R₂ := R.map Prod.snd
+      have : IsProbabilityMeasure R₁ := R.isProbabilityMeasure_map measurable_fst.aemeasurable
+      have : IsProbabilityMeasure R₂ := R.isProbabilityMeasure_map measurable_snd.aemeasurable
 
-      have sup_prod_sum : ∀ (S : Set (Measure 𝓧)) (T : Set (Measure 𝓨)),
-          ⨆ X, ⨆ Y, ⨆ (_ : IsEVar X S), ⨆ (_ : IsEVar Y T),
+      have sup_prod_sum (S : Set (Measure 𝓧)) (T : Set (Measure 𝓨)) :
+          ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
+            ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
             ∫ᵉ x, (logUtility ∘ fun x ↦ X x.1 * Y x.2) x ∂R =
-          ⨆ X, ⨆ Y, ⨆ (_ : IsEVar X S), ⨆ (_ : IsEVar Y T),
-            ∫ᵉ x, logUtility (X x) ∂R₁ + ∫ᵉ x, logUtility (Y x) ∂R₂ := by
-        intro S T
+          ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
+            ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
+            ∫ᵉ x, (logUtility ∘ X) x ∂R₁ + ∫ᵉ x, (logUtility ∘ Y) x ∂R₂ := by
         congr with X
         congr with Y
         congr with hX
@@ -238,13 +245,21 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
         calc
         _ = ∫ᵉ x, logUtility (X x.1) ∂R + ∫ᵉ x, logUtility (Y x.2) ∂R := by
           simp_rw [logUtility, Function.comp, ENNReal.log_mul_add]
+          have := hX.measurable
+          have := hY.measurable
           rw [eintegral_add]
-          · have := hX.measurable
-            fun_prop
-          · have := hY.measurable
-            fun_prop
-          · sorry
-          · sorry
+          · fun_prop
+          · fun_prop
+          · rcases hX.eintegrable with hXe | hXe
+            · left
+              rwa [lintegral_map (by fun_prop) measurable_fst] at hXe
+            · right
+              rwa [lintegral_map (by fun_prop) measurable_fst] at hXe
+          · rcases hY.eintegrable with hYe | hYe
+            · left
+              rwa [lintegral_map (by fun_prop) measurable_snd] at hYe
+            · right
+              rwa [lintegral_map (by fun_prop) measurable_snd] at hYe
           · refine .inl (EReal.ne_bot_of_nonneg ?_)
             sorry
           · refine .inr (EReal.ne_bot_of_nonneg ?_)
@@ -258,24 +273,24 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
               have : Measurable Y := hY.measurable
               fun_prop
       congr
-      · rw [sup_prod_sum S₁ T₁, ← exists_iSup₂_EReal_add]
-        · rfl
-        · exact isEVar_numeraire R₁ S₁
+      · rw [sup_prod_sum S₁ T₁, ← exists_iSup₂_EReal_add,
+            ← maxUtility_eq_restrict_eintegrable, ← maxUtility_eq_restrict_eintegrable]
+        · exact isIntegrableEVar_numeraire hS₁
         · exact numeraire R₂ T₁
-        · exact isEVar_numeraire R₂ T₁
-        · haveI := R.isProbabilityMeasure_map measurable_fst.aemeasurable
-          exact (maxUtility_eq_integral_numeraire R₁ hS₁).symm
-        · haveI := R.isProbabilityMeasure_map measurable_snd.aemeasurable
-          exact (maxUtility_eq_integral_numeraire R₂ hT₁).symm
-      · rw [sup_prod_sum S₂ T₂, ← exists_iSup₂_EReal_add]
-        · rfl
-        · exact isEVar_numeraire R₁ S₂
+        · exact isIntegrableEVar_numeraire hT₁
+        · rw [← maxUtility_eq_restrict_eintegrable, maxUtility_eq_integral_numeraire R₁ hS₁]
+          rfl
+        · rw [← maxUtility_eq_restrict_eintegrable, maxUtility_eq_integral_numeraire R₂ hT₁]
+          rfl
+      · rw [sup_prod_sum S₂ T₂, ← exists_iSup₂_EReal_add,
+            ← maxUtility_eq_restrict_eintegrable, ← maxUtility_eq_restrict_eintegrable]
+        · exact isIntegrableEVar_numeraire hS₂
         · exact numeraire R₂ T₂
-        · exact isEVar_numeraire R₂ T₂
-        · haveI := R.isProbabilityMeasure_map measurable_fst.aemeasurable
-          exact (maxUtility_eq_integral_numeraire R₁ hS₂).symm
-        · haveI := R.isProbabilityMeasure_map measurable_snd.aemeasurable
-          exact (maxUtility_eq_integral_numeraire R₂ hT₂).symm
+        · exact isIntegrableEVar_numeraire hT₂
+        · rw [← maxUtility_eq_restrict_eintegrable, maxUtility_eq_integral_numeraire R₁ hS₂]
+          rfl
+        · rw [← maxUtility_eq_restrict_eintegrable, maxUtility_eq_integral_numeraire R₂ hT₂]
+          rfl
     _ = (1 - α)⁻¹ * sInf {y | ∃ R₁ R₂,
         IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
         y = α * (maxUtility R₁ S₁ logUtility + maxUtility R₂ T₁ logUtility).toENNReal +

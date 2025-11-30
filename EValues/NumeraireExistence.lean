@@ -170,4 +170,8 @@ lemma lintegral_div_self_le_iff_IsNumeraire [IsProbabilityMeasure P]
       filter_upwards [ae_eq_numeraire] with ω hω
       rw [hω]
 
+lemma isIntegrableEVar_numeraire [IsProbabilityMeasure P] (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    IsIntegrableEVar (numeraire P S) P S logUtility :=
+  ⟨isEVar_numeraire P S, (isNumeraire_numeraire P hS).eintegrable_log⟩
+
 end ProbabilityTheory

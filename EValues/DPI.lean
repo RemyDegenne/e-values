@@ -82,6 +82,12 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
         eintegral_map U.measurable hX.measurable]
       rfl
 
+/-- The maximum utility over e-variables equals the supremum over eintegrable
+e-variables. -/
+lemma maxUtility_eq_restrict_eintegrable : maxUtility P S U =
+    ⨆ (X : 𝓧 → ℝ≥0∞) (_hX : IsIntegrableEVar X P S U), ∫ᵉ x, (U ∘ X) x ∂P := by
+  sorry
+
 /-- Data processing inequality for the maximum randomized utility and a Markov kernel. -/
 lemma maxRandUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)
     [IsMarkovKernel κ] :
