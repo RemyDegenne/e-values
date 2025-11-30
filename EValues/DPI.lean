@@ -94,7 +94,7 @@ lemma maxUtility_eq_restrict_eintegrable : maxUtility P S U =
     · simp only [hX, Function.comp_apply, iSup_pos, hX_int, not_false_eq_true, iSup_neg]
       refine eintegral_of_not_eintegrable ?_
       by_contra! h
-      replace h : IsIntegrableEVar X P S U := ⟨hX, h⟩
+      have : IsIntegrableEVar X P S U := ⟨hX, h⟩
       contradiction
   · have hX_int : ¬IsIntegrableEVar X P S U := fun h ↦ hX h.toIsEVar
     simp [hX, hX_int]
