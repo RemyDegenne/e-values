@@ -86,7 +86,20 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
 e-variables. -/
 lemma maxUtility_eq_restrict_eintegrable : maxUtility P S U =
     ⨆ (X : 𝓧 → ℝ≥0∞) (_hX : IsIntegrableEVar X P S U), ∫ᵉ x, (U ∘ X) x ∂P := by
-  sorry
+  unfold maxUtility
+  congr with X
+  by_cases hX : IsEVar X S
+  · by_cases hX_int : IsIntegrableEVar X P S U
+    · simp [hX, hX_int]
+    · simp only [hX, Function.comp_apply, iSup_pos, hX_int, not_false_eq_true, iSup_neg]
+      refine eintegral_of_not_eintegrable ?_
+      by_contra! h
+      replace h : IsIntegrableEVar X P S U := ⟨hX, h⟩
+      contradiction
+  · have hX_int : ¬IsIntegrableEVar X P S U := by
+      intro h
+      exact hX h.toIsEVar
+    simp [hX, hX_int]
 
 /-- Data processing inequality for the maximum randomized utility and a Markov kernel. -/
 lemma maxRandUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)
