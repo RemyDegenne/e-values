@@ -43,6 +43,24 @@ lemma ConvexOn.add_deriv_mul_le {S : Set ℝ} {f : ℝ → ℝ} {x y : ℝ}
     field_simp at h_cvx
     linarith
 
+lemma StrictConvexOn.add_deriv_mul_lt {S : Set ℝ} {f : ℝ → ℝ} {x y : ℝ}
+    (hfc : StrictConvexOn ℝ S f) (hx : x ∈ S) (hy : y ∈ S) (hxy : x ≠ y)
+    (hfd : DifferentiableAt ℝ f y) :
+    f y + deriv f y * (x - y) < f x := by
+  rcases lt_trichotomy x y with hxy' | rfl | hyx
+  · have h_sccv := hfc.slope_lt_deriv hx hy hxy' hfd
+    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_sccv
+    have : 0 < (y - x) := sub_pos.mpr hxy'
+    field_simp at h_sccv
+    linarith
+  · exfalso
+    exact hxy rfl
+  · have h_sccv := hfc.deriv_lt_slope hy hx hyx hfd
+    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_sccv
+    have : 0 < (x - y) := sub_pos.mpr hyx
+    field_simp at h_sccv
+    linarith
+
 lemma strictConvexOn_inv_Ioi : StrictConvexOn ℝ (Ioi (0 : ℝ)) Inv.inv := by
   apply strictConvexOn_of_slope_strict_mono_adjacent (convex_Ioi (0 : ℝ))
   intro x y z (hx : 0 < x) (hz : 0 < z) hxy hyz

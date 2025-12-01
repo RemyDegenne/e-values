@@ -199,6 +199,17 @@ lemma eintegral_mono_ae (hfg : f ≤ᵐ[μ] g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ 
     rw [← EReal.neg_le_neg_iff] at hfgx
     exact EReal.toENNReal_le_toENNReal hfgx
 
+lemma eintegral_strict_mono_ae (hfg : ∀ᵐ x ∂μ, f x < g x) (hfi : ∫ᵉ x, f x ∂μ < ⊤) :
+    ∫ᵉ x, f x ∂μ < ∫ᵉ x, g x ∂μ := by
+  sorry
+
+lemma eintegral_add_compl {A : Set α} (hA : MeasurableSet A) :
+    ∫ᵉ x, f x ∂μ = ∫ᵉ x in A, f x ∂μ + ∫ᵉ x in Aᶜ, f x ∂μ := by
+  simp only [eintegral]
+  rw [← lintegral_add_compl (f := fun x ↦ (f x).toENNReal) hA]
+  rw [← lintegral_add_compl (f := fun x ↦ (-f x).toENNReal) hA]
+  sorry
+
 @[gcongr]
 lemma eintegral_mono (hfg : f ≤ g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ :=
   eintegral_mono_ae <| ae_of_all _ hfg

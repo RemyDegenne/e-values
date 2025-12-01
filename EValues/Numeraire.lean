@@ -186,20 +186,16 @@ theorem ae_unique [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY : IsNu
     simp only [Pi.div_apply, ← hY.lintegral_eq_setLIntegral_fsupport hX.toIsEVar, W]
     exact hY.inv_lintegral_div_eq_one hX μ_fsupport
   have avg_eq_one : ∫⁻ ω, W ω ∂μ = 1 := lintegral_div_eq_one hY hX μ_fsupport
-  rcases hY.measure_fsupport_ne_zero_or_ae_top with hY₀ | hYₜ
-  · have strict_Jensen : W =ᵐ[μ] const 𝓧 (∫⁻ ω, W ω ∂μ) ∨
-        (∫⁻ ω in Y.fsupport, W ω ∂μ)⁻¹ < ∫⁻ ω in Y.fsupport, (W ω)⁻¹ ∂μ :=
-      strictConvexOn_inv.ae_eq_const_or_map_set_lintegral_lt continuousOn_inv isClosed_univ hY₀
-        (by simp) (by simp)
-    have h_le : ∫⁻ ω in fsupport Y, (W ω)⁻¹ ∂μ ≤ 1 :=
-      setLIntegral_fsupport_inv_le_one hY.toIsEVar hX
-    simp only [inv_avg_eq_one, not_lt.mpr h_le, or_false, avg_eq_one] at strict_Jensen
-    filter_upwards [strict_Jensen] with ω hx
-    simp only [Pi.div_apply, const_apply, W] at hx
-    exact ENNReal.eq_of_div_eq_one hx
-  · suffices ∀ᵐ ω ∂μ, W ω = 0 by simp [lintegral_congr_ae this] at avg_eq_one
-    filter_upwards [hYₜ] with ω hω
-    simp [W, hω]
+  have strict_Jensen : W =ᵐ[μ] const 𝓧 (∫⁻ ω, W ω ∂μ) ∨
+      (∫⁻ ω in Y.fsupport, W ω ∂μ)⁻¹ < ∫⁻ ω in Y.fsupport, (W ω)⁻¹ ∂μ :=
+    strictConvexOn_inv.ae_eq_const_or_map_set_lintegral_lt continuousOn_inv
+        isClosed_univ μ_fsupport (by simp) (by simp)
+  have h_le : ∫⁻ ω in fsupport Y, (W ω)⁻¹ ∂μ ≤ 1 :=
+    setLIntegral_fsupport_inv_le_one hY.toIsEVar hX
+  simp only [inv_avg_eq_one, not_lt.mpr h_le, or_false, avg_eq_one] at strict_Jensen
+  filter_upwards [strict_Jensen] with ω hx
+  simp only [Pi.div_apply, const_apply, W] at hx
+  exact ENNReal.eq_of_div_eq_one hx
 
 lemma congr (hX : IsNumeraire X S μ) (hY_evar : IsEVar Y S) (hY : Y =ᵐ[μ] X) :
     IsNumeraire Y S μ := by
