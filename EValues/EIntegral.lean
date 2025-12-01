@@ -410,6 +410,13 @@ lemma eintegral_eq_lintegral (f : α → ENNReal) :
   · intro
     positivity
 
+lemma lintegral_eq_eintegral (f : α → ENNReal) :
+    ∫⁻ x, f x ∂μ = (∫ᵉ x, f x ∂μ).toENNReal := by
+  rw [eintegral_of_nonneg]
+  · simp
+  · intro
+    positivity
+
 lemma eintegral_mul_const_of_nonneg {c : EReal} (hc_bot : c ≠ ⊥) (hc_top : c ≠ ⊤)
     (hf : ∀ x, 0 ≤ f x) :
     ∫ᵉ x, c * f x ∂μ = c * ∫ᵉ x, f x ∂μ := by

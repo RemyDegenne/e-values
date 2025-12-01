@@ -6,9 +6,42 @@ Authors: Gaëtan Serré
 
 import EValues.Mathlib.EReal
 import Mathlib.Algebra.Lie.OfAssociative
+import Mathlib.Analysis.Convex.Deriv
 import Mathlib.Analysis.Convex.SpecificFunctions.Basic
 
 open Set ENNReal NNReal
+
+lemma ConcaveOn.le_add_deriv_mul {S : Set ℝ} {f : ℝ → ℝ} {x y : ℝ}
+    (hfc : ConcaveOn ℝ S f) (hx : x ∈ S) (hy : y ∈ S) (hfd : DifferentiableAt ℝ f y) :
+    f x ≤ f y + deriv f y * (x - y) := by
+  rcases lt_trichotomy x y with hxy | rfl | hyx
+  · have h_ccv := hfc.deriv_le_slope hx hy hxy hfd
+    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
+    have : 0 < (y - x) := sub_pos.mpr hxy
+    field_simp at h_ccv
+    linarith
+  · simp
+  · have h_ccv := hfc.slope_le_deriv hy hx hyx hfd
+    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_ccv
+    have : 0 < (x - y) := sub_pos.mpr hyx
+    field_simp at h_ccv
+    linarith
+
+lemma ConvexOn.add_deriv_mul_le {S : Set ℝ} {f : ℝ → ℝ} {x y : ℝ}
+    (hfc : ConvexOn ℝ S f) (hx : x ∈ S) (hy : y ∈ S) (hfd : DifferentiableAt ℝ f y) :
+    f y + deriv f y * (x - y) ≤ f x := by
+  rcases lt_trichotomy x y with hxy | rfl | hyx
+  · have h_cvx := hfc.slope_le_deriv hx hy hxy hfd
+    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_cvx
+    have : 0 < (y - x) := sub_pos.mpr hxy
+    field_simp at h_cvx
+    linarith
+  · simp
+  · have h_cvx := hfc.deriv_le_slope hy hx hyx hfd
+    simp only [slope, vsub_eq_sub, smul_eq_mul] at h_cvx
+    have : 0 < (x - y) := sub_pos.mpr hyx
+    field_simp at h_cvx
+    linarith
 
 lemma strictConvexOn_inv_Ioi : StrictConvexOn ℝ (Ioi (0 : ℝ)) Inv.inv := by
   apply strictConvexOn_of_slope_strict_mono_adjacent (convex_Ioi (0 : ℝ))

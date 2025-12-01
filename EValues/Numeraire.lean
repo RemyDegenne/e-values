@@ -62,6 +62,14 @@ lemma ae_pos (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, 0 < X ω := by
 lemma ae_ne_zero (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, X ω ≠ 0 := by
   filter_upwards [hX.ae_pos] with ω hω using hω.ne'
 
+lemma div_ae_finite (hX : IsNumeraire X S μ) (hY : IsEVar Y S) : ∀ᵐ x ∂μ, Y x / X x ≠ ⊤ := by
+  rw [ae_iff]
+  by_contra! h
+  have le_one := hX.lintegral_div_le_one hY
+  rw [lintegral_eq_top_of_measure_eq_top_ne_zero
+      (hY.measurable.div hX.measurable).aemeasurable h] at le_one
+  contradiction
+
 lemma lintegral_eq_setLIntegral_fsupport (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫⁻ ω, Y ω / X ω ∂μ = ∫⁻ ω in X.fsupport, Y ω / X ω ∂μ := by
   rw [← lintegral_add_compl _ hX.measurable_fsupport]
@@ -123,14 +131,41 @@ lemma inv_lintegral_div_eq_one [IsProbabilityMeasure μ]
     (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) (h : μ X.fsupport ≠ 0) :
     (∫⁻ ω, Y ω / X ω ∂μ)⁻¹ = 1 := by
   set W := Y / X
-  rw [hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar]
+  --rw [hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar]
   refine le_antisymm ?_ ?_
-  · calc (∫⁻ ω in X.fsupport, W ω ∂μ)⁻¹
-    _ ≤ ∫⁻ ω in X.fsupport, (W ω)⁻¹ ∂μ :=
-      strictConvexOn_inv.convexOn.map_set_lintegral_le continuousOn_inv isClosed_univ h (by simp)
-        (by simp)
+  · calc (∫⁻ ω, W ω ∂μ)⁻¹
+    _ ≤ ∫⁻ ω, (W ω)⁻¹ ∂μ := by
+      refine Inv.map_lintegral_le ?_ ?_
+      · exact (hY.measurable.div hX.measurable).aemeasurable
+      · exact div_ae_finite hX hY.toIsEVar
+    _ = ∫⁻ ω in X.fsupport, (W ω)⁻¹ ∂μ := by
+        sorry
+      /- rw [← lintegral_add_compl _ hX.measurable_fsupport]
+      suffices ∫⁻ ω in X.fsupportᶜ, (W ω)⁻¹ ∂μ = 0 by simp [this]
+      rw [setLIntegral_eq_zero_iff (hX.measurable_fsupport).compl]
+      swap
+      · have : Measurable W := hY.measurable.div hX.measurable
+        fun_prop
+      · filter_upwards [hY.ae_ne_zero, hX.ae_ne_zero, ae_top_implies_numeraire_top hX hY.toIsEVar]
+          with ω hω hXω hYXω hYω
+        simp [W]
+        rw [div_eq_top]
+        rw [fsupport_compl] at hYω
+        rcases hYω with hYω_top | hYω_zero
+        · simp_all [W]
+          apply?
+          sorry
+        · contradiction -/
+    /- _ = ∫⁻ ω, (X ω / Y ω) ∂μ := by
+      refine lintegral_congr_ae ?_
+      filter_upwards [div_ae_finite hX hY.toIsEVar, ae_ne_zero hX] with ω hω hXω
+      refine ENNReal.inv_div ?_ (.inl hXω)
+      by_contra! h
+      sorry -/
     _ ≤ 1 := setLIntegral_fsupport_inv_le_one hX.toIsEVar hY
-  · simp only [← hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar, le_inv_iff_mul_le, one_mul]
+
+  · rw [hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar]
+    simp only [← hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar, le_inv_iff_mul_le, one_mul]
     exact hX.lintegral_div_le_one hY.toIsEVar
 
 lemma lintegral_div_eq_one [IsProbabilityMeasure μ]
