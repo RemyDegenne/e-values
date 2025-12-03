@@ -131,6 +131,20 @@ lemma inv_lintegral_div_eq_one [IsProbabilityMeasure μ]
     (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) (h : μ X.fsupport ≠ 0) :
     (∫⁻ ω, Y ω / X ω ∂μ)⁻¹ = 1 := by
   set W := Y / X
+  rw [hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar]
+  refine le_antisymm ?_ ?_
+  · calc (∫⁻ ω in X.fsupport, W ω ∂μ)⁻¹
+    _ ≤ ∫⁻ ω in X.fsupport, (W ω)⁻¹ ∂μ :=
+      strictConvexOn_inv.convexOn.map_set_lintegral_le continuousOn_inv isClosed_univ h (by simp)
+        (by simp)
+    _ ≤ 1 := setLIntegral_fsupport_inv_le_one hX.toIsEVar hY
+  · simp only [← hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar, le_inv_iff_mul_le, one_mul]
+    exact hX.lintegral_div_le_one hY.toIsEVar
+
+lemma inv_lintegral_div_eq_one' [IsProbabilityMeasure μ]
+    (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) (h : ∀ᵐ x ∂μ, (Y / X) x ≠ ⊤) :
+    (∫⁻ ω, Y ω / X ω ∂μ)⁻¹ = 1 := by
+  set W := Y / X
   --rw [hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar]
   refine le_antisymm ?_ ?_
   · calc (∫⁻ ω, W ω ∂μ)⁻¹
