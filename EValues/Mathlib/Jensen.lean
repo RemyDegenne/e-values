@@ -6,11 +6,11 @@ Authors: Gaëtan Serré
 
 import EValues.EIntegral
 import EValues.Mathlib.Convex
-import Mathlib
+import Mathlib.Analysis.Calculus.Deriv.Inv
 
 open Function Set ENNReal
 
-open MeasureTheory
+open MeasureTheory ProbabilityTheory
 
 variable {α : Type*} [MeasurableSpace α] {μ : Measure α} {s : Set ℝ≥0∞} {t : Set α}
   {f : α → ℝ≥0∞} {g : ℝ≥0∞ → ℝ≥0∞}
@@ -120,6 +120,36 @@ theorem Inv.map_lintegral_le [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
   have := Inv.map_set_lintegral_le (f := f) (μ := μ) MeasurableSet.univ hf.restrict (by simp) ?_
   · simp_all
   · simp_all only [ne_eq, mem_univ, forall_const]
+
+example (ht : MeasurableSet t) (hf : AEMeasurable f (μ.restrict t))
+    (hμ_t : μ t ≠ 0) (ht_top : ∀ᵐ x ∂μ, x ∈ t → f x ≠ ⊤) :
+    μ t * ((μ t)⁻¹ * ∫⁻ x in t, f x ∂μ)⁻¹ ≤ ∫⁻ x in t, (f x)⁻¹ ∂μ := by
+  let ν : Measure α := (μ t)⁻¹ • (μ.restrict t)
+  have : IsProbabilityMeasure ν := by sorry
+  replace hf : AEMeasurable f ν := by sorry
+  replace ht_top : ∀ᵐ x ∂ν, f x ≠ ⊤ := by sorry
+  have := Inv.map_lintegral_le hf ht_top
+  replace := mul_le_mul_left' this (μ t)
+  simp only [lintegral_smul_measure, smul_eq_mul, ν] at this
+  refine le_trans this ?_
+  rw [← mul_assoc]
+  rw [ENNReal.mul_inv_cancel hμ_t]
+  · simp
+  · by_contra! h
+    simp_all
+
+example (hμ_t : μ t ≠ 0) [IsProbabilityMeasure μ] :
+    (μ t * ∫⁻ x in t, f x ∂μ)⁻¹ ≤ μ t * ∫⁻ x in t, (f x)⁻¹ ∂μ := by
+  have := strictConvexOn_inv.convexOn.2
+  let x := (μ t)⁻¹ * ∫⁻ x in t, f x ∂μ
+  specialize @this x (by trivial) 0 (by trivial) (μ t) (1 - μ t) (by positivity) (by positivity)
+    ?_
+  · refine (toReal_eq_one_iff (μ t + (1 - μ t))).mp ?_
+    rw [toReal_add (by simp) (by simp)]
+    sorry
+  · simp_all
+    --exact this
+    sorry
 
 lemma Inv.lt_add_deriv_mul {x y : ℝ≥0∞} (hx_top : x ≠ ⊤) (hy_zero : y ≠ 0) (hxy : x ≠ y) :
     y⁻¹ + Inv.deriv y * (x - y) < x⁻¹ := by
