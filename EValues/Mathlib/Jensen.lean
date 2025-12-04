@@ -72,54 +72,101 @@ lemma Inv.le_add_deriv_mul {x y : ℝ≥0∞} (hx_top : x ≠ ⊤) (hy_zero : y 
       ← EReal.coe_ennreal_toReal <| inv_ne_top.mpr hy_zero]
     norm_cast
 
-theorem Inv.map_set_lintegral_le (ht : MeasurableSet t) (hf : AEMeasurable f (μ.restrict t))
-    (hμ_t : μ t ≠ 0) (ht_top : ∀ᵐ x ∂μ, x ∈ t → f x ≠ ⊤) :
-    μ t * (∫⁻ x in t, f x ∂μ)⁻¹ ≤ ∫⁻ x in t, (f x)⁻¹ ∂μ := by
-  by_cases h0 : ∫⁻ x in t, f x ∂μ = 0
-  · simp only [h0, ENNReal.inv_zero, ENNReal.mul_top hμ_t]
-    rw [setLIntegral_eq_zero_iff' ht hf] at h0
-    have : ∀ᵐ x ∂μ, x ∈ t → (f x)⁻¹ = ⊤ := by
-      filter_upwards [h0] with x hx hxt
-      rw [hx hxt]
-      simp
-    rw [setLIntegral_congr_fun_ae ht this]
-    simp [hμ_t]
-  · by_cases htop_inv : ∫⁻ x in t, (f x)⁻¹ ∂μ = ⊤
-    · simp [htop_inv]
-    · let y := ∫⁻ x in t, f x ∂μ
-      calc
-      _ = μ t * ((∫ᵉ x in t, f x ∂μ).toENNReal)⁻¹ := by
-        rw [lintegral_eq_eintegral _]
-      _ = (∫ᵉ x in t, y⁻¹ + Inv.deriv y * (f x - y) ∂μ).toENNReal := by
-        rw [eintegral_add]
-        · have : ∫ᵉ x in t, Inv.deriv y * ((f x) - y) ∂μ = 0 := by sorry
-          rw [this]
-          simp only [eintegral_const, MeasurableSet.univ, Measure.restrict_apply, univ_inter,
-            add_zero]
-          rw [← lintegral_eq_eintegral _, EReal.toENNReal_mul <| EReal.coe_ennreal_nonneg _]
-          simp
-          ring
-        · fun_prop
-        · fun_prop
-        · sorry
-        · sorry
-        · sorry
-        · sorry
-      _ ≤ (∫ᵉ x in t, (Inv.inv (α := ℝ≥0∞) (f x)) ∂μ).toENNReal := by
-        refine EReal.toENNReal_le_toENNReal ?_
-        refine eintegral_mono_ae ?_
-        unfold Filter.EventuallyLE
-        rw [ae_restrict_iff' ht]
-        filter_upwards [ht_top] with x hx hxt
-        exact Inv.le_add_deriv_mul (hx hxt) h0
-      _ ≤ ∫⁻ x in t, (f x)⁻¹ ∂μ := by
-        rw [← lintegral_eq_eintegral _]
-
 theorem Inv.map_lintegral_le [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
     (hf_top : ∀ᵐ x ∂μ, f x ≠ ⊤) : (∫⁻ x, f x ∂μ)⁻¹ ≤ ∫⁻ x, (f x)⁻¹ ∂μ := by
-  have := Inv.map_set_lintegral_le (f := f) (μ := μ) MeasurableSet.univ hf.restrict (by simp) ?_
+  by_cases h0 : ∫⁻ x, f x ∂μ = 0
+  · simp only [h0, ENNReal.inv_zero]
+    rw [lintegral_eq_zero_iff' hf] at h0
+    have : ∀ᵐ x ∂μ, (f x)⁻¹ = ⊤ := by
+      filter_upwards [h0] with x hx
+      rw [hx]
+      simp
+    rw [lintegral_congr_ae this]
+    simp
+  by_cases htop_inv : ∫⁻ x, (f x)⁻¹ ∂μ = ⊤
+  · simp [htop_inv]
+  let y := ∫⁻ x, f x ∂μ
+  calc
+  _ = (∫ᵉ x, f x ∂μ).toENNReal⁻¹ := by
+    rw [lintegral_eq_eintegral _]
+  _ = (∫ᵉ x, y⁻¹ + Inv.deriv y * (f x - y) ∂μ).toENNReal := by
+    rw [eintegral_add]
+    · have : ∫ᵉ x, Inv.deriv y * ((f x) - y) ∂μ = 0 := by sorry
+      rw [this]
+      simp [eintegral_const, ← lintegral_eq_eintegral, y]
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+    · sorry
+  _ ≤ (∫ᵉ x, (Inv.inv (α := ℝ≥0∞) (f x)) ∂μ).toENNReal := by
+    refine EReal.toENNReal_le_toENNReal ?_
+    refine eintegral_mono_ae ?_
+    filter_upwards [hf_top] with x hx
+    exact Inv.le_add_deriv_mul hx h0
+  _ ≤ ∫⁻ x, (f x)⁻¹ ∂μ := by
+    rw [← lintegral_eq_eintegral _]
+  /- have := Inv.map_set_lintegral_le (f := f) (μ := μ) MeasurableSet.univ hf.restrict (by simp) ?_
   · simp_all
-  · simp_all only [ne_eq, mem_univ, forall_const]
+  · simp_all only [ne_eq, mem_univ, forall_const] -/
+
+/-- A renormalized measure on a set `s` from a probability measure `μ`. -/
+noncomputable def renorm_measure (μ : Measure α) (s : Set α) : Measure α :=
+  ((μ s)⁻¹ • μ).restrict s
+
+lemma isProbabilityMeasure_renorm_measure (hμ_t₀ : μ t ≠ 0) (hμ_t₁ : μ t ≠ ⊤) :
+    IsProbabilityMeasure (renorm_measure μ t) := by
+  refine isProbabilityMeasure_iff.mpr ?_
+  simp only [renorm_measure, Measure.restrict_smul, Measure.smul_apply, MeasurableSet.univ,
+    Measure.restrict_apply, univ_inter, smul_eq_mul]
+  exact ENNReal.inv_mul_cancel hμ_t₀ hμ_t₁
+
+lemma AEMeasurable.renorm_measure {μ : Measure α}
+    (hf : AEMeasurable f (μ.restrict t)) : AEMeasurable f (renorm_measure μ t) := by
+  simp [_root_.renorm_measure, hf.smul_measure (μ t)⁻¹]
+
+theorem Inv.map_set_lintegral_le (ht : MeasurableSet t) (hf : AEMeasurable f (μ.restrict t))
+    (hμ_t₀ : μ t ≠ 0) (hμ_t₁ : μ t ≠ ⊤) (ht_top : ∀ᵐ x ∂μ, x ∈ t → f x ≠ ⊤) :
+    μ t * (∫⁻ x in t, f x ∂μ)⁻¹ ≤ (μ t)⁻¹ * ∫⁻ x in t, (f x)⁻¹ ∂μ := by
+  let ν := renorm_measure μ t
+  have : IsProbabilityMeasure ν := isProbabilityMeasure_renorm_measure hμ_t₀ hμ_t₁
+  replace hf : AEMeasurable f ν := hf.renorm_measure
+  replace ht_top : ∀ᵐ x ∂ν, f x ≠ ⊤ := by
+    simp only [ν, renorm_measure]
+    rw [ae_restrict_iff' ht]
+    change ((μ t)⁻¹ • μ) {x | x ∈ t → f x ≠ ⊤}ᶜ = 0
+    rw [Measure.smul_apply]
+    exact smul_eq_zero_of_right (μ t)⁻¹ ht_top
+  calc
+  _ = (∫⁻ x, f x ∂ν)⁻¹ := by
+    simp only [Measure.restrict_smul, lintegral_smul_measure, smul_eq_mul, ν, renorm_measure]
+    rw [ENNReal.mul_inv, inv_inv]
+    · left
+      simp [hμ_t₁]
+    · left
+      simp [hμ_t₀]
+  _ ≤ ∫⁻ x, (f x)⁻¹ ∂ν := Inv.map_lintegral_le hf ht_top
+  _ = (μ t)⁻¹ * ∫⁻ x in t, (f x)⁻¹ ∂μ := by
+    simp [ν, renorm_measure]
+
+/- example (ht : MeasurableSet t) (hf : AEMeasurable f (μ.restrict t))
+    (hμ_t₀ : μ t ≠ 0) (hμ_t₁ : μ t ≠ ⊤) (ht_top : ∀ᵐ x ∂μ, x ∈ t → f x ≠ ⊤) :
+    (∫⁻ x, f x ∂(renorm_measure μ t))⁻¹ ≤ ∫⁻ x, (f x)⁻¹ ∂(renorm_measure μ t) := by
+  /- let ν : Measure α := μ.restrict t
+  have : IsProbabilityMeasure ν := by sorry
+  replace hf : AEMeasurable f ν := by sorry
+  replace ht_top : ∀ᵐ x ∂ν, f x ≠ ⊤ := by sorry -/
+  have : MeasurableSet (Set.univ : Set α) := by exact MeasurableSet.univ
+  let f' : α → ℝ≥0∞ := fun x ↦ f x * (μ t)⁻¹
+  have := Inv.map_set_lintegral_le ht (f := f') (μ := μ) ?_ hμ_t₀ hμ_t₁ ?_
+  · simp at this
+    sorry
+  · fun_prop
+  · filter_upwards [ht_top] with x hx hxt
+    simp only [f']
+    refine mul_ne_top (hx hxt) ?_
+    simp [hμ_t₀]
 
 example (ht : MeasurableSet t) (hf : AEMeasurable f (μ.restrict t))
     (hμ_t : μ t ≠ 0) (ht_top : ∀ᵐ x ∂μ, x ∈ t → f x ≠ ⊤) :
@@ -149,7 +196,7 @@ example (hμ_t : μ t ≠ 0) [IsProbabilityMeasure μ] :
     sorry
   · simp_all
     --exact this
-    sorry
+    sorry -/
 
 lemma Inv.lt_add_deriv_mul {x y : ℝ≥0∞} (hx_top : x ≠ ⊤) (hy_zero : y ≠ 0) (hxy : x ≠ y) :
     y⁻¹ + Inv.deriv y * (x - y) < x⁻¹ := by
@@ -185,6 +232,58 @@ lemma Inv.lt_add_deriv_mul {x y : ℝ≥0∞} (hx_top : x ≠ ⊤) (hy_zero : y 
       ← EReal.coe_ennreal_toReal <| inv_ne_top.mpr hx_zero,
       ← EReal.coe_ennreal_toReal <| inv_ne_top.mpr hy_zero]
     norm_cast
+
+theorem Inv.ae_eq_const_or_map_lintegral_lt [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
+    (hf_top : ∀ᵐ x ∂μ, f x ≠ ⊤) :
+    f =ᵐ[μ] const α (∫⁻ x, f x ∂μ) ∨ (∫⁻ x, f x ∂μ)⁻¹ < ∫⁻ x, (f x)⁻¹ ∂μ := by
+  sorry
+
+theorem Inv.ae_eq_const_or_map_set_lintegral_lt (ht : MeasurableSet t)
+    (hf : AEMeasurable f (μ.restrict t)) (hμ_t₀ : μ t ≠ 0) (hμ_t₁ : μ t ≠ ⊤)
+    (ht_top : ∀ᵐ x ∂μ, x ∈ t → f x ≠ ⊤) :
+    f =ᵐ[μ.restrict t] const α ((μ t)⁻¹ * ∫⁻ x in t, f x ∂μ) ∨
+      μ t * (∫⁻ x in t, f x ∂μ)⁻¹ < (μ t)⁻¹ * ∫⁻ x in t, (f x)⁻¹ ∂μ := by
+  let ν := renorm_measure μ t
+  have : IsProbabilityMeasure ν := isProbabilityMeasure_renorm_measure hμ_t₀ hμ_t₁
+  replace hf : AEMeasurable f ν := hf.renorm_measure
+  replace ht_top : ∀ᵐ x ∂ν, f x ≠ ⊤ := by
+    simp only [ν, renorm_measure]
+    rw [ae_restrict_iff' ht]
+    change ((μ t)⁻¹ • μ) {x | x ∈ t → f x ≠ ⊤}ᶜ = 0
+    rw [Measure.smul_apply]
+    exact smul_eq_zero_of_right (μ t)⁻¹ ht_top
+  rcases Inv.ae_eq_const_or_map_lintegral_lt hf ht_top with h | h
+  · left
+    unfold Filter.EventuallyEq at h ⊢
+    rw [ae_restrict_iff' ht]
+    simp only [const_apply] at h ⊢
+    change μ {x | x ∈ t → f x = ((μ t)⁻¹ * ∫⁻ x in t, f x ∂μ)}ᶜ = 0
+    replace h : ν {x | f x = ∫⁻ x, f x ∂ν}ᶜ = 0 := h
+    simp_all only [ne_eq, renorm_measure, Measure.restrict_smul, ENNReal.inv_eq_zero,
+      not_false_eq_true, aemeasurable_smul_measure_iff, Measure.ae_smul_measure_eq, ae_restrict_eq,
+      lintegral_smul_measure, smul_eq_mul, Measure.smul_apply, Measure.restrict_apply', mul_eq_zero,
+      false_or, ν]
+    rw [← h]
+    congr
+    simp only [compl_def, mem_setOf_eq, Classical.not_imp]
+    ext x
+    constructor
+    · rintro ⟨hxt, hx⟩
+      refine ⟨hx, hxt⟩
+    · rintro ⟨hx, hxt⟩
+      refine ⟨hxt, hx⟩
+  · right
+    calc
+    _ = (∫⁻ x, f x ∂ν)⁻¹ := by
+      simp only [Measure.restrict_smul, lintegral_smul_measure, smul_eq_mul, ν, renorm_measure]
+      rw [ENNReal.mul_inv, inv_inv]
+      · left
+        simp [hμ_t₁]
+      · left
+        simp [hμ_t₀]
+    _ < ∫⁻ x, (f x)⁻¹ ∂ν := h
+    _ = (μ t)⁻¹ * ∫⁻ x in t, (f x)⁻¹ ∂μ := by
+      simp [ν, renorm_measure]
 
 /- theorem Inv.ae_eq_const_or_map_set_lintegral_lt (ht : MeasurableSet t)
     (hf : AEMeasurable f (μ.restrict t)) (hμ_t₀ : μ t ≠ 0) (hμ_t₁ : μ t ≠ ⊤)

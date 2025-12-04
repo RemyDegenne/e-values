@@ -3,7 +3,6 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-import EValues.NumeraireExistence
 import EValues.DPI
 
 /-!
@@ -42,7 +41,7 @@ lemma IsEVar.prod {T : Set (Measure 𝓨)} (hT : ∀ μ ∈ T, IsProbabilityMeas
 /-- The numeraire of a product measure with respect to a product of sets is the product
 of the numeraires. -/
 theorem isNumeraire_mul
-    (P : Measure 𝓧) (Q : Measure 𝓨) [IsProbabilityMeasure Q]
+    (P : Measure 𝓧) [IsFiniteMeasure P] (Q : Measure 𝓨) [IsProbabilityMeasure Q]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
     {X : 𝓧 → ℝ≥0∞} {Y : 𝓨 → ℝ≥0∞} (hX : IsNumeraire X S P) (hY : IsNumeraire Y T Q) :
     IsNumeraire (fun (x : 𝓧 × 𝓨) ↦ X x.1 * Y x.2)
@@ -64,7 +63,7 @@ theorem isNumeraire_mul
     specialize hS μ hμS
     specialize hT ν hνT
     infer_instance
-  lintegral_div_le_one Z hZ_evar := by
+  lintegral_div_le_measure_fsupport Z hZ_evar := by
     have hX_meas := hX.measurable
     have hY_meas := hY.measurable
     have hZ_meas := hZ_evar.measurable
@@ -82,7 +81,50 @@ theorem isNumeraire_mul
       rw [ENNReal.mul_inv (.inl hy) (.inr hx), mul_assoc]
     suffices IsEVar (fun x ↦ ∫⁻ y, Z (x, y) / Y y ∂Q) S by
       rw [h_eq]
-      exact hX.lintegral_div_le_one this
+      calc
+      _ ≤ ∫⁻ x, Q Y.fsupport / X x ∂P := by
+        gcongr with x
+        refine hY.lintegral_div_le_measure_fsupport ?_
+        refine ⟨?_, fun μ hμ ↦ ?_⟩
+        · have := hZ_evar.measurable
+          fun_prop
+        · have := hZ_evar.lintegral_le_one
+          -- If T is non-empty, we won.
+          sorry
+      _ = ∫⁻ x, (Q Y.fsupport) * (1 / X x) ∂P := by
+        congr with x
+        exact div_eq_mul_one_div _ _
+      _ = (Q Y.fsupport) * ∫⁻ x, 1 / X x ∂P := by
+        rw [lintegral_const_mul _ (by fun_prop)]
+      _ ≤ (Q Y.fsupport) * P X.fsupport := by
+        gcongr
+        exact hX.lintegral_div_le_measure_fsupport <| isEVar_fun_one S hS
+      _ = (P.prod Q) (fun x ↦ Y x.2 * X x.1).fsupport := by
+        suffices (fun x ↦ Y x.2 * X x.1).fsupport =
+            (fun x ↦ X x).fsupport ×ˢ (fun y ↦ Y y).fsupport by
+          rw [this, P.prod_prod, mul_comm]
+        ext x
+        constructor
+        · simp only [Set.mem_inter_iff, ne_eq, Set.mem_setOf_eq, mul_eq_zero, not_or, Set.mem_prod,
+            and_imp]
+          intro h_mul_top hY_zero hX_zero
+          rw [← ne_eq] at h_mul_top
+          replace h_mul_top : Y x.2 * X x.1 < ⊤ := h_mul_top.symm.lt_top'
+          rw [ENNReal.mul_lt_top_iff] at h_mul_top
+          refine ⟨⟨?_, hX_zero⟩, ⟨?_, hY_zero⟩⟩
+          · rcases h_mul_top with h_top | hX_zero | hY_zero
+            · exact h_top.2.ne
+            · contradiction
+            · contradiction
+          · rcases h_mul_top with h_top | hX_zero | hY_zero
+            · exact h_top.1.ne
+            · contradiction
+            · contradiction
+        · simp only [Set.mem_prod, Set.mem_inter_iff, ne_eq, Set.mem_setOf_eq, mul_eq_zero, not_or,
+            and_imp]
+          intro hX_top hX_zero hY_top hY_zero
+          simp_all only [not_false_eq_true, and_self, and_true]
+          exact ENNReal.mul_ne_top hY_top hX_top
     constructor
     · fun_prop
     intro μ hμS
