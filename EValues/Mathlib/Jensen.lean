@@ -111,44 +111,32 @@ theorem Inv.map_lintegral_le [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
   · simp_all
   · simp_all only [ne_eq, mem_univ, forall_const] -/
 
-/-- A renormalized measure on a set `s` from a probability measure `μ`. -/
-noncomputable def renorm_measure (μ : Measure α) (s : Set α) : Measure α :=
-  ((μ s)⁻¹ • μ).restrict s
-
-lemma isProbabilityMeasure_renorm_measure (hμ_t₀ : μ t ≠ 0) (hμ_t₁ : μ t ≠ ⊤) :
-    IsProbabilityMeasure (renorm_measure μ t) := by
-  refine isProbabilityMeasure_iff.mpr ?_
-  simp only [renorm_measure, Measure.restrict_smul, Measure.smul_apply, MeasurableSet.univ,
-    Measure.restrict_apply, univ_inter, smul_eq_mul]
-  exact ENNReal.inv_mul_cancel hμ_t₀ hμ_t₁
-
-lemma AEMeasurable.renorm_measure {μ : Measure α}
-    (hf : AEMeasurable f (μ.restrict t)) : AEMeasurable f (renorm_measure μ t) := by
-  simp [_root_.renorm_measure, hf.smul_measure (μ t)⁻¹]
+lemma AEMeasurable.cond {μ : Measure α}
+    (hf : AEMeasurable f (μ.restrict t)) : AEMeasurable f μ[|t] := by
+  simp [ProbabilityTheory.cond, hf.smul_measure (μ t)⁻¹]
 
 theorem Inv.map_set_lintegral_le (ht : MeasurableSet t) (hf : AEMeasurable f (μ.restrict t))
     (hμ_t₀ : μ t ≠ 0) (hμ_t₁ : μ t ≠ ⊤) (ht_top : ∀ᵐ x ∂μ, x ∈ t → f x ≠ ⊤) :
     μ t * (∫⁻ x in t, f x ∂μ)⁻¹ ≤ (μ t)⁻¹ * ∫⁻ x in t, (f x)⁻¹ ∂μ := by
-  let ν := renorm_measure μ t
-  have : IsProbabilityMeasure ν := isProbabilityMeasure_renorm_measure hμ_t₀ hμ_t₁
-  replace hf : AEMeasurable f ν := hf.renorm_measure
-  replace ht_top : ∀ᵐ x ∂ν, f x ≠ ⊤ := by
-    simp only [ν, renorm_measure]
-    rw [ae_restrict_iff' ht]
+  have : IsProbabilityMeasure μ[|t] := cond_isProbabilityMeasure_of_finite hμ_t₀ hμ_t₁
+  replace hf : AEMeasurable f μ[|t] := hf.cond
+  replace ht_top : ∀ᵐ x ∂μ[|t], f x ≠ ⊤ := by
+    unfold ProbabilityTheory.cond
+    rw [← μ.restrict_smul, ae_restrict_iff' ht]
     change ((μ t)⁻¹ • μ) {x | x ∈ t → f x ≠ ⊤}ᶜ = 0
     rw [Measure.smul_apply]
     exact smul_eq_zero_of_right (μ t)⁻¹ ht_top
   calc
-  _ = (∫⁻ x, f x ∂ν)⁻¹ := by
-    simp only [Measure.restrict_smul, lintegral_smul_measure, smul_eq_mul, ν, renorm_measure]
+  _ = (∫⁻ x, f x ∂μ[|t])⁻¹ := by
+    simp only [lintegral_smul_measure, smul_eq_mul, ProbabilityTheory.cond]
     rw [ENNReal.mul_inv, inv_inv]
     · left
       simp [hμ_t₁]
     · left
       simp [hμ_t₀]
-  _ ≤ ∫⁻ x, (f x)⁻¹ ∂ν := Inv.map_lintegral_le hf ht_top
+  _ ≤ ∫⁻ x, (f x)⁻¹ ∂μ[|t] := Inv.map_lintegral_le hf ht_top
   _ = (μ t)⁻¹ * ∫⁻ x in t, (f x)⁻¹ ∂μ := by
-    simp [ν, renorm_measure]
+    simp [ProbabilityTheory.cond]
 
 /- example (ht : MeasurableSet t) (hf : AEMeasurable f (μ.restrict t))
     (hμ_t₀ : μ t ≠ 0) (hμ_t₁ : μ t ≠ ⊤) (ht_top : ∀ᵐ x ∂μ, x ∈ t → f x ≠ ⊤) :
@@ -243,12 +231,11 @@ theorem Inv.ae_eq_const_or_map_set_lintegral_lt (ht : MeasurableSet t)
     (ht_top : ∀ᵐ x ∂μ, x ∈ t → f x ≠ ⊤) :
     f =ᵐ[μ.restrict t] const α ((μ t)⁻¹ * ∫⁻ x in t, f x ∂μ) ∨
       μ t * (∫⁻ x in t, f x ∂μ)⁻¹ < (μ t)⁻¹ * ∫⁻ x in t, (f x)⁻¹ ∂μ := by
-  let ν := renorm_measure μ t
-  have : IsProbabilityMeasure ν := isProbabilityMeasure_renorm_measure hμ_t₀ hμ_t₁
-  replace hf : AEMeasurable f ν := hf.renorm_measure
-  replace ht_top : ∀ᵐ x ∂ν, f x ≠ ⊤ := by
-    simp only [ν, renorm_measure]
-    rw [ae_restrict_iff' ht]
+  have : IsProbabilityMeasure μ[|t] := cond_isProbabilityMeasure_of_finite hμ_t₀ hμ_t₁
+  replace hf : AEMeasurable f μ[|t] := hf.cond
+  replace ht_top : ∀ᵐ x ∂μ[|t], f x ≠ ⊤ := by
+    unfold ProbabilityTheory.cond
+    rw [← μ.restrict_smul, ae_restrict_iff' ht]
     change ((μ t)⁻¹ • μ) {x | x ∈ t → f x ≠ ⊤}ᶜ = 0
     rw [Measure.smul_apply]
     exact smul_eq_zero_of_right (μ t)⁻¹ ht_top
@@ -258,11 +245,11 @@ theorem Inv.ae_eq_const_or_map_set_lintegral_lt (ht : MeasurableSet t)
     rw [ae_restrict_iff' ht]
     simp only [const_apply] at h ⊢
     change μ {x | x ∈ t → f x = ((μ t)⁻¹ * ∫⁻ x in t, f x ∂μ)}ᶜ = 0
-    replace h : ν {x | f x = ∫⁻ x, f x ∂ν}ᶜ = 0 := h
-    simp_all only [ne_eq, renorm_measure, Measure.restrict_smul, ENNReal.inv_eq_zero,
-      not_false_eq_true, aemeasurable_smul_measure_iff, Measure.ae_smul_measure_eq, ae_restrict_eq,
+    replace h : μ[|t] {x | f x = ∫⁻ x, f x ∂μ[|t]}ᶜ = 0 := h
+    simp_all only [ne_eq, ProbabilityTheory.cond, ENNReal.inv_eq_zero, not_false_eq_true,
+      aemeasurable_smul_measure_iff, Measure.ae_smul_measure_eq, ae_restrict_eq,
       lintegral_smul_measure, smul_eq_mul, Measure.smul_apply, Measure.restrict_apply', mul_eq_zero,
-      false_or, ν]
+      false_or]
     rw [← h]
     congr
     simp only [compl_def, mem_setOf_eq, Classical.not_imp]
@@ -274,16 +261,16 @@ theorem Inv.ae_eq_const_or_map_set_lintegral_lt (ht : MeasurableSet t)
       refine ⟨hxt, hx⟩
   · right
     calc
-    _ = (∫⁻ x, f x ∂ν)⁻¹ := by
-      simp only [Measure.restrict_smul, lintegral_smul_measure, smul_eq_mul, ν, renorm_measure]
+    _ = (∫⁻ x, f x ∂μ[|t])⁻¹ := by
+      simp only [lintegral_smul_measure, smul_eq_mul, ProbabilityTheory.cond]
       rw [ENNReal.mul_inv, inv_inv]
       · left
         simp [hμ_t₁]
       · left
         simp [hμ_t₀]
-    _ < ∫⁻ x, (f x)⁻¹ ∂ν := h
+    _ < ∫⁻ x, (f x)⁻¹ ∂μ[|t] := h
     _ = (μ t)⁻¹ * ∫⁻ x in t, (f x)⁻¹ ∂μ := by
-      simp [ν, renorm_measure]
+      simp [ProbabilityTheory.cond]
 
 /- theorem Inv.ae_eq_const_or_map_set_lintegral_lt (ht : MeasurableSet t)
     (hf : AEMeasurable f (μ.restrict t)) (hμ_t₀ : μ t ≠ 0) (hμ_t₁ : μ t ≠ ⊤)
@@ -383,10 +370,10 @@ theorem Inv.ae_eq_const_or_map_set_lintegral_lt (ht : MeasurableSet t)
         _ ≤ ∫⁻ x in t, (f x)⁻¹ ∂μ := by
           rw [← lintegral_eq_eintegral _] -/
 
-theorem ConvexOn.map_set_lintegral_le (hg : ConvexOn ℝ≥0∞ s g) (hgc : ContinuousOn g s)
+/- theorem ConvexOn.map_set_lintegral_le (hg : ConvexOn ℝ≥0∞ s g) (hgc : ContinuousOn g s)
     (hsc : IsClosed s) (h0 : μ t ≠ 0) (ht : μ t ≠ ∞) (hfs : ∀ᵐ x ∂μ.restrict t, f x ∈ s) :
     g (∫⁻ x in t, f x ∂μ) ≤ ∫⁻ x in t, g (f x) ∂μ :=
-  sorry
+  sorry -/
 
 /- theorem StrictConvexOn.ae_eq_const_or_map_laverage_lt [IsFiniteMeasure μ]
     (hg : StrictConvexOn ℝ≥0∞ s g) (hgc : ContinuousOn g s) (hsc : IsClosed s)
@@ -394,8 +381,10 @@ theorem ConvexOn.map_set_lintegral_le (hg : ConvexOn ℝ≥0∞ s g) (hgc : Cont
     f =ᵐ[μ] const α (⨍⁻ x, f x ∂μ) ∨ g (⨍⁻ x, f x ∂μ) < ⨍⁻ x, g (f x) ∂μ := by
   sorry -/
 
-theorem StrictConvexOn.ae_eq_const_or_map_set_lintegral_lt [IsFiniteMeasure μ]
+/- theorem StrictConvexOn.ae_eq_const_or_map_set_lintegral_lt [IsFiniteMeasure μ]
     (hg : StrictConvexOn ℝ≥0∞ s g) (hgc : ContinuousOn g s) (hsc : IsClosed s)
     (h0 : μ t ≠ 0) (ht : μ t ≠ ∞) (hfs : ∀ᵐ x ∂μ.restrict t, f x ∈ s) :
     f =ᵐ[μ] const α (∫⁻ x, f x ∂μ) ∨ g (∫⁻ x in t, f x ∂μ) < ∫⁻ x in t, g (f x) ∂μ := by
   sorry
+ -/
+#min_imports
