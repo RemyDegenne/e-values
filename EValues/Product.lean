@@ -110,11 +110,10 @@ theorem isNumeraire_mul
             exact Set.nonempty_iff_ne_empty.mpr hS_empty
           let ν := hS_empty.some
           specialize this (ν.prod μ) ⟨ν, hS_empty.some_mem, μ, hμ, rfl⟩
-          refine this.trans_eq' ?_
+          refine this.trans' ?_
           have : IsProbabilityMeasure μ := hT μ hμ
           rw [lintegral_prod _ (by fun_prop)]
 
-          -- If S is non-empty, we won.
           sorry
       _ = ∫⁻ x, (Q Y.fsupport) * (1 / X x) ∂P := by
         congr with x
