@@ -172,4 +172,8 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
     have h' := h.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
     rwa [Measure.comp_assoc] at h'
 
+lemma isEVar_of_isEmpty {S : Set (Measure 𝓧)} (hS : IsEmpty S) : IsEVar (fun _ ↦ ∞) S where
+  measurable := measurable_const
+  lintegral_le_one := by simp_all
+
 end ProbabilityTheory

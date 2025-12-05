@@ -41,30 +41,46 @@ lemma IsEVar.prod {T : Set (Measure 𝓨)} (hT : ∀ μ ∈ T, IsProbabilityMeas
 /-- The numeraire of a product measure with respect to a product of sets is the product
 of the numeraires. -/
 theorem isNumeraire_mul
-    (P : Measure 𝓧) [IsFiniteMeasure P] (Q : Measure 𝓨) [IsProbabilityMeasure Q]
+    (P : Measure 𝓧) [IsProbabilityMeasure P] (Q : Measure 𝓨) [IsProbabilityMeasure Q]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
     {X : 𝓧 → ℝ≥0∞} {Y : 𝓨 → ℝ≥0∞} (hX : IsNumeraire X S P) (hY : IsNumeraire Y T Q) :
     IsNumeraire (fun (x : 𝓧 × 𝓨) ↦ X x.1 * Y x.2)
-      {ρ | ∃ μ ∈ S, ∃ ν ∈ T, μ.prod ν = ρ} (P.prod Q) where
-  measurable := by
-    have hX_meas := hX.measurable
+      {ρ | ∃ μ ∈ S, ∃ ν ∈ T, μ.prod ν = ρ} (P.prod Q) := by
+  by_cases hS_empty : IsEmpty S
+  · have empty_prod_set : IsEmpty {ρ | ∃ μ ∈ S, ∃ ν ∈ T, μ.prod ν = ρ} := by
+      simp_all
+    refine isNumeraire_of_isEmpty ?_ ?_ empty_prod_set
+    · have := hX.measurable
+      have := hY.measurable
+      fun_prop
+    · change ∀ᵐ x ∂(P.prod Q), x ∈ {x | (fun x ↦ X x.1 * Y x.2) x = ∞}
+      rw [Measure.ae_prod_mem_iff_ae_ae_mem]
+      · have : X =ᵐ[P] fun _ ↦ ∞ := by
+          refine hX.ae_unique <| isNumeraire_of_isEmpty measurable_const ?_ hS_empty
+          simp
+        filter_upwards [this] with x hX₁
+        filter_upwards [hY.ae_ne_zero] with y hY₀
+        simp_all
+      · refine measurableSet_eq_fun' ?_ measurable_const
+        have := hX.measurable
+        have := hY.measurable
+        fun_prop
+  refine ⟨⟨?_, ?_⟩, ?_, fun Z hZ_evar ↦ ?_⟩
+  · have hX_meas := hX.measurable
     have hY_meas := hY.measurable
     fun_prop
-  lintegral_le_one := by
-    have hX_meas := hX.measurable
+  · have hX_meas := hX.measurable
     have hY_meas := hY.measurable
     rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
     specialize hS μ hμS
     specialize hT ν hνT
     rw [lintegral_prod_mul (by fun_prop) (by fun_prop)]
     exact mul_le_one' (hX.toIsEVar.lintegral_le_one μ hμS) (hY.toIsEVar.lintegral_le_one ν hνT)
-  isProbabilityMeasure_set := by
-    rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
+  · rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
     specialize hS μ hμS
     specialize hT ν hνT
     infer_instance
-  lintegral_div_le_measure_fsupport Z hZ_evar := by
-    have hX_meas := hX.measurable
+  · have hX_meas := hX.measurable
     have hY_meas := hY.measurable
     have hZ_meas := hZ_evar.measurable
     rw [lintegral_prod _ (by fun_prop)]
@@ -89,7 +105,16 @@ theorem isNumeraire_mul
         · have := hZ_evar.measurable
           fun_prop
         · have := hZ_evar.lintegral_le_one
-          -- If T is non-empty, we won.
+          replace hS_empty : S.Nonempty := by
+            simp_all only [Set.isEmpty_coe_sort, Set.mem_setOf_eq, forall_exists_index, and_imp]
+            exact Set.nonempty_iff_ne_empty.mpr hS_empty
+          let ν := hS_empty.some
+          specialize this (ν.prod μ) ⟨ν, hS_empty.some_mem, μ, hμ, rfl⟩
+          refine this.trans_eq' ?_
+          have : IsProbabilityMeasure μ := hT μ hμ
+          rw [lintegral_prod _ (by fun_prop)]
+
+          -- If S is non-empty, we won.
           sorry
       _ = ∫⁻ x, (Q Y.fsupport) * (1 / X x) ∂P := by
         congr with x

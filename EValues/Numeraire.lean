@@ -67,6 +67,23 @@ lemma ae_pos [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, 0
 lemma ae_ne_zero [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, X ω ≠ 0 := by
   filter_upwards [hX.ae_pos] with ω hω using hω.ne'
 
+lemma _root_.ProbabilityTheory.isNumeraire_of_isEmpty {f : 𝓧 → ℝ≥0∞}
+    (hf : Measurable f) (hf_top : ∀ᵐ x ∂μ, f x = ∞)
+    (hS : IsEmpty S) : IsNumeraire f S μ where
+  measurable := hf
+  lintegral_le_one := by simp_all
+  isProbabilityMeasure_set := by simp_all
+  lintegral_div_le_measure_fsupport := by
+    by_contra! h
+    obtain ⟨Y, hY, h⟩ := h
+    have : μ f.fsupport = μ ∅ := by sorry
+    rw [this, measure_empty] at h
+    have : ∀ᵐ ω ∂μ, Y ω / f ω = 0 := by
+      filter_upwards [hf_top] with ω hω
+      simp_all
+    rw [lintegral_congr_ae this, lintegral_zero] at h
+    simp_all
+
 lemma lintegral_eq_setLIntegral_fsupport [IsFiniteMeasure μ] (hX : IsNumeraire X S μ)
     (hY : IsEVar Y S) : ∫⁻ ω, Y ω / X ω ∂μ = ∫⁻ ω in X.fsupport, Y ω / X ω ∂μ := by
   rw [← lintegral_add_compl _ hX.measurable_fsupport]
