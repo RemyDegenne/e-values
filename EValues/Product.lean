@@ -41,7 +41,7 @@ lemma IsEVar.prod {T : Set (Measure 𝓨)} (hT : ∀ μ ∈ T, IsProbabilityMeas
 /-- The numeraire of a product measure with respect to a product of sets is the product
 of the numeraires. -/
 theorem isNumeraire_mul
-    (P : Measure 𝓧) [IsProbabilityMeasure P] (Q : Measure 𝓨) [IsProbabilityMeasure Q]
+    (P : Measure 𝓧) [IsFiniteMeasure P] (Q : Measure 𝓨) [IsFiniteMeasure Q]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
     {X : 𝓧 → ℝ≥0∞} {Y : 𝓨 → ℝ≥0∞} (hX : IsNumeraire X S P) (hY : IsNumeraire Y T Q) :
     IsNumeraire (fun (x : 𝓧 × 𝓨) ↦ X x.1 * Y x.2)
