@@ -101,7 +101,9 @@ theorem Inv.map_lintegral_le [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
       simp
     rw [lintegral_congr_ae this]
     simp
-  by_cases htop_inv : ∫⁻ x, (f x)⁻¹ ∂μ = ⊤
+  by_cases h_int_top : ∫⁻ x, f x ∂μ = ∞
+  · simp [h_int_top]
+  by_cases htop_inv : ∫⁻ x, (f x)⁻¹ ∂μ = ∞
   · simp [htop_inv]
   let y := ∫⁻ x, f x ∂μ
   calc
@@ -109,7 +111,21 @@ theorem Inv.map_lintegral_le [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
     rw [lintegral_eq_eintegral _]
   _ = (∫ᵉ x, y⁻¹ + Inv.deriv y * (f x - y) ∂μ).toENNReal := by
     rw [eintegral_add]
-    · have : ∫ᵉ x, Inv.deriv y * ((f x) - y) ∂μ = 0 := by sorry
+    · have : ∫ᵉ x, Inv.deriv y * ((f x) - y) ∂μ = 0 := by
+        rw [eintegral_mul_const (by simp) (deriv_inv_ne_top h0)]
+        swap
+        · sorry
+        rw [eintegral_sub]
+        rotate_left
+        · exact eintegrable_of_nonneg (fun x ↦ by positivity)
+        · fun_prop
+        · exact eintegrable_const
+        · fun_prop
+        · simp [eintegral_eq_lintegral, h_int_top]
+        · simp
+        simp only [eintegral_const, measure_univ, EReal.coe_ennreal_one, mul_one, mul_eq_zero, y]
+        right
+        rw [eintegral_eq_lintegral, EReal.sub_self (by simp [h_int_top]) (by simp)]
       rw [this]
       simp [eintegral_const, ← lintegral_eq_eintegral, y]
     · fun_prop
