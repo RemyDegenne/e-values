@@ -245,10 +245,8 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
             fun_prop
           · sorry
           · sorry
-          · refine .inl (EReal.ne_bot_of_nonneg ?_)
-            sorry
-          · refine .inr (EReal.ne_bot_of_nonneg ?_)
-            sorry
+          · sorry
+          · sorry
         _ = ∫ᵉ x, logUtility (X x) ∂R₁ + ∫ᵉ x, logUtility (Y x) ∂R₂ := by
             congr
             · rw [eintegral_map ?_ measurable_fst]
