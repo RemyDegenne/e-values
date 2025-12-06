@@ -95,74 +95,57 @@ theorem isNumeraire_mul
       refine lintegral_congr_ae ?_
       filter_upwards [hY.ae_ne_zero] with y hy
       rw [ENNReal.mul_inv (.inl hy) (.inr hx), mul_assoc]
-    suffices IsEVar (fun x ↦ ∫⁻ y, Z (x, y) / Y y ∂Q) S by
+    suffices IsEVar (fun x ↦ (Q Y.fsupport)⁻¹ * ∫⁻ y, Z (x, y) / Y y ∂Q) S by
       rw [h_eq]
-      calc
-      _ ≤ ∫⁻ x, Q Y.fsupport / X x ∂P := by
-        gcongr with x
-        refine hY.lintegral_div_le_measure_fsupport ?_
-        refine ⟨?_, fun μ hμ ↦ ?_⟩
-        · have := hZ_evar.measurable
-          fun_prop
-        · have := hZ_evar.lintegral_le_one
-          replace hS_empty : S.Nonempty := by
-            simp_all only [Set.isEmpty_coe_sort, Set.mem_setOf_eq, forall_exists_index, and_imp]
-            exact Set.nonempty_iff_ne_empty.mpr hS_empty
-          let ν := hS_empty.some
-          specialize this (ν.prod μ) ⟨ν, hS_empty.some_mem, μ, hμ, rfl⟩
-          refine this.trans_eq' ?_
-          have : IsProbabilityMeasure μ := hT μ hμ
-          rw [lintegral_prod _ (by fun_prop)]
-
-          -- If S is non-empty, we won.
-          sorry
-      _ = ∫⁻ x, (Q Y.fsupport) * (1 / X x) ∂P := by
-        congr with x
-        exact div_eq_mul_one_div _ _
-      _ = (Q Y.fsupport) * ∫⁻ x, 1 / X x ∂P := by
-        rw [lintegral_const_mul _ (by fun_prop)]
-      _ ≤ (Q Y.fsupport) * P X.fsupport := by
-        gcongr
-        exact hX.lintegral_div_le_measure_fsupport <| isEVar_fun_one S hS
-      _ = (P.prod Q) (fun x ↦ Y x.2 * X x.1).fsupport := by
-        suffices (fun x ↦ Y x.2 * X x.1).fsupport =
+      have h_le := hX.lintegral_div_le_measure_fsupport this
+      simp_rw [mul_div_assoc] at h_le
+      rw [lintegral_const_mul, ENNReal.inv_mul_le_iff, mul_comm] at h_le
+      rotate_left
+      · sorry
+      · simp
+      · sorry
+      refine h_le.trans_eq ?_
+      suffices (fun x ↦ Y x.2 * X x.1).fsupport =
             (fun x ↦ X x).fsupport ×ˢ (fun y ↦ Y y).fsupport by
           rw [this, P.prod_prod, mul_comm]
-        ext x
-        constructor
-        · simp only [Set.mem_inter_iff, ne_eq, Set.mem_setOf_eq, mul_eq_zero, not_or, Set.mem_prod,
-            and_imp]
-          intro h_mul_top hY_zero hX_zero
-          rw [← ne_eq] at h_mul_top
-          replace h_mul_top : Y x.2 * X x.1 < ⊤ := h_mul_top.symm.lt_top'
-          rw [ENNReal.mul_lt_top_iff] at h_mul_top
-          refine ⟨⟨?_, hX_zero⟩, ⟨?_, hY_zero⟩⟩
-          · rcases h_mul_top with h_top | hX_zero | hY_zero
-            · exact h_top.2.ne
-            · contradiction
-            · contradiction
-          · rcases h_mul_top with h_top | hX_zero | hY_zero
-            · exact h_top.1.ne
-            · contradiction
-            · contradiction
-        · simp only [Set.mem_prod, Set.mem_inter_iff, ne_eq, Set.mem_setOf_eq, mul_eq_zero, not_or,
-            and_imp]
-          intro hX_top hX_zero hY_top hY_zero
-          simp_all only [not_false_eq_true, and_self, and_true]
-          exact ENNReal.mul_ne_top hY_top hX_top
+      ext x
+      constructor
+      · simp only [Set.mem_inter_iff, ne_eq, Set.mem_setOf_eq, mul_eq_zero, not_or, Set.mem_prod,
+          and_imp]
+        intro h_mul_top hY_zero hX_zero
+        rw [← ne_eq] at h_mul_top
+        replace h_mul_top : Y x.2 * X x.1 < ⊤ := h_mul_top.symm.lt_top'
+        rw [ENNReal.mul_lt_top_iff] at h_mul_top
+        refine ⟨⟨?_, hX_zero⟩, ⟨?_, hY_zero⟩⟩
+        · rcases h_mul_top with h_top | hX_zero | hY_zero
+          · exact h_top.2.ne
+          · contradiction
+          · contradiction
+        · rcases h_mul_top with h_top | hX_zero | hY_zero
+          · exact h_top.1.ne
+          · contradiction
+          · contradiction
+      · simp only [Set.mem_prod, Set.mem_inter_iff, ne_eq, Set.mem_setOf_eq, mul_eq_zero, not_or,
+          and_imp]
+        intro hX_top hX_zero hY_top hY_zero
+        simp_all only [not_false_eq_true, and_self, and_true]
+        exact ENNReal.mul_ne_top hY_top hX_top
     constructor
     · fun_prop
     intro μ hμS
     have := hX.isProbabilityMeasure_set μ hμS
-    rw [lintegral_lintegral_swap (by fun_prop)]
-    have h_eq' : ∫⁻ y, ∫⁻ x, Z (x, y) / Y y ∂μ ∂Q
-        = ∫⁻ y, (∫⁻ x, Z (x, y) ∂μ) / Y y ∂Q := by
+    suffices IsEVar (fun y ↦ ∫⁻ x, Z (x, y) ∂μ) T by
+      have hY' := hY.lintegral_div_le_measure_fsupport this
+      rw [lintegral_const_mul, ENNReal.inv_mul_le_iff, mul_one]
+      rotate_left
+      · sorry
+      · simp
+      · sorry
+      refine le_trans (le_of_eq ?_) hY'
+      rw [lintegral_lintegral_swap (by fun_prop)]
       congr with y
       simp_rw [div_eq_mul_inv]
       rw [lintegral_mul_const _ (by fun_prop)]
-    suffices IsEVar (fun y ↦ ∫⁻ x, Z (x, y) ∂μ) T by
-      rw [h_eq']
-      exact hY.lintegral_div_le_one this
     constructor
     · fun_prop
     intro ν hνT
