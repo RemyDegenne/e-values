@@ -335,9 +335,25 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
       · simp
 
 theorem Inv.ae_eq_const_or_map_lintegral_lt [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
-    (hf_top : ∀ᵐ x ∂μ, f x ≠ ⊤) :
+    (hf_top : ∀ᵐ x ∂μ, f x ≠ ∞) :
     f =ᵐ[μ] const α (∫⁻ x, f x ∂μ) ∨ (∫⁻ x, f x ∂μ)⁻¹ < ∫⁻ x, (f x)⁻¹ ∂μ := by
-  sorry
+  have hf_top' : ∀ᵐ x ∂μ, hf.mk f x ≠ ∞ := by
+    filter_upwards [hf_top, hf.ae_eq_mk] with x hx_ne hx_eq using by rwa [← hx_eq]
+  have h := Inv.ae_eq_const_or_map_lintegral_lt' hf.measurable_mk (μ := μ) hf_top'
+  cases h with
+  | inl h =>
+    left
+    filter_upwards [hf.ae_eq_mk, h] with x hx_eq hx_const
+    rw [hx_eq, hx_const]
+    congr 1
+    exact lintegral_congr_ae hf.ae_eq_mk.symm
+  | inr h =>
+    right
+    rw [lintegral_congr_ae hf.ae_eq_mk]
+    refine h.trans_eq ?_
+    refine lintegral_congr_ae ?_
+    filter_upwards [hf.ae_eq_mk] with x hx_eq
+    rw [hx_eq]
 
 theorem Inv.ae_eq_const_or_map_set_lintegral_lt (ht : MeasurableSet t)
     (hf : AEMeasurable f (μ.restrict t)) (hμ_t₀ : μ t ≠ 0) (hμ_t₁ : μ t ≠ ⊤)
