@@ -90,6 +90,11 @@ lemma IsEVar.isRandEVar_deterministic (hX : IsEVar X S) :
     · simpa using hX.lintegral_le_one μ hμ
     · exact measurable_id.aemeasurable
 
+lemma isEVar_of_isEmpty (hS : IsEmpty S) (hX : Measurable X) :
+   IsEVar X S where
+  measurable := hX
+  lintegral_le_one := by simp_all
+
 lemma isEVar_zero : IsEVar 0 S where
   measurable := measurable_const
   lintegral_le_one μ hμ := by simp
@@ -171,9 +176,5 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
   lintegral_le_one μ hμ := by
     have h' := h.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
     rwa [Measure.comp_assoc] at h'
-
-lemma isEVar_of_isEmpty {S : Set (Measure 𝓧)} (hS : IsEmpty S) : IsEVar (fun _ ↦ ∞) S where
-  measurable := measurable_const
-  lintegral_le_one := by simp_all
 
 end ProbabilityTheory

@@ -96,11 +96,7 @@ theorem isNumeraire_mul
         exact ENNReal.mul_ne_top hY_top hX_top
     rw [h_eq, h_fsupport_mul, P.prod_prod]
     by_cases hY_top : Y =ᵐ[Q] fun _ ↦ ∞
-    · have hQY : Q Y.fsupport = 0 := by
-        suffices Q {y | ¬ y ∈ Y.fsupportᶜ} = 0 by simpa
-        rw [← ae_iff]
-        filter_upwards [hY_top] with y hy
-        simp [hy]
+    · have hQY : Q Y.fsupport = 0 := measure_fsupport_eq_zero_of_ae_eq_top hY_top
       refine le_of_eq ?_
       calc ∫⁻ x, (∫⁻ y, Z (x, y) / Y y ∂Q) / X x ∂P
       _ = ∫⁻ x, 0 / X x ∂P := by

@@ -31,6 +31,14 @@ variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableS
 
 namespace ProbabilityTheory
 
+lemma measure_fsupport_eq_zero_of_ae_eq_top {μ : Measure 𝓧} {X : 𝓧 → ℝ≥0∞}
+    (hX_top : ∀ᵐ ω ∂μ, X ω = ∞) :
+    μ X.fsupport = 0 := by
+  suffices μ {x | ¬ x ∈ X.fsupportᶜ} = 0 by simpa
+  rw [← ae_iff]
+  filter_upwards [hX_top] with x hx
+  simp [hx]
+
 /-- A random variable `X` is the numeraire for a set of measures `S` and a measure `μ`
 if it is an E-variable for `S` and the expectation of the ratio of any E-variable `Y` over `X`
 is at most one under `μ`. -/
@@ -76,8 +84,8 @@ lemma _root_.ProbabilityTheory.isNumeraire_of_isEmpty {f : 𝓧 → ℝ≥0∞}
   lintegral_div_le_measure_fsupport := by
     by_contra! h
     obtain ⟨Y, hY, h⟩ := h
-    have : μ f.fsupport = μ ∅ := by sorry
-    rw [this, measure_empty] at h
+    have : μ f.fsupport = 0 := measure_fsupport_eq_zero_of_ae_eq_top hf_top
+    rw [this] at h
     have : ∀ᵐ ω ∂μ, Y ω / f ω = 0 := by
       filter_upwards [hf_top] with ω hω
       simp_all
