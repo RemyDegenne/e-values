@@ -214,16 +214,8 @@ lemma Inv.lt_add_deriv_mul {x y : ℝ≥0∞} (hx_top : x ≠ ⊤) (hy_zero : y 
       EReal.coe_neg, EReal.coe_ennreal_zero, zero_sub, mul_neg, neg_mul, neg_neg, ENNReal.inv_zero,
       EReal.coe_ennreal_top]
       refine EReal.add_lt_top ?_ ?_
-      · simp_all
-      · refine (EReal.mul_ne_top ↑(y.toReal ^ 2)⁻¹ ↑y).mpr ⟨?_, ?_, ?_, ?_⟩
-        · right
-          positivity
-        · right
-          simp_all
-        · left
-          simp
-        · right
-          simp_all
+      · simp [hy_zero]
+      · refine (EReal.mul_ne_top ↑(y.toReal ^ 2)⁻¹ ↑y).mpr ⟨?_, ?_, ?_, ?_⟩ <;> simp [hy_top]
     have h_cvx := strictConvexOn_inv_Ioi.add_deriv_mul_lt (x := x.toReal) (y := y.toReal)
       ?_ ?_ ?_ ?_
     rotate_left
