@@ -72,6 +72,14 @@ lemma Inv.le_add_deriv_mul {x y : ℝ≥0∞} (hx_top : x ≠ ⊤) (hy_zero : y 
       ← EReal.coe_ennreal_toReal <| inv_ne_top.mpr hy_zero]
     norm_cast
 
+lemma eintegrable_const {μ : Measure α} [IsFiniteMeasure μ] {c : EReal} :
+    eintegrable (fun _ ↦ c) μ := by
+  rcases le_total c 0 with hc | hc
+  · left
+    simp [hc]
+  · right
+    simp [hc]
+
 theorem Inv.map_lintegral_le [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
     (hf_top : ∀ᵐ x ∂μ, f x ≠ ⊤) : (∫⁻ x, f x ∂μ)⁻¹ ≤ ∫⁻ x, (f x)⁻¹ ∂μ := by
   by_cases h0 : ∫⁻ x, f x ∂μ = 0
@@ -94,11 +102,11 @@ theorem Inv.map_lintegral_le [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
     · have : ∫ᵉ x, Inv.deriv y * ((f x) - y) ∂μ = 0 := by sorry
       rw [this]
       simp [eintegral_const, ← lintegral_eq_eintegral, y]
+    · fun_prop
+    · fun_prop
+    · exact eintegrable_const
     · sorry
-    · sorry
-    · sorry
-    · sorry
-    · sorry
+    · simp
     · sorry
   _ ≤ (∫ᵉ x, (Inv.inv (α := ℝ≥0∞) (f x)) ∂μ).toENNReal := by
     refine EReal.toENNReal_le_toENNReal ?_
