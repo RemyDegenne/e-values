@@ -51,6 +51,16 @@ def Inv.deriv (x : ℝ≥0∞) : EReal :=
   else if x = ∞ then 0
   else ((deriv Inv.inv x.toReal : ℝ) : EReal)
 
+@[simp]
+lemma deriv_inv_ne_bot (x : ℝ≥0∞) : Inv.deriv x ≠ ⊥ := by
+  unfold Inv.deriv
+  split_ifs <;> simp
+
+lemma deriv_inv_ne_top {x : ℝ≥0∞} (hx : x ≠ 0) : Inv.deriv x ≠ ⊤ := by
+  unfold Inv.deriv
+  simp only [hx, ↓reduceIte, deriv_inv', EReal.coe_neg, ne_eq]
+  split_ifs <;> simp
+
 lemma Inv.le_add_deriv_mul {x y : ℝ≥0∞} (hx_top : x ≠ ⊤) (hy_zero : y ≠ 0) :
     y⁻¹ + Inv.deriv y * (x - y) ≤ x⁻¹ := by
   by_cases hy_top : y = ⊤
@@ -240,6 +250,16 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
     rw [h] at hf_const
     rw [lintegral_eq_zero_iff hf] at h
     exact hf_const h
+  by_cases h_int_top : ∫⁻ x, f x ∂μ = ∞
+  · simp only [h_int_top, inv_top, gt_iff_lt]
+    by_contra! h
+    simp only [nonpos_iff_eq_zero, lintegral_eq_zero_iff hf.inv] at h
+    refine absurd h ?_
+    rw [Filter.EventuallyEq]
+    simp only [Pi.zero_apply, ENNReal.inv_eq_zero, Filter.not_eventually]
+    exact hf_top.frequently
+  by_cases h_int_inv_top : ∫⁻ x, (f x)⁻¹ ∂μ = ∞
+  · simp [h_int_inv_top, pos_iff_ne_zero, h_int_ne_zero]
   have h_left_eq_add : (∫⁻ x, f x ∂μ)⁻¹
       = ∫⁻ x in {y | f y = ∫⁻ z, f z ∂μ}, (∫⁻ y, f y ∂μ)⁻¹ ∂μ
         + ∫⁻ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, (∫⁻ y, f y ∂μ)⁻¹ ∂μ := by
@@ -275,17 +295,52 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
         swap; · exact (measurableSet_eq_fun' hf measurable_const).compl
         filter_upwards [hf_top] with x hx hx_ne
         specialize h_cvx_lt x hx hx_ne
-        sorry
+        rwa [EReal.lt_sub_iff_add_lt (by simp [h_int_ne_zero]) (by simp)]
       · simp [h_int_ne_zero, lt_top_iff_ne_top, EReal.mul_ne_top]
-    _ = ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, (f x)⁻¹ ∂μ
+    _ = ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ
         - Inv.deriv (∫⁻ z, f z ∂μ) * ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, (f x - ∫⁻ z, f z ∂μ) ∂μ := by
-      sorry
-    _ = ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, (f x)⁻¹ ∂μ
+      rw [eintegral_sub]
+      rotate_left
+      · exact eintegrable_of_nonneg fun x ↦ by positivity
+      · fun_prop
+      · sorry
+      · fun_prop
+      · left
+        rw [eintegral_eq_lintegral, ne_eq, EReal.coe_ennreal_eq_top_iff]
+        refine ne_top_of_le_ne_top h_int_inv_top ?_
+        exact setLIntegral_le_lintegral _ _
+      · simp [eintegral_eq_lintegral]
+      congr
+      rw [eintegral_mul_const]
+      · simp
+      · exact deriv_inv_ne_top h_int_ne_zero
+      · sorry
+    _ = ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ
         - Inv.deriv (∫⁻ z, f z ∂μ) * ∫ᵉ x, (f x - ∫⁻ z, f z ∂μ) ∂μ := by
       congr 2
-      sorry
+      nth_rw 2 [eintegral_add_compl (A := {y | f y = ∫⁻ z, f z ∂μ})]
+      swap; · exact measurableSet_eq_fun' hf measurable_const
+      suffices h_zero : ∫ᵉ x in {y | f y = ∫⁻ z, f z ∂μ}, (f x - ∫⁻ z, f z ∂μ) ∂μ = 0 by
+        rw [h_zero, zero_add]
+        congr
+      suffices ∀ x ∈ {y | f y = ∫⁻ z, f z ∂μ}, (f x : EReal) - ∫⁻ z, f z ∂μ = 0 by
+        rw [eintegral_congr_ae (ae_restrict_of_forall_mem ?_ this)]
+        · simp
+        · exact measurableSet_eq_fun' hf measurable_const
+      intro x hx
+      rw [hx, EReal.sub_self (by simp [h_int_top]) (by simp)]
     _ = ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ := by
-      sorry
+      suffices ∫ᵉ x, (f x - ∫⁻ z, f z ∂μ) ∂μ = 0 by simp [this]
+      rw [eintegral_sub]
+      · rw [eintegral_eq_lintegral]
+        simp only [eintegral_const, measure_univ, EReal.coe_ennreal_one, mul_one]
+        rw [EReal.sub_self (by simp [h_int_top]) (by simp)]
+      · exact eintegrable_of_nonneg fun x ↦ by positivity
+      · fun_prop
+      · exact eintegrable_const
+      · fun_prop
+      · simp [h_int_top]
+      · simp
 
 theorem Inv.ae_eq_const_or_map_lintegral_lt [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
     (hf_top : ∀ᵐ x ∂μ, f x ≠ ⊤) :
