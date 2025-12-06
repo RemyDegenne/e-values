@@ -296,11 +296,15 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
       · simp [h_int_ne_zero, lt_top_iff_ne_top, EReal.mul_ne_top]
     _ = ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ
         - Inv.deriv (∫⁻ z, f z ∂μ) * ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, (f x - ∫⁻ z, f z ∂μ) ∂μ := by
+      have h_eint : eintegrable (fun x ↦ (f x : EReal) - ∫⁻ z, f z ∂μ)
+          (μ.restrict {y | f y ≠ ∫⁻ z, f z ∂μ}) := by
+        refine eintegrable.sub_const ?_ (by simp) (by simp [h_int_top])
+        exact eintegrable_of_nonneg fun _ ↦ by positivity
       rw [eintegral_sub]
       rotate_left
-      · exact eintegrable_of_nonneg fun x ↦ by positivity
+      · exact eintegrable_of_nonneg fun _ ↦ by positivity
       · fun_prop
-      · sorry
+      · exact h_eint.const_mul (by simp) (deriv_inv_ne_top h_int_ne_zero)
       · fun_prop
       · left
         rw [eintegral_eq_lintegral, ne_eq, EReal.coe_ennreal_eq_top_iff]
@@ -308,10 +312,8 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
         exact setLIntegral_le_lintegral _ _
       · simp [eintegral_eq_lintegral]
       congr
-      rw [eintegral_mul_const]
-      · simp
-      · exact deriv_inv_ne_top h_int_ne_zero
-      · sorry
+      rw [eintegral_mul_const (by simp) _ h_eint]
+      exact deriv_inv_ne_top h_int_ne_zero
     _ = ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ
         - Inv.deriv (∫⁻ z, f z ∂μ) * ∫ᵉ x, (f x - ∫⁻ z, f z ∂μ) ∂μ := by
       congr 2
