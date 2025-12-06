@@ -216,8 +216,8 @@ theorem ae_unique [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY : IsNu
   · filter_upwards [hYₜ, hX.ae_top_implies_numeraire_top hY.toIsEVar] with ω hω hω₂
     simp_all
   let W := X / Y
-  have := Inv.ae_eq_const_or_map_set_lintegral_lt (f := W) (μ := μ) (hY.measurable_fsupport)
-      ?_ μ_fsupport ?_ ?_
+  have h_str_cvx := Inv.ae_eq_const_or_map_set_lintegral_lt (f := W) (μ := μ)
+      (hY.measurable_fsupport) ?_ μ_fsupport ?_ ?_
   rotate_left
   · have := hX.measurable
     have := hY.measurable
@@ -228,9 +228,9 @@ theorem ae_unique [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY : IsNu
     by_cases hX : X ω = ⊤
     · simp_all
     · exact div_ne_top hX hYω₀
-  simp only [Pi.div_apply, W] at this
-  rw [hY.measure_fsupport_mul_inv_lintegral_div_eq_one hX μ_fsupport] at this
-  rcases this with h_eq | h_lt
+  simp only [Pi.div_apply, W] at h_str_cvx
+  rw [hY.measure_fsupport_mul_inv_lintegral_div_eq_one hX μ_fsupport] at h_str_cvx
+  rcases h_str_cvx with h_eq | h_lt
   · rw [hY.inv_measure_fsupport_mul_lintegral_div_eq_one hX μ_fsupport] at h_eq
     unfold Filter.EventuallyEq at h_eq ⊢
     rw [ae_restrict_iff] at h_eq
