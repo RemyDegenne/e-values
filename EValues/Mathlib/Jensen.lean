@@ -82,14 +82,6 @@ lemma Inv.le_add_deriv_mul {x y : ℝ≥0∞} (hx_top : x ≠ ⊤) (hy_zero : y 
       ← EReal.coe_ennreal_toReal <| inv_ne_top.mpr hy_zero]
     norm_cast
 
-lemma eintegrable_const {μ : Measure α} [IsFiniteMeasure μ] {c : EReal} :
-    eintegrable (fun _ ↦ c) μ := by
-  rcases le_total c 0 with hc | hc
-  · left
-    simp [hc]
-  · right
-    simp [hc]
-
 theorem Inv.map_lintegral_le [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
     (hf_top : ∀ᵐ x ∂μ, f x ≠ ⊤) : (∫⁻ x, f x ∂μ)⁻¹ ≤ ∫⁻ x, (f x)⁻¹ ∂μ := by
   by_cases h0 : ∫⁻ x, f x ∂μ = 0
@@ -106,16 +98,16 @@ theorem Inv.map_lintegral_le [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
   by_cases htop_inv : ∫⁻ x, (f x)⁻¹ ∂μ = ∞
   · simp [htop_inv]
   let y := ∫⁻ x, f x ∂μ
+  have h_eint : eintegrable (fun x ↦ (f x : EReal) - y) μ := by
+    refine eintegrable.sub_const ?_ (by simp [y]) (by simp [y, h_int_top])
+    exact eintegrable_of_nonneg (fun _ ↦ by positivity)
   calc
   _ = (∫ᵉ x, f x ∂μ).toENNReal⁻¹ := by
     rw [lintegral_eq_eintegral _]
   _ = (∫ᵉ x, y⁻¹ + Inv.deriv y * (f x - y) ∂μ).toENNReal := by
     rw [eintegral_add]
     · have : ∫ᵉ x, Inv.deriv y * ((f x) - y) ∂μ = 0 := by
-        rw [eintegral_mul_const (by simp) (deriv_inv_ne_top h0)]
-        swap
-        · sorry
-        rw [eintegral_sub]
+        rw [eintegral_mul_const (by simp) (deriv_inv_ne_top h0) h_eint, eintegral_sub]
         rotate_left
         · exact eintegrable_of_nonneg (fun x ↦ by positivity)
         · fun_prop
@@ -131,7 +123,7 @@ theorem Inv.map_lintegral_le [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
     · fun_prop
     · fun_prop
     · exact eintegrable_const
-    · sorry
+    · exact h_eint.const_mul (by simp) (deriv_inv_ne_top h0)
     · simp
     · simp [y, h0]
   _ ≤ (∫ᵉ x, (Inv.inv (α := ℝ≥0∞) (f x)) ∂μ).toENNReal := by
@@ -141,9 +133,6 @@ theorem Inv.map_lintegral_le [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
     exact Inv.le_add_deriv_mul hx h0
   _ ≤ ∫⁻ x, (f x)⁻¹ ∂μ := by
     rw [← lintegral_eq_eintegral _]
-  /- have := Inv.map_set_lintegral_le (f := f) (μ := μ) MeasurableSet.univ hf.restrict (by simp) ?_
-  · simp_all
-  · simp_all only [ne_eq, mem_univ, forall_const] -/
 
 lemma AEMeasurable.cond {μ : Measure α}
     (hf : AEMeasurable f (μ.restrict t)) : AEMeasurable f μ[|t] := by
