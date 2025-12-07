@@ -262,8 +262,8 @@ theorem ae_unique [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY : IsNu
     have := h_lt.trans_le this
     simp_all
 
-lemma congr [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY_evar : IsEVar Y S)
-    (hY : Y =ᵐ[μ] X) : IsNumeraire Y S μ := by
+lemma congr (hX : IsNumeraire X S μ) (hY_evar : IsEVar Y S) (hY : Y =ᵐ[μ] X) :
+    IsNumeraire Y S μ := by
   refine ⟨hY_evar, hX.isProbabilityMeasure_set, fun Z hZ_evar ↦ ?_⟩
   calc ∫⁻ ω, Z ω / Y ω ∂μ
     _ = ∫⁻ ω, Z ω / X ω ∂μ := by

@@ -44,8 +44,7 @@ def eintegrable (f : α → EReal) (μ : Measure α := by volume_tac) : Prop :=
 lemma eintegrable_of_nonneg {f : α → EReal} (hf : ∀ x, 0 ≤ f x) : eintegrable f μ :=
   Or.inr <| by simp [hf]
 
-lemma eintegrable_const {μ : Measure α} [IsFiniteMeasure μ] {c : EReal} :
-    eintegrable (fun _ ↦ c) μ := by
+lemma eintegrable_const {μ : Measure α} {c : EReal} : eintegrable (fun _ ↦ c) μ := by
   rcases le_total c 0 with hc | hc
   · left
     simp [hc]
