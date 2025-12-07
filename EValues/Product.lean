@@ -112,8 +112,7 @@ theorem isNumeraire_mul
       simp_rw [mul_div_assoc] at h_le
       rw [lintegral_const_mul _ (by fun_prop), ENNReal.inv_mul_le_iff _ (by simp), mul_comm] at h_le
       swap; · simpa [hY_top] using hY.measure_fsupport_ne_zero_or_ae_top
-      refine h_le.trans_eq ?_
-      rw [mul_comm]
+      exact h_le
     constructor
     · fun_prop
     intro μ hμS
