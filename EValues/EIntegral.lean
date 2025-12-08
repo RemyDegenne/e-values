@@ -277,6 +277,20 @@ lemma eintegral_neg_eq_top_eq_bot (hf_neg_top : ∫⁻ x, (-f x).toENNReal ∂μ
     ∫ᵉ x, f x ∂μ = ⊥ := by
   simp [eintegral, hf_neg_top]
 
+@[gcongr]
+lemma eintegral_mono (hfg : f ≤ g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ :=
+  eintegral_mono_ae <| ae_of_all _ hfg
+
+lemma ae_ne_bot_of_eintegral_ne_bot (hf_meas : AEMeasurable f μ) (hf : ∫ᵉ x, f x ∂μ ≠ ⊥) :
+    ∀ᵐ x ∂μ, f x ≠ ⊥ := by
+  rw [eintegral, sub_eq_add_neg, ne_eq, EReal.add_eq_bot_iff] at hf
+  simp only [EReal.coe_ennreal_ne_bot, EReal.neg_eq_bot_iff, EReal.coe_ennreal_eq_top_iff,
+    false_or] at hf
+  have h := ae_lt_top' (by fun_prop) hf
+  filter_upwards [h] with x hx
+  rw [lt_top_iff_ne_top, ne_eq, EReal.toENNReal_eq_top_iff] at hx
+  simpa using hx
+
 lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : AEMeasurable f μ)
     (hfg : ∀ᵐ x ∂μ, f x < g x) (hfi : ∫ᵉ x, f x ∂μ < ⊤) (hgi : ∫ᵉ x, g x ∂μ ≠ ⊥) :
     ∫ᵉ x, f x ∂μ < ∫ᵉ x, g x ∂μ := by
@@ -286,12 +300,15 @@ lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : A
   · have := eintegral_neg_eq_top_eq_bot hf_neg_top
     simp_all only [bot_lt_top, gt_iff_lt]
     exact Ne.bot_lt' hgi.symm
-  -- This is false : f could be negative and g positive. Find another statement.
-  obtain ⟨s, hμs, h_cases⟩ : ∃ s, μ s ≠ 0 ∧ ((∀ᵐ x ∂μ, x ∈ s → 0 ≤ f x ∧ f x < g x) ∨
-      (∀ᵐ x ∂μ, x ∈ s → g x ≤ 0 ∧ f x < g x)) := by
+  -- Split the set where f < g into three parts depending on the signs of f and g
+  obtain ⟨s, hμs, h_cases⟩ : ∃ s, μ s ≠ 0 ∧ (
+      (∀ᵐ x ∂μ, x ∈ s → 0 ≤ f x ∧ f x < g x)
+      ∨ (∀ᵐ x ∂μ, x ∈ s → g x ≤ 0 ∧ f x < g x)
+      ∨ (∀ᵐ x ∂μ, x ∈ s → f x ≤ 0 ∧ 0 < g x ∧ f x < g x)
+    ) := by
     sorry
   simp only [eintegral]
-  rcases h_cases with h_pos | h_neg
+  rcases h_cases with h_pos | h_neg | h_mixed
   · refine EReal.sub_lt_sub_of_lt_of_le ?_ ?_ ?_ ?_
     · norm_cast
       refine lintegral_strict_mono_of_ae_le_of_ae_lt_on ?_ ?_ ?_ hμs ?_
@@ -317,7 +334,7 @@ lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : A
     · norm_cast
       refine lintegral_strict_mono_of_ae_le_of_ae_lt_on ?_ ?_ ?_ hμs ?_
       · fun_prop
-      · by_contra! h
+      · by_contra!
         simp_all [eintegral]
       · filter_upwards [hfg] with x hx
         refine EReal.toENNReal_le_toENNReal ?_
@@ -329,7 +346,24 @@ lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : A
     · by_contra! h
       simp_all only [ne_eq, eintegral, EReal.coe_ennreal_eq_top_iff]
       cases EReal.top_sub_eq_top_or_bot (a := ∫⁻ (x : α), (-g x).toENNReal ∂μ) <;> simp_all
-    · simp_all [eintegral]
+    · simp_all
+  · refine EReal.sub_lt_sub_of_lt_of_le ?_ ?_ ?_ ?_
+    · norm_cast
+      refine lintegral_strict_mono_of_ae_le_of_ae_lt_on ?_ ?_ ?_ hμs ?_
+      · fun_prop
+      · by_contra!
+        simp_all [eintegral]
+      · filter_upwards [hfg] with x hx
+        exact EReal.toENNReal_le_toENNReal hx.le
+      · filter_upwards [h_mixed] with x hx hxs
+        simp_all
+    · norm_cast
+      refine lintegral_mono_ae ?_
+      filter_upwards [hfg] with x hx
+      refine EReal.toENNReal_le_toENNReal ?_
+      exact EReal.neg_le_neg_iff.mpr hx.le
+    · simp
+    · simp_all
 
 lemma eintegral_add_compl {A : Set α} (hA : MeasurableSet A) :
     ∫ᵉ x, f x ∂μ = ∫ᵉ x in A, f x ∂μ + ∫ᵉ x in Aᶜ, f x ∂μ := by
@@ -337,20 +371,6 @@ lemma eintegral_add_compl {A : Set α} (hA : MeasurableSet A) :
   rw [← lintegral_add_compl (f := fun x ↦ (f x).toENNReal) hA]
   rw [← lintegral_add_compl (f := fun x ↦ (-f x).toENNReal) hA]
   sorry
-
-@[gcongr]
-lemma eintegral_mono (hfg : f ≤ g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ :=
-  eintegral_mono_ae <| ae_of_all _ hfg
-
-lemma ae_ne_bot_of_eintegral_ne_bot (hf_meas : AEMeasurable f μ) (hf : ∫ᵉ x, f x ∂μ ≠ ⊥) :
-    ∀ᵐ x ∂μ, f x ≠ ⊥ := by
-  rw [eintegral, sub_eq_add_neg, ne_eq, EReal.add_eq_bot_iff] at hf
-  simp only [EReal.coe_ennreal_ne_bot, EReal.neg_eq_bot_iff, EReal.coe_ennreal_eq_top_iff,
-    false_or] at hf
-  have h := ae_lt_top' (by fun_prop) hf
-  filter_upwards [h] with x hx
-  rw [lt_top_iff_ne_top, ne_eq, EReal.toENNReal_eq_top_iff] at hx
-  simpa using hx
 
 lemma eintegral_sub_of_nonneg_of_eq_zero (hf : ∀ x, 0 ≤ f x) (hg : ∀ x, 0 ≤ g x)
     (h_or : ∀ x, f x = 0 ∨ g x = 0) :

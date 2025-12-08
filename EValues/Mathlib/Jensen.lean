@@ -210,13 +210,17 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
     calc ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((∫⁻ y, f y ∂μ)⁻¹ : ℝ≥0∞) ∂μ
     _ < ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ},
         (f x)⁻¹ - Inv.deriv (∫⁻ z, f z ∂μ) * (f x - ∫⁻ z, f z ∂μ) ∂μ := by
-      refine eintegral_strict_mono_ae ?_ ?_
+      refine eintegral_strict_mono_ae ?_ ?_ ?_ ?_ ?_ ?_
+      · sorry
+      · fun_prop
+      · fun_prop
       · rw [ae_restrict_iff']
         swap; · exact (measurableSet_eq_fun' hf measurable_const).compl
         filter_upwards [hf_top] with x hx hx_ne
         specialize h_cvx_lt x hx hx_ne
         rwa [EReal.lt_sub_iff_add_lt (by simp [h_int_ne_zero]) (by simp)]
       · simp [h_int_ne_zero, lt_top_iff_ne_top, EReal.mul_ne_top]
+      · sorry
     _ = ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ
         - Inv.deriv (∫⁻ z, f z ∂μ) * ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, (f x - ∫⁻ z, f z ∂μ) ∂μ := by
       have h_eint : eintegrable (fun x ↦ (f x : EReal) - ∫⁻ z, f z ∂μ)

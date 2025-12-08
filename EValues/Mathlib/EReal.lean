@@ -254,3 +254,8 @@ lemma EReal.top_sub_eq_top_or_bot {a : EReal} : ⊤ - a = ⊤ ∨ ⊤ - a = ⊥ 
   | bot => simp
   | coe a => simp
   | top => simp
+
+lemma EReal.sub_eq_bot {a b : EReal} : a - b = ⊥ ↔ a = ⊥ ∨ b = ⊤ := by
+  cases a <;> cases b <;> simp_all
+  norm_cast
+  simp [-coe_sub]
