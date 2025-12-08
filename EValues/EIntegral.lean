@@ -273,9 +273,63 @@ lemma eintegral_mono_ae (hfg : f ≤ᵐ[μ] g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ 
     rw [← EReal.neg_le_neg_iff] at hfgx
     exact EReal.toENNReal_le_toENNReal hfgx
 
-lemma eintegral_strict_mono_ae (hfg : ∀ᵐ x ∂μ, f x < g x) (hfi : ∫ᵉ x, f x ∂μ < ⊤) :
+lemma eintegral_neg_eq_top_eq_bot (hf_neg_top : ∫⁻ x, (-f x).toENNReal ∂μ = ⊤) :
+    ∫ᵉ x, f x ∂μ = ⊥ := by
+  simp [eintegral, hf_neg_top]
+
+lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : AEMeasurable f μ)
+    (hfg : ∀ᵐ x ∂μ, f x < g x) (hfi : ∫ᵉ x, f x ∂μ < ⊤) (hgi : ∫ᵉ x, g x ∂μ ≠ ⊥) :
     ∫ᵉ x, f x ∂μ < ∫ᵉ x, g x ∂μ := by
-  sorry
+  by_cases hg_top : ∫ᵉ x, g x ∂μ = ⊤
+  · simp_all
+  by_cases hf_neg_top : ∫⁻ x, (-f x).toENNReal ∂μ = ⊤
+  · have := eintegral_neg_eq_top_eq_bot hf_neg_top
+    simp_all only [bot_lt_top, gt_iff_lt]
+    exact Ne.bot_lt' hgi.symm
+  -- This is false : f could be negative and g positive. Find another statement.
+  obtain ⟨s, hμs, h_cases⟩ : ∃ s, μ s ≠ 0 ∧ ((∀ᵐ x ∂μ, x ∈ s → 0 ≤ f x ∧ f x < g x) ∨
+      (∀ᵐ x ∂μ, x ∈ s → g x ≤ 0 ∧ f x < g x)) := by
+    sorry
+  simp only [eintegral]
+  rcases h_cases with h_pos | h_neg
+  · refine EReal.sub_lt_sub_of_lt_of_le ?_ ?_ ?_ ?_
+    · norm_cast
+      refine lintegral_strict_mono_of_ae_le_of_ae_lt_on ?_ ?_ ?_ hμs ?_
+      · fun_prop
+      · by_contra!
+        simp_all [eintegral]
+      · filter_upwards [hfg] with x hx
+        exact EReal.toENNReal_le_toENNReal hx.le
+      · filter_upwards [h_pos] with x hx hxs
+        exact EReal.toENNReal_lt_toENNReal (hx hxs).1 (hx hxs).2
+    · norm_cast
+      refine lintegral_mono_ae ?_
+      filter_upwards [hfg] with x hx
+      refine EReal.toENNReal_le_toENNReal ?_
+      exact EReal.neg_le_neg_iff.mpr hx.le
+    · simp
+    · simp_all
+  · refine EReal.sub_lt_sub_of_le_of_lt ?_ ?_ ?_ ?_
+    · norm_cast
+      refine lintegral_mono_ae ?_
+      filter_upwards [hfg] with x hx
+      exact EReal.toENNReal_le_toENNReal hx.le
+    · norm_cast
+      refine lintegral_strict_mono_of_ae_le_of_ae_lt_on ?_ ?_ ?_ hμs ?_
+      · fun_prop
+      · by_contra! h
+        simp_all [eintegral]
+      · filter_upwards [hfg] with x hx
+        refine EReal.toENNReal_le_toENNReal ?_
+        exact EReal.neg_le_neg_iff.mpr hx.le
+      · filter_upwards [h_neg] with x hx hxs
+        refine EReal.toENNReal_lt_toENNReal ?_ ?_
+        · exact EReal.neg_nonneg.mpr (hx hxs).1
+        · exact EReal.neg_lt_neg_iff.mpr (hx hxs).2
+    · by_contra! h
+      simp_all only [ne_eq, eintegral, EReal.coe_ennreal_eq_top_iff]
+      cases EReal.top_sub_eq_top_or_bot (a := ∫⁻ (x : α), (-g x).toENNReal ∂μ) <;> simp_all
+    · simp_all [eintegral]
 
 lemma eintegral_add_compl {A : Set α} (hA : MeasurableSet A) :
     ∫ᵉ x, f x ∂μ = ∫ᵉ x in A, f x ∂μ + ∫ᵉ x in Aᶜ, f x ∂μ := by
