@@ -5,11 +5,8 @@ Authors: Gaëtan Serré, Rémy Degenne
 -/
 
 import EValues.EValue
-import EValues.Mathlib.Convex
 import EValues.Mathlib.Jensen
-import EValues.Mathlib.ENNReal
 import EValues.Utility
-import Mathlib.MeasureTheory.Constructions.Polish.Basic
 
 /-!
 # Numeraire E-variables
@@ -34,36 +31,69 @@ variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableS
 
 namespace ProbabilityTheory
 
+lemma measure_fsupport_eq_zero_of_ae_eq_top {μ : Measure 𝓧} {X : 𝓧 → ℝ≥0∞}
+    (hX_top : ∀ᵐ ω ∂μ, X ω = ∞) :
+    μ X.fsupport = 0 := by
+  suffices μ {x | ¬ x ∈ X.fsupportᶜ} = 0 by simpa
+  rw [← ae_iff]
+  filter_upwards [hX_top] with x hx
+  simp [hx]
+
 /-- A random variable `X` is the numeraire for a set of measures `S` and a measure `μ`
 if it is an E-variable for `S` and the expectation of the ratio of any E-variable `Y` over `X`
 is at most one under `μ`. -/
 structure IsNumeraire (X : 𝓧 → ℝ≥0∞) (S : Set (Measure 𝓧)) (μ : Measure 𝓧) : Prop
     extends IsEVar X S where
   isProbabilityMeasure_set : ∀ μ ∈ S, IsProbabilityMeasure μ
-  lintegral_div_le_one : ∀ ⦃Y⦄, IsEVar Y S → ∫⁻ ω, Y ω / X ω ∂μ ≤ 1
+  lintegral_div_le_measure_fsupport : ∀ ⦃Y⦄, IsEVar Y S → ∫⁻ ω, Y ω / X ω ∂μ ≤ μ X.fsupport
 
 namespace IsNumeraire
 
 variable {X Y : 𝓧 → ℝ≥0∞} {μ : Measure 𝓧} {S : Set (Measure 𝓧)}
   {hS : ∀ μ ∈ S, IsProbabilityMeasure μ}
 
-lemma lintegral_inv_le_one (hX : IsNumeraire X S μ) : ∫⁻ ω, (X ω)⁻¹ ∂μ ≤ 1 := by
-  simpa using hX.lintegral_div_le_one (isEVar_one S hX.isProbabilityMeasure_set)
+lemma lintegral_inv_le_measure_fsupport (hX : IsNumeraire X S μ) :
+    ∫⁻ ω, (X ω)⁻¹ ∂μ ≤ μ X.fsupport := by
+  simpa using hX.lintegral_div_le_measure_fsupport (isEVar_one S hX.isProbabilityMeasure_set)
 
-lemma ae_pos (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, 0 < X ω := by
+lemma lintegral_div_le_one [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
+    ∫⁻ ω, Y ω / X ω ∂μ ≤ 1 := by
+  calc ∫⁻ ω, Y ω / X ω ∂μ
+    _ ≤ μ X.fsupport := hX.lintegral_div_le_measure_fsupport hY
+    _ ≤ μ univ := measure_mono (by simp)
+    _ = 1 := by simp
+
+lemma ae_pos [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, 0 < X ω := by
   suffices ∀ᵐ ω ∂μ, (X ω)⁻¹ < ∞ by
     simp only [pos_iff_ne_zero]
     filter_upwards [this] with ω hω using by simpa using hω.ne
   refine ae_lt_top ?_ ?_
   · have := hX.measurable
     fun_prop
-  · exact ne_top_of_le_ne_top (by simp) hX.lintegral_inv_le_one
+  · exact ne_top_of_le_ne_top (measure_ne_top _ _) hX.lintegral_inv_le_measure_fsupport
 
-lemma ae_ne_zero (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, X ω ≠ 0 := by
+lemma ae_ne_zero [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, X ω ≠ 0 := by
   filter_upwards [hX.ae_pos] with ω hω using hω.ne'
 
-lemma lintegral_eq_setLIntegral_fsupport (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
-    ∫⁻ ω, Y ω / X ω ∂μ = ∫⁻ ω in X.fsupport, Y ω / X ω ∂μ := by
+lemma _root_.ProbabilityTheory.isNumeraire_of_isEmpty {f : 𝓧 → ℝ≥0∞}
+    (hf : Measurable f) (hf_top : ∀ᵐ x ∂μ, f x = ∞)
+    (hS : IsEmpty S) : IsNumeraire f S μ where
+  measurable := hf
+  lintegral_le_one := by simp_all
+  isProbabilityMeasure_set := by simp_all
+  lintegral_div_le_measure_fsupport := by
+    by_contra! h
+    obtain ⟨Y, hY, h⟩ := h
+    have : μ f.fsupport = 0 := measure_fsupport_eq_zero_of_ae_eq_top hf_top
+    rw [this] at h
+    have : ∀ᵐ ω ∂μ, Y ω / f ω = 0 := by
+      filter_upwards [hf_top] with ω hω
+      simp_all
+    rw [lintegral_congr_ae this, lintegral_zero] at h
+    simp_all
+
+lemma lintegral_eq_setLIntegral_fsupport [IsFiniteMeasure μ] (hX : IsNumeraire X S μ)
+    (hY : IsEVar Y S) : ∫⁻ ω, Y ω / X ω ∂μ = ∫⁻ ω in X.fsupport, Y ω / X ω ∂μ := by
   rw [← lintegral_add_compl _ hX.measurable_fsupport]
   suffices ∫⁻ ω in X.fsupportᶜ, Y ω / X ω ∂μ = 0 by simp [this]
   rw [setLIntegral_eq_zero_iff (hX.measurable_fsupport).compl <| hY.measurable.div hX.measurable]
@@ -72,24 +102,24 @@ lemma lintegral_eq_setLIntegral_fsupport (hX : IsNumeraire X S μ) (hY : IsEVar 
     and_true, Decidable.not_not] at hω₂
   simp [hω₂]
 
-lemma ae_top_implies_numeraire_top (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
+lemma ae_top_implies_numeraire_top [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∀ᵐ ω ∂μ, Y ω = ∞ → X ω = ∞ := by
   by_contra h
   simp only [ae_iff, Classical.not_imp] at h
   have m : MeasurableSet {ω | Y ω = ∞ ∧ X ω ≠ ∞} :=
     MeasurableSet.inter ((measurableSet_singleton ∞).preimage hY.measurable)
       ((measurableSet_singleton ∞).compl.preimage hX.measurable)
-  have lintegral_div_le_one := hX.lintegral_div_le_one hY
-  rw [← lintegral_add_compl _ m] at lintegral_div_le_one
+  have lintegral_div_le_measure_fsupport := hX.lintegral_div_le_measure_fsupport hY
+  rw [← lintegral_add_compl _ m] at lintegral_div_le_measure_fsupport
   suffices ∀ ω ∈ {ω | Y ω = ∞ ∧ X ω ≠ ∞}, Y ω / X ω = ∞ by
-    rw [setLIntegral_congr_fun m this] at lintegral_div_le_one
-    simp [top_mul h] at lintegral_div_le_one
+    rw [setLIntegral_congr_fun m this] at lintegral_div_le_measure_fsupport
+    simp [top_mul h] at lintegral_div_le_measure_fsupport
   intro ω hω
   simp [hω.1, ENNReal.top_div, hω.2]
 
 -- `rev`?
-lemma lintegral_eq_setLIntegral_rev_fsupport (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
-    ∫⁻ ω, Y ω / X ω ∂μ = ∫⁻ ω in Y.fsupport, Y ω / X ω ∂μ := by
+lemma lintegral_eq_setLIntegral_rev_fsupport [IsFiniteMeasure μ] (hX : IsNumeraire X S μ)
+    (hY : IsEVar Y S) : ∫⁻ ω, Y ω / X ω ∂μ = ∫⁻ ω in Y.fsupport, Y ω / X ω ∂μ := by
   rw [← lintegral_add_compl _ hY.measurable_fsupport]
   suffices ∫⁻ ω in Y.fsupportᶜ, Y ω / X ω ∂μ = 0 by simp [this]
   rw [setLIntegral_eq_zero_iff (hY.measurable_fsupport).compl
@@ -102,7 +132,7 @@ lemma lintegral_eq_setLIntegral_rev_fsupport (hX : IsNumeraire X S μ) (hY : IsE
       Decidable.not_not] at hω₂
     simp [hω_top, hω₂]
 
-lemma measure_fsupport_ne_zero_or_ae_top (hX : IsNumeraire X S μ) :
+lemma measure_fsupport_ne_zero_or_ae_top [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) :
     μ X.fsupport ≠ 0 ∨ X =ᵐ[μ] fun _ ↦ ∞ := by
   by_contra! h
   rcases h with ⟨h, h_top⟩
@@ -112,32 +142,79 @@ lemma measure_fsupport_ne_zero_or_ae_top (hX : IsNumeraire X S μ) :
   filter_upwards [h', ae_ne_zero hX] with ω hω_mem hω_ne_zero
   simpa [hω_ne_zero] using hω_mem
 
-lemma setLIntegral_fsupport_inv_le_one (hX : IsEVar X S) (hY : IsNumeraire Y S μ) :
-    ∫⁻ ω in X.fsupport, (Y ω / X ω)⁻¹ ∂μ ≤ 1 := by
-  suffices ∫⁻ ω in X.fsupport, ((Y / X) ω)⁻¹ ∂μ ≤ 1 by exact this
+lemma measure_fsupport_eq_measure_fsupport [IsFiniteMeasure μ] (hX : IsNumeraire X S μ)
+    (hY : IsNumeraire Y S μ) : μ X.fsupport = μ Y.fsupport := by
+  refine measure_congr ?_
+  filter_upwards [hX.ae_ne_zero, hY.ae_top_implies_numeraire_top hX.toIsEVar,
+      hY.ae_ne_zero, hX.ae_top_implies_numeraire_top hY.toIsEVar] with ω hXω₀ hωXY hYω₀ hωYX
+  rw [eq_iff_iff]
+  constructor
+  · rintro ⟨hXω_ne_top, _⟩
+    refine ⟨?_, hYω₀⟩
+    by_contra! h
+    simp only [ne_eq, mem_setOf_eq, Decidable.not_not] at h
+    exact hXω_ne_top <| hωYX h
+  · rintro ⟨hYω_ne_top, _⟩
+    refine ⟨?_, hXω₀⟩
+    by_contra! h
+    simp only [ne_eq, mem_setOf_eq, Decidable.not_not] at h
+    exact hYω_ne_top <| hωXY h
+
+lemma setLIntegral_fsupport_inv_le_measure [IsFiniteMeasure μ] (hX : IsNumeraire X S μ)
+    (hY : IsNumeraire Y S μ) : ∫⁻ ω in X.fsupport, (Y ω / X ω)⁻¹ ∂μ ≤ μ X.fsupport := by
+  suffices ∫⁻ ω in X.fsupport, ((Y / X) ω)⁻¹ ∂μ ≤ μ X.fsupport from this
   rw [setLIntegral_congr_fun hX.measurable_fsupport <| ENNReal.inv_div_fsupport Y X,
-    ← hY.lintegral_eq_setLIntegral_rev_fsupport hX]
-  exact hY.lintegral_div_le_one hX
+    ← hY.lintegral_eq_setLIntegral_rev_fsupport hX.toIsEVar]
+  rw [hX.measure_fsupport_eq_measure_fsupport hY]
+  exact hY.lintegral_div_le_measure_fsupport hX.toIsEVar
 
-lemma inv_lintegral_div_eq_one [IsProbabilityMeasure μ]
-    (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) (h : μ X.fsupport ≠ 0) :
-    (∫⁻ ω, Y ω / X ω ∂μ)⁻¹ = 1 := by
+lemma measure_fsupport_mul_inv_lintegral_div_eq_one [IsFiniteMeasure μ] (hX : IsNumeraire X S μ)
+    (hY : IsNumeraire Y S μ) (h : μ X.fsupport ≠ 0) :
+    (μ X.fsupport) * (∫⁻ ω in X.fsupport, Y ω / X ω ∂μ)⁻¹ = 1 := by
   set W := Y / X
-  rw [hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar]
   refine le_antisymm ?_ ?_
-  · calc (∫⁻ ω in X.fsupport, W ω ∂μ)⁻¹
-    _ ≤ ∫⁻ ω in X.fsupport, (W ω)⁻¹ ∂μ :=
-      strictConvexOn_inv.convexOn.map_set_lintegral_le continuousOn_inv isClosed_univ h (by simp)
-        (by simp)
-    _ ≤ 1 := setLIntegral_fsupport_inv_le_one hX.toIsEVar hY
-  · simp only [← hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar, le_inv_iff_mul_le, one_mul]
-    exact hX.lintegral_div_le_one hY.toIsEVar
+  · calc
+    _ ≤ (μ X.fsupport)⁻¹ * ∫⁻ x in X.fsupport, (W x)⁻¹ ∂μ := by
+      refine Inv.map_set_lintegral_le hX.measurable_fsupport ?_ h ?_ ?_
+      · have := hX.measurable
+        have := hY.measurable
+        fun_prop
+      · simp
+      · filter_upwards [hX.ae_ne_zero, hX.ae_top_implies_numeraire_top hY.toIsEVar]
+          with ω hXω₀ hXYω hω
+        by_cases hY : Y ω = ⊤
+        · simp_all
+        · exact div_ne_top hY hXω₀
+    _ ≤ (μ X.fsupport)⁻¹ * μ X.fsupport := by
+      gcongr
+      exact setLIntegral_fsupport_inv_le_measure hX hY
+    _ = 1 := by
+      refine ENNReal.inv_mul_cancel h ?_
+      simp
+  · rw [← inv_inv (μ X.fsupport), ← ENNReal.mul_inv]
+    rotate_left
+    · left
+      simp
+    · left
+      simp [h]
+    · simp only [le_inv_iff_mul_le, one_mul]
+      calc
+      _ ≤ (μ X.fsupport)⁻¹ * μ X.fsupport := by
+        rw [← hX.lintegral_eq_setLIntegral_fsupport hY.toIsEVar]
+        gcongr
+        exact hX.lintegral_div_le_measure_fsupport hY.toIsEVar
+      _ = 1 := by
+        refine ENNReal.inv_mul_cancel h (by simp)
 
-lemma lintegral_div_eq_one [IsProbabilityMeasure μ]
-    (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) (h : μ X.fsupport ≠ 0) :
-    ∫⁻ ω, Y ω / X ω ∂μ = 1 := by
-  rw [← ENNReal.inv_eq_one]
-  exact hX.inv_lintegral_div_eq_one hY h
+lemma inv_measure_fsupport_mul_lintegral_div_eq_one [IsFiniteMeasure μ] (hX : IsNumeraire X S μ)
+    (hY : IsNumeraire Y S μ) (h : μ X.fsupport ≠ 0) :
+    (μ X.fsupport)⁻¹ * ∫⁻ ω in X.fsupport, Y ω / X ω ∂μ = 1 := by
+  rw [← inv_inv (∫⁻ ω in X.fsupport, Y ω / X ω ∂μ), ← ENNReal.mul_inv,
+    ← ENNReal.inv_eq_one, inv_inv]
+  · exact hX.measure_fsupport_mul_inv_lintegral_div_eq_one hY h
+  · exact .inl h
+  · left
+    simp
 
 /-- The Numeraire is almost-everywhere unique. -/
 theorem ae_unique [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) :
@@ -147,24 +224,43 @@ theorem ae_unique [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY : IsNu
   · filter_upwards [hYₜ, hX.ae_top_implies_numeraire_top hY.toIsEVar] with ω hω hω₂
     simp_all
   let W := X / Y
-  have inv_avg_eq_one : (∫⁻ ω in Y.fsupport, W ω ∂μ)⁻¹ = 1 := by
-    simp only [Pi.div_apply, ← hY.lintegral_eq_setLIntegral_fsupport hX.toIsEVar, W]
-    exact hY.inv_lintegral_div_eq_one hX μ_fsupport
-  have avg_eq_one : ∫⁻ ω, W ω ∂μ = 1 := lintegral_div_eq_one hY hX μ_fsupport
-  rcases hY.measure_fsupport_ne_zero_or_ae_top with hY₀ | hYₜ
-  · have strict_Jensen : W =ᵐ[μ] const 𝓧 (∫⁻ ω, W ω ∂μ) ∨
-        (∫⁻ ω in Y.fsupport, W ω ∂μ)⁻¹ < ∫⁻ ω in Y.fsupport, (W ω)⁻¹ ∂μ :=
-      strictConvexOn_inv.ae_eq_const_or_map_set_lintegral_lt continuousOn_inv isClosed_univ hY₀
-        (by simp) (by simp)
-    have h_le : ∫⁻ ω in fsupport Y, (W ω)⁻¹ ∂μ ≤ 1 :=
-      setLIntegral_fsupport_inv_le_one hY.toIsEVar hX
-    simp only [inv_avg_eq_one, not_lt.mpr h_le, or_false, avg_eq_one] at strict_Jensen
-    filter_upwards [strict_Jensen] with ω hx
-    simp only [Pi.div_apply, const_apply, W] at hx
-    exact ENNReal.eq_of_div_eq_one hx
-  · suffices ∀ᵐ ω ∂μ, W ω = 0 by simp [lintegral_congr_ae this] at avg_eq_one
-    filter_upwards [hYₜ] with ω hω
-    simp [W, hω]
+  have h_str_cvx := Inv.ae_eq_const_or_map_set_lintegral_lt (f := W) (μ := μ)
+      (hY.measurable_fsupport) ?_ μ_fsupport ?_ ?_
+  rotate_left
+  · have := hX.measurable
+    have := hY.measurable
+    fun_prop
+  · simp
+  · filter_upwards [hY.ae_ne_zero, hY.ae_top_implies_numeraire_top hX.toIsEVar]
+      with ω hYω₀ hYXω hω
+    by_cases hX : X ω = ⊤
+    · simp_all
+    · exact div_ne_top hX hYω₀
+  simp only [Pi.div_apply, W] at h_str_cvx
+  rw [hY.measure_fsupport_mul_inv_lintegral_div_eq_one hX μ_fsupport] at h_str_cvx
+  rcases h_str_cvx with h_eq | h_lt
+  · rw [hY.inv_measure_fsupport_mul_lintegral_div_eq_one hX μ_fsupport] at h_eq
+    unfold Filter.EventuallyEq at h_eq ⊢
+    rw [ae_restrict_iff] at h_eq
+    · filter_upwards [h_eq, hX.ae_ne_zero, hY.ae_ne_zero,
+        hX.ae_top_implies_numeraire_top hY.toIsEVar] with ω hω_support hωY₀ hωX₀ hωXY
+      by_cases hω : ω ∈ Y.fsupport
+      · simp_all [ENNReal.eq_of_div_eq_one (hω_support hω)]
+      · rw [not_mem_fsupport_iff] at hω
+        rcases hω with hω_top | hω_zero
+        · simp_all
+        · contradiction
+    · simp only [Pi.div_apply, const_apply]
+      refine measurableSet_eq_fun' ?_ measurable_const
+      have := hX.measurable
+      have := hY.measurable
+      fun_prop
+  · have : (μ Y.fsupport)⁻¹ * ∫⁻ x in Y.fsupport, (X x / Y x)⁻¹ ∂μ ≤ 1 := by
+      rw [← ENNReal.inv_mul_cancel μ_fsupport (by simp)]
+      gcongr
+      exact hY.setLIntegral_fsupport_inv_le_measure hX
+    have := h_lt.trans_le this
+    simp_all
 
 lemma congr (hX : IsNumeraire X S μ) (hY_evar : IsEVar Y S) (hY : Y =ᵐ[μ] X) :
     IsNumeraire Y S μ := by
@@ -174,7 +270,18 @@ lemma congr (hX : IsNumeraire X S μ) (hY_evar : IsEVar Y S) (hY : Y =ᵐ[μ] X)
       refine lintegral_congr_ae ?_
       filter_upwards [hY] with ω hω
       rw [hω]
-    _ ≤ 1 := hX.lintegral_div_le_one hZ_evar
+    _ ≤ μ X.fsupport := hX.lintegral_div_le_measure_fsupport hZ_evar
+    _ = μ Y.fsupport := by
+      refine measure_congr ?_
+      filter_upwards [hY] with ω hω
+      rw [eq_iff_iff]
+      constructor
+      · rintro ⟨(h_top : X ω ≠ ⊤), (h_zero : X ω ≠ 0)⟩
+        rw [← hω] at h_top h_zero
+        exact ⟨h_top, h_zero⟩
+      · rintro ⟨(h_top : Y ω ≠ ⊤), (h_zero : Y ω ≠ 0)⟩
+        rw [hω] at h_top h_zero
+        exact ⟨h_top, h_zero⟩
 
 section LogOptimal
 
@@ -203,7 +310,7 @@ lemma eintegral_eq_setEIntegral_of_eq_zero {f : 𝓧 → EReal}
     · simp [hωs]
     · simp [hω hωs, hωs]
 
-lemma eintegral_div_le_one (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
+lemma eintegral_div_le_one [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫ᵉ ω, Y ω / X ω ∂μ ≤ 1 := by
   rw [eintegral_of_nonneg (fun _ ↦ by positivity)]
   norm_cast
@@ -230,7 +337,7 @@ lemma setEIntegral_le_eintegral_of_ae_nonneg {f : 𝓧 → EReal} (hf_meas : AEM
 
 -- todo: it should really be ≤ 0 instead, but this weaker result will be useful to prove that a
 -- numeraire is `eintegrable`
-lemma eintegral_sub_div_le_one (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
+lemma eintegral_sub_div_le_one [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫ᵉ ω, (Y ω - X ω) / X ω ∂μ ≤ 1 := by
   have h_eq : ∀ᵐ ω ∂μ, X ω ≠ ⊤ → ((Y ω : EReal) - X ω) / X ω = Y ω / X ω - 1 := by
     filter_upwards [hX.ae_ne_zero, ae_top_implies_numeraire_top hX hY] with ω hX0 h_imp_top hX_top
