@@ -248,13 +248,13 @@ lemma EReal.sub_lt_sub_of_le_of_lt {x y z t : EReal} (h : x ≤ y) (h' : z < t)
     · grind
     · exact sub_pos.mpr h'
 
-@[simp]
 lemma EReal.top_sub_eq_top_or_bot {a : EReal} : ⊤ - a = ⊤ ∨ ⊤ - a = ⊥ := by
   cases a with
   | bot => simp
   | coe a => simp
   | top => simp
 
+-- In newer versions of Mathlib
 lemma EReal.sub_eq_bot {a b : EReal} : a - b = ⊥ ↔ a = ⊥ ∨ b = ⊤ := by
   cases a <;> cases b <;> simp_all
   norm_cast
