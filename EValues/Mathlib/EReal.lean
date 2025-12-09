@@ -226,6 +226,10 @@ instance : MeasurableInv EReal where
     change Measurable (Real.toEReal ∘ _)
     exact Measurable.comp measurable_coe_real_ereal (by fun_prop)
 
+lemma EReal.toReal_pos {x : EReal} (hx : 0 < x) (h'x : x ≠ ⊤) : 0 < x.toReal := by
+  lift x to ℝ using by aesop
+  simpa using hx
+
 lemma EReal.sub_lt_sub_of_le_of_lt {x y z t : EReal} (h : x ≤ y) (h' : z < t)
   (hy_top : y ≠ ⊤) (hy_bot : y ≠ ⊥) : x - t < y - z := by
   refine sub_lt_of_lt_add' ?_
@@ -235,14 +239,10 @@ lemma EReal.sub_lt_sub_of_le_of_lt {x y z t : EReal} (h : x ≤ y) (h' : z < t)
     lift y to ℝ using ⟨hy_top, hy_bot⟩
     by_cases htz_top : t - z = ⊤
     · simp_all
-    have : (t - z).toReal.toEReal = t - z := by
-      refine coe_toReal htz_top ?_
-      exact ne_bot_of_nonneg (sub_pos.mpr h').le
-    rw [← this]
+    rw [← coe_toReal htz_top <| ne_bot_of_nonneg (sub_pos.mpr h').le]
     norm_cast
     refine lt_add_of_pos_right y ?_
-    have : 0 < t - z := sub_pos.mpr h'
-    sorry
+    exact EReal.toReal_pos (sub_pos.mpr h') htz_top
   · rw [← add_zero x]
     refine add_lt_add ?_ ?_
     · grind
