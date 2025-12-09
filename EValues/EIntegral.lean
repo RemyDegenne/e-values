@@ -311,12 +311,12 @@ lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : A
     let S₃ := S ∩ {x | f x < 0 ∧ 0 < g x}
     have : μ S₁ ≠ 0 ∨ μ S₂ ≠ 0 ∨ μ S₃ ≠ 0 := by
       by_contra! h_zero
-      have hμS : 0 < μ S := by
-        refine pos_of_ne_zero ?_
-        rw [measure_of_measure_compl_eq_zero hfg]
-        exact μ.measure_univ_ne_zero.mpr hμ
       suffices S = S₁ ∪ S₂ ∪ S₃ by
-        rw [this] at hμS
+        have : 0 < μ (S₁ ∪ S₂ ∪ S₃) := by
+          rw [← this]
+          refine pos_of_ne_zero ?_
+          rw [measure_of_measure_compl_eq_zero hfg]
+          exact μ.measure_univ_ne_zero.mpr hμ
         have : μ (S₁ ∪ S₂ ∪ S₃) ≤ 0 := by
           calc
           _ ≤ μ (S₁ ∪ S₂) + μ S₃ := measure_union_le _ _
