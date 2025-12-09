@@ -409,6 +409,11 @@ lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : A
     · simp
     · simp_all
 
+lemma eintegral_strict_mono (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : AEMeasurable f μ)
+    (hfg : ∀ x, f x < g x) (hfi : ∫ᵉ x, f x ∂μ < ⊤) (hgi : ∫ᵉ x, g x ∂μ ≠ ⊥) :
+    ∫ᵉ x, f x ∂μ < ∫ᵉ x, g x ∂μ :=
+  eintegral_strict_mono_ae hμ hg hf (ae_of_all μ hfg) hfi hgi
+
 lemma eintegral_add_compl {A : Set α} (hA : MeasurableSet A) :
     ∫ᵉ x, f x ∂μ = ∫ᵉ x in A, f x ∂μ + ∫ᵉ x in Aᶜ, f x ∂μ := by
   simp only [eintegral]
