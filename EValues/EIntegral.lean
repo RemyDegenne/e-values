@@ -300,13 +300,55 @@ lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : A
   · have := eintegral_neg_eq_top_eq_bot hf_neg_top
     simp_all only [bot_lt_top, gt_iff_lt]
     exact Ne.bot_lt' hgi.symm
-  -- Split the set where f < g into three parts depending on the signs of f and g
   obtain ⟨s, hμs, h_cases⟩ : ∃ s, μ s ≠ 0 ∧ (
-      (∀ᵐ x ∂μ, x ∈ s → 0 ≤ f x ∧ f x < g x)
-      ∨ (∀ᵐ x ∂μ, x ∈ s → g x ≤ 0 ∧ f x < g x)
-      ∨ (∀ᵐ x ∂μ, x ∈ s → f x ≤ 0 ∧ 0 < g x ∧ f x < g x)
+      (∀ ⦃x⦄, x ∈ s → 0 ≤ f x ∧ f x < g x)
+      ∨ (∀ ⦃x⦄, x ∈ s → g x ≤ 0 ∧ f x < g x)
+      ∨ (∀ ⦃x⦄, x ∈ s → f x < 0 ∧ 0 < g x ∧ f x < g x)
     ) := by
-    sorry
+    let S := {x | f x < g x}
+    let S₁ := S ∩ {x | 0 ≤ f x}
+    let S₂ := S ∩ {x | g x ≤ 0}
+    let S₃ := S ∩ {x | f x < 0 ∧ 0 < g x}
+    have : μ S₁ ≠ 0 ∨ μ S₂ ≠ 0 ∨ μ S₃ ≠ 0 := by
+      by_contra! h_zero
+      have hμS : 0 < μ S := by
+        refine pos_of_ne_zero ?_
+        rw [measure_of_measure_compl_eq_zero hfg]
+        exact μ.measure_univ_ne_zero.mpr hμ
+      suffices S = S₁ ∪ S₂ ∪ S₃ by
+        rw [this] at hμS
+        have : μ (S₁ ∪ S₂ ∪ S₃) ≤ 0 := by
+          calc
+          _ ≤ μ (S₁ ∪ S₂) + μ S₃ := measure_union_le _ _
+          _ ≤ μ S₁ + μ S₂ + μ S₃ := by
+            gcongr
+            exact measure_union_le _ _
+          _ = 0 := by
+            simp [h_zero]
+        grind
+      ext x
+      constructor
+      · intro hx
+        simp only [Set.mem_union]
+        by_cases hfx : 0 ≤ f x
+        · exact .inl <| .inl ⟨hx, hfx⟩
+        by_cases hgx : g x ≤ 0
+        · exact .inl <| .inr ⟨hx, hgx⟩
+        push_neg at hfx hgx
+        exact .inr ⟨hx, hfx, hgx⟩
+      · intro hx
+        simp only [Set.mem_union] at hx
+        rcases hx with (h | h) | h <;> exact h.1
+    rcases this with hμ1 | hμ2 | hμ3
+    · refine ⟨S₁, hμ1, ?_⟩
+      left
+      grind
+    · refine ⟨S₂, hμ2, ?_⟩
+      right; left
+      grind
+    · refine ⟨S₃, hμ3, ?_⟩
+      right; right
+      grind
   simp only [eintegral]
   rcases h_cases with h_pos | h_neg | h_mixed
   · refine EReal.sub_lt_sub_of_lt_of_le ?_ ?_ ?_ ?_
@@ -317,8 +359,8 @@ lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : A
         simp_all [eintegral]
       · filter_upwards [hfg] with x hx
         exact EReal.toENNReal_le_toENNReal hx.le
-      · filter_upwards [h_pos] with x hx hxs
-        exact EReal.toENNReal_lt_toENNReal (hx hxs).1 (hx hxs).2
+      · filter_upwards with x hxs
+        exact EReal.toENNReal_lt_toENNReal (h_pos hxs).1 (h_pos hxs).2
     · norm_cast
       refine lintegral_mono_ae ?_
       filter_upwards [hfg] with x hx
@@ -339,10 +381,10 @@ lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : A
       · filter_upwards [hfg] with x hx
         refine EReal.toENNReal_le_toENNReal ?_
         exact EReal.neg_le_neg_iff.mpr hx.le
-      · filter_upwards [h_neg] with x hx hxs
+      · filter_upwards with x hxs
         refine EReal.toENNReal_lt_toENNReal ?_ ?_
-        · exact EReal.neg_nonneg.mpr (hx hxs).1
-        · exact EReal.neg_lt_neg_iff.mpr (hx hxs).2
+        · exact EReal.neg_nonneg.mpr (h_neg hxs).1
+        · exact EReal.neg_lt_neg_iff.mpr (h_neg hxs).2
     · by_contra! h
       simp_all only [ne_eq, eintegral, EReal.coe_ennreal_eq_top_iff]
       cases EReal.top_sub_eq_top_or_bot (a := ∫⁻ (x : α), (-g x).toENNReal ∂μ) <;> simp_all
@@ -355,7 +397,9 @@ lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : A
         simp_all [eintegral]
       · filter_upwards [hfg] with x hx
         exact EReal.toENNReal_le_toENNReal hx.le
-      · filter_upwards [h_mixed] with x hx hxs
+      · filter_upwards with x hxs
+        specialize h_mixed hxs
+        have : f x ≤ 0 := h_mixed.1.le
         simp_all
     · norm_cast
       refine lintegral_mono_ae ?_
