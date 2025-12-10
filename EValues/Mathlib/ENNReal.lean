@@ -30,6 +30,11 @@ lemma fsupport_compl_disjoint {α β : Type*} [Top β] [Zero β] (X : α → β)
   rw [h'.1] at h'
   exact h.symm h'.2
 
+lemma not_mem_fsupport_iff {α β : Type*} [Top β] [Zero β] (X : α → β) (ω : α) :
+    ω ∉ X.fsupport ↔ X ω = ⊤ ∨ X ω = 0 := by
+  rw [← Set.mem_compl_iff, fsupport_compl]
+  simp
+
 end Function
 
 namespace ENNReal

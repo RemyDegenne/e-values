@@ -3,7 +3,6 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-import EValues.NumeraireExistence
 import EValues.DPI
 
 /-!
@@ -42,34 +41,26 @@ lemma IsEVar.prod {T : Set (Measure 𝓨)} (hT : ∀ μ ∈ T, IsProbabilityMeas
 /-- The numeraire of a product measure with respect to a product of sets is the product
 of the numeraires. -/
 theorem isNumeraire_mul
-    (P : Measure 𝓧) (Q : Measure 𝓨) [IsProbabilityMeasure Q]
+    (P : Measure 𝓧) [IsFiniteMeasure P] (Q : Measure 𝓨) [IsFiniteMeasure Q]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) (hT : ∀ μ ∈ T, IsProbabilityMeasure μ)
     {X : 𝓧 → ℝ≥0∞} {Y : 𝓨 → ℝ≥0∞} (hX : IsNumeraire X S P) (hY : IsNumeraire Y T Q) :
     IsNumeraire (fun (x : 𝓧 × 𝓨) ↦ X x.1 * Y x.2)
-      {ρ | ∃ μ ∈ S, ∃ ν ∈ T, μ.prod ν = ρ} (P.prod Q) where
-  measurable := by
-    have hX_meas := hX.measurable
-    have hY_meas := hY.measurable
-    fun_prop
-  lintegral_le_one := by
-    have hX_meas := hX.measurable
-    have hY_meas := hY.measurable
-    rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
+      {ρ | ∃ μ ∈ S, ∃ ν ∈ T, μ.prod ν = ρ} (P.prod Q) := by
+  have hX_meas := hX.measurable
+  have hY_meas := hY.measurable
+  refine ⟨⟨?_, ?_⟩, ?_, fun Z hZ_evar ↦ ?_⟩
+  · fun_prop
+  · rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
     specialize hS μ hμS
     specialize hT ν hνT
     rw [lintegral_prod_mul (by fun_prop) (by fun_prop)]
     exact mul_le_one' (hX.toIsEVar.lintegral_le_one μ hμS) (hY.toIsEVar.lintegral_le_one ν hνT)
-  isProbabilityMeasure_set := by
-    rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
+  · rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
     specialize hS μ hμS
     specialize hT ν hνT
     infer_instance
-  lintegral_div_le_one Z hZ_evar := by
-    have hX_meas := hX.measurable
-    have hY_meas := hY.measurable
-    have hZ_meas := hZ_evar.measurable
+  · have hZ_meas := hZ_evar.measurable
     rw [lintegral_prod _ (by fun_prop)]
-    simp only [ge_iff_le]
     simp_rw [mul_comm (X _)]
     have h_eq : ∫⁻ x, ∫⁻ y, Z (x, y) / (Y y * X x) ∂Q ∂P
         = ∫⁻ x, (∫⁻ y, Z (x, y) / Y y ∂Q) / X x ∂P := by
@@ -80,22 +71,61 @@ theorem isNumeraire_mul
       refine lintegral_congr_ae ?_
       filter_upwards [hY.ae_ne_zero] with y hy
       rw [ENNReal.mul_inv (.inl hy) (.inr hx), mul_assoc]
-    suffices IsEVar (fun x ↦ ∫⁻ y, Z (x, y) / Y y ∂Q) S by
-      rw [h_eq]
-      exact hX.lintegral_div_le_one this
+    have h_fsupport_mul : (fun x ↦ Y x.2 * X x.1).fsupport = X.fsupport ×ˢ Y.fsupport := by
+      ext x
+      constructor
+      · simp only [Set.mem_inter_iff, ne_eq, Set.mem_setOf_eq, mul_eq_zero, not_or, Set.mem_prod,
+          and_imp]
+        intro h_mul_top hY_zero hX_zero
+        rw [← ne_eq] at h_mul_top
+        replace h_mul_top : Y x.2 * X x.1 < ⊤ := h_mul_top.symm.lt_top'
+        rw [ENNReal.mul_lt_top_iff] at h_mul_top
+        refine ⟨⟨?_, hX_zero⟩, ⟨?_, hY_zero⟩⟩
+        · rcases h_mul_top with h_top | hX_zero | hY_zero
+          · exact h_top.2.ne
+          · contradiction
+          · contradiction
+        · rcases h_mul_top with h_top | hX_zero | hY_zero
+          · exact h_top.1.ne
+          · contradiction
+          · contradiction
+      · simp only [Set.mem_prod, Set.mem_inter_iff, ne_eq, Set.mem_setOf_eq, mul_eq_zero, not_or,
+          and_imp]
+        intro hX_top hX_zero hY_top hY_zero
+        simp_all only [not_false_eq_true, and_self, and_true]
+        exact ENNReal.mul_ne_top hY_top hX_top
+    rw [h_eq, h_fsupport_mul, P.prod_prod]
+    by_cases hY_top : Y =ᵐ[Q] fun _ ↦ ∞
+    · have hQY : Q Y.fsupport = 0 := measure_fsupport_eq_zero_of_ae_eq_top hY_top
+      refine le_of_eq ?_
+      calc ∫⁻ x, (∫⁻ y, Z (x, y) / Y y ∂Q) / X x ∂P
+      _ = ∫⁻ x, 0 / X x ∂P := by
+        congr with x
+        congr
+        refine lintegral_eq_zero_of_ae_eq_zero ?_
+        filter_upwards [hY_top] with y hy
+        simp [hy]
+      _ = 0 := by simp
+      _ = P X.fsupport * Q Y.fsupport := by simp [hQY]
+    suffices IsEVar (fun x ↦ (Q Y.fsupport)⁻¹ * ∫⁻ y, Z (x, y) / Y y ∂Q) S by
+      have h_le := hX.lintegral_div_le_measure_fsupport this
+      simp_rw [mul_div_assoc] at h_le
+      rw [lintegral_const_mul _ (by fun_prop), ENNReal.inv_mul_le_iff _ (by simp), mul_comm] at h_le
+      swap; · simpa [hY_top] using hY.measure_fsupport_ne_zero_or_ae_top
+      exact h_le
     constructor
     · fun_prop
     intro μ hμS
     have := hX.isProbabilityMeasure_set μ hμS
-    rw [lintegral_lintegral_swap (by fun_prop)]
-    have h_eq' : ∫⁻ y, ∫⁻ x, Z (x, y) / Y y ∂μ ∂Q
-        = ∫⁻ y, (∫⁻ x, Z (x, y) ∂μ) / Y y ∂Q := by
+    suffices IsEVar (fun y ↦ ∫⁻ x, Z (x, y) ∂μ) T by
+      have hY' := hY.lintegral_div_le_measure_fsupport this
+      rw [lintegral_const_mul _ (by fun_prop), ENNReal.inv_mul_le_iff _ (by simp), mul_one]
+      swap; · simpa [hY_top] using hY.measure_fsupport_ne_zero_or_ae_top
+      refine le_trans (le_of_eq ?_) hY'
+      rw [lintegral_lintegral_swap (by fun_prop)]
       congr with y
       simp_rw [div_eq_mul_inv]
       rw [lintegral_mul_const _ (by fun_prop)]
-    suffices IsEVar (fun y ↦ ∫⁻ x, Z (x, y) ∂μ) T by
-      rw [h_eq']
-      exact hY.lintegral_div_le_one this
     constructor
     · fun_prop
     intro ν hνT

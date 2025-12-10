@@ -1,0 +1,117 @@
+
+\begin{lemma}\label{lem:exists_mem_conv_tendsto}
+Let $(X_n)_{n \in \mathbb{N}}$ be a sequence of measurable functions from $\mathcal{X}$ to $\mathbb{R}_{+,\infty}$ and let $Q \in \mathcal{P}(\mathcal{X})$.
+There exists a sequence of measurable functions $\tilde{X}_n \in \mathrm{conv}(X_n, X_{n+1}, \ldots)$ and $X : \mathcal{X} \to \mathbb{R}_{+, \infty}$ such that $\tilde{X}_n \to X$ $Q$-almost surely.
+\end{lemma}
+
+\begin{proof}
+Proved in the Brownian motion project.
+\end{proof}
+
+
+\begin{lemma}\label{lem:exists_integral_utility_eq_sup}
+  \uses{def:eVar}
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ a concave function which is bounded from above.
+Then there exists $f^* \in \mathcal{E}_{\mathcal{Q}}$ such that
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U(f)]
+  &= P[U(f^*)]
+  \: .
+\end{align*}
+\end{lemma}
+
+The properties of $\mathcal{E}_{\mathcal{Q}}$ we use for the proof of this lemma are convexity and the fact that if $f_n \in \mathcal{E}_{\mathcal{Q}}$ then $\liminf_{n \to \infty} f_n \in \mathcal{E}_{\mathcal{Q}}$.
+
+\begin{proof}
+  \uses{lem:exists_mem_conv_tendsto}
+Let $(f_n)_{n \in \mathbb{N}}$ be a sequence of e-variables in $\mathcal{E}_{\mathcal{Q}}$ such that $n \mapsto P[U(f_n)]$ is non-decreasing and $P[U(f_n)] \to \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U(f)]$.
+Let $\tilde{f}_n$ be a sequence of measurable functions and let $\tilde{f} : \mathcal{X} \to \mathbb{R}_{+, \infty}$, with $\tilde{f}_n \in \mathrm{conv}(f_n, f_{n+1}, \ldots)$ such that $\tilde{f}_n \to \tilde{f}$ $P$-almost surely.
+That sequence exists by Lemma~\ref{lem:exists_mem_conv_tendsto}.
+By convexity of $\mathcal{E}_{\mathcal{Q}}$, $\tilde{f}_n \in \mathcal{E}_{\mathcal{Q}}$ for all $n$.
+
+Let $f^* = \liminf_{n \to \infty} \tilde{f}_n$. Note that $f^*$ is a measurable function such that $f^* = \tilde{f}$ $P$-almost surely.
+We have $f^* \in \mathcal{E}_{\mathcal{Q}}$ by an application of Fatou's lemma: for $Q \in \mathcal{Q}$,
+\begin{align*}
+  Q[f^*]
+  = Q[\liminf_{n \to \infty} \tilde{f}_n]
+  \le \liminf_{n \to \infty} Q[\tilde{f}_n]
+  \le 1
+  \: .
+\end{align*}
+
+By concavity of $U$ and the fact that $P[U(f_n)]$ is non-decreasing, we have
+\begin{align*}
+  P[U(\tilde{f}_n)]
+  &= P[U(\sum_{i=n}^{m_n} \lambda_{n,i} f_{i})]
+  \ge \sum_{i=n}^{m_n} \lambda_{n,i} P[U(f_{i})]
+  \ge P[U(f_n)]
+  \: .
+\end{align*}
+
+We also have $f^* = \limsup_{n \to \infty} \tilde{f}_n$ $P$-almost surely, hence by Fatou's lemma (using that $U$ is bounded from above),
+\begin{align*}
+  P[U(f^*)]
+  &= P[U(\limsup_{n \to \infty} \tilde{f}_n)]
+  \ge \limsup_{n \to \infty} P[U(\tilde{f}_n)]
+  \ge \limsup_{n \to \infty} P[U(f_n)]
+  = \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U(f)]
+  \: .
+\end{align*}
+Since $f^* \in \mathcal{E}_{\mathcal{Q}}$, we also have $P[U(f^*)] \le \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U(f)]$, which proves the equality.
+\end{proof}
+
+
+\begin{lemma}\label{lem:exists_integral_utility_eq_sup_forall_lt_top}
+  \uses{def:eVar}
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ a concave function which is bounded from above.
+Then there exists $f^* \in \mathcal{E}_{\mathcal{Q}}$ such that
+\begin{align*}
+  \sup_{f \in \mathcal{E}_{\mathcal{Q}}} P[U(f)]
+  &= P[U(f^*)]
+  \: ,
+\end{align*}
+and such that all e-variables are $P$-a.s. finite on $\{f^* < \infty\}$.
+\end{lemma}
+
+\begin{proof}
+  \uses{lem:exists_integral_utility_eq_sup, lem:singularSet_unique, lem:nullSet_eq_top}
+Let $f_0$ be as in Lemma~\ref{lem:exists_integral_utility_eq_sup}.
+The set $\{f_0 = \infty\}$ is $\mathcal{Q}$-null by Lemma~\ref{lem:nullSet_eq_top}.
+
+TODO
+\end{proof}
+
+
+\begin{lemma}\label{lem:bounded_numeraire_first_order}
+  \uses{def:eVar, lem:exists_integral_utility_eq_sup_forall_lt_top}
+Let $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$ be a set of probability measures and $U : \mathbb{R}_{+,\infty} \to \overline{\mathbb{R}}$ a non-decreasing concave $C^1$ function which is bounded from above.
+Then the e-variable $f^*$ in Lemma~\ref{lem:exists_integral_utility_eq_sup} is such that for all e-variables $g \in \mathcal{E}_{\mathcal{Q}}$,
+\begin{align*}
+  P\left[ U'(f^*) (g - f^*) \right] \le 0 \: .
+\end{align*}
+\end{lemma}
+
+\begin{proof}
+For $f \in \mathcal{E}_{\mathcal{Q}}$, let $f_t = t f + (1-t) f^*$ for $t \in [0,1]$.
+By concavity of $U$, $U(f_t) \ge t U(f) + (1-t) U(f^*)$, hence
+\begin{align*}
+  \frac{U(f_t) - U(f^*)}{t}
+  &\ge U(f) - U(f^*)
+  \: .
+\end{align*}
+TODO
+\end{proof}
+
+
+\begin{theorem}[Existence of the numeraire]\label{thm:exists_numeraire}
+  \uses{def:IsNumeraire}
+Let $P \in \mathcal{P}(\mathcal{X})$ and $\mathcal{Q} \subseteq \mathcal{P}(\mathcal{X})$.
+A numeraire for $(P, \mathcal{Q})$ exists and is $P$-a.e. unique.
+\end{theorem}
+
+\begin{proof}
+  \uses{lem:bounded_numeraire_first_order}
+
+\end{proof}
+
+We will write $E^*_{P, \mathcal{Q}}$ for the numeraire for $(P, \mathcal{Q})$.
