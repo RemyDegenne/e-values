@@ -280,9 +280,10 @@ lemma eintegral_strict_mono_ae (hfg : ∀ᵐ x ∂μ, f x < g x) (hfi : ∫ᵉ x
 lemma eintegral_add_compl {A : Set α} (hA : MeasurableSet A) :
     ∫ᵉ x, f x ∂μ = ∫ᵉ x in A, f x ∂μ + ∫ᵉ x in Aᶜ, f x ∂μ := by
   simp only [eintegral]
-  rw [← lintegral_add_compl (f := fun x ↦ (f x).toENNReal) hA]
-  rw [← lintegral_add_compl (f := fun x ↦ (-f x).toENNReal) hA]
-  sorry
+  rw [← lintegral_add_compl (f := fun x ↦ (f x).toENNReal) hA,
+    ← lintegral_add_compl (f := fun x ↦ (-f x).toENNReal) hA]
+  push_cast
+  rw [EReal.add_sub_add_comm (by simp) (by simp)]
 
 @[gcongr]
 lemma eintegral_mono (hfg : f ≤ g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ :=
@@ -1056,7 +1057,11 @@ lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
     rw [eintegral_prod]
     · refine AEMeasurable.comp_aemeasurable ?_ (by fun_prop)
       rwa [Measure.prod_swap]
-    · sorry
+    · convert hf_int using 1
+      unfold MeasureTheory.eintegrable
+      simp only [Function.comp_apply, ne_eq]
+      rw [lintegral_prod_swap (ν := ν) (fun p ↦ (f p).toENNReal),
+        lintegral_prod_swap (ν := ν) (fun p ↦ (-f p).toENNReal)]
   _ = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by simp
 
 end MeasureTheory

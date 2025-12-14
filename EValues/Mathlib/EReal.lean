@@ -225,3 +225,8 @@ instance : MeasurableInv EReal where
     simp_rw [← EReal.coe_inv]
     change Measurable (Real.toEReal ∘ _)
     exact Measurable.comp measurable_coe_real_ereal (by fun_prop)
+
+lemma EReal.add_sub_add_comm {a b c d : EReal} (h1 : c ≠ ⊥ ∨ d ≠ ⊤) (h2 : c ≠ ⊤ ∨ d ≠ ⊥) :
+    (a + b) - (c + d) = (a - c) + (b - d) := by
+  rw [sub_eq_add_neg, sub_eq_add_neg, sub_eq_add_neg, EReal.neg_add h1 h2, sub_eq_add_neg]
+  grind
