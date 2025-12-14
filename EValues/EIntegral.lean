@@ -277,27 +277,13 @@ lemma eintegral_strict_mono_ae (hfg : ∀ᵐ x ∂μ, f x < g x) (hfi : ∫ᵉ x
     ∫ᵉ x, f x ∂μ < ∫ᵉ x, g x ∂μ := by
   sorry
 
-lemma EReal.top_sub_ennreal_of_ne_top {a : ℝ≥0∞} (ha : a ≠ ⊤) :
-    (⊤ : EReal) - (a : EReal) = ⊤ := by cases a <;> norm_cast
-
-lemma EReal.add_ennreal_sub_add_ennreal (a b c d : ENNReal) :
-    (a + b : EReal) - (c + d) = (a - c : EReal) + (b - d : EReal) := by
-  induction a using ENNReal.recTopCoe
-    <;> induction b using ENNReal.recTopCoe
-    <;> induction c using ENNReal.recTopCoe
-    <;> induction d using ENNReal.recTopCoe
-    <;> norm_cast
-  push_cast
-  erw [ EReal.coe_eq_coe_iff ]
-  ring
-
 lemma eintegral_add_compl {A : Set α} (hA : MeasurableSet A) :
     ∫ᵉ x, f x ∂μ = ∫ᵉ x in A, f x ∂μ + ∫ᵉ x in Aᶜ, f x ∂μ := by
   simp only [eintegral]
   rw [← lintegral_add_compl (f := fun x ↦ (f x).toENNReal) hA,
     ← lintegral_add_compl (f := fun x ↦ (-f x).toENNReal) hA]
   push_cast
-  rw [EReal.add_ennreal_sub_add_ennreal]
+  rw [EReal.add_sub_add_comm (by simp) (by simp)]
 
 @[gcongr]
 lemma eintegral_mono (hfg : f ≤ g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ :=
