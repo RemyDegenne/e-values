@@ -207,17 +207,10 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
     refine EReal.toENNReal_lt_toENNReal ?_ ?_
     · rw [eintegral_eq_lintegral]
       exact EReal.coe_ennreal_nonneg _
-    calc ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((∫⁻ y, f y ∂μ)⁻¹ : ℝ≥0∞) ∂μ
-    _ < ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ},
-        (f x)⁻¹ - Inv.deriv (∫⁻ z, f z ∂μ) * (f x - ∫⁻ z, f z ∂μ) ∂μ := by
-      refine eintegral_strict_mono_ae ?_ ?_
-      · rw [ae_restrict_iff']
-        swap; · exact (measurableSet_eq_fun' hf measurable_const).compl
-        filter_upwards [hf_top] with x hx hx_ne
-        specialize h_cvx_lt x hx hx_ne
-        rwa [EReal.lt_sub_iff_add_lt (by simp [h_int_ne_zero]) (by simp)]
-      · simp [h_int_ne_zero, lt_top_iff_ne_top, EReal.mul_ne_top]
-    _ = ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ
+
+    have transform_eint_deriv : ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ},
+        (f x)⁻¹ - Inv.deriv (∫⁻ z, f z ∂μ) * (f x - (∫⁻ z, f z ∂μ)) ∂μ =
+        ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ
         - Inv.deriv (∫⁻ z, f z ∂μ) * ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, (f x - ∫⁻ z, f z ∂μ) ∂μ := by
       have h_eint : eintegrable (fun x ↦ (f x : EReal) - ∫⁻ z, f z ∂μ)
           (μ.restrict {y | f y ≠ ∫⁻ z, f z ∂μ}) := by
@@ -237,32 +230,70 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
       congr
       rw [eintegral_mul_const (by simp) _ h_eint]
       exact deriv_inv_ne_top h_int_ne_zero
-    _ = ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ
-        - Inv.deriv (∫⁻ z, f z ∂μ) * ∫ᵉ x, (f x - ∫⁻ z, f z ∂μ) ∂μ := by
-      congr 2
-      nth_rw 2 [eintegral_add_compl (A := {y | f y = ∫⁻ z, f z ∂μ})]
-      swap; · exact measurableSet_eq_fun' hf measurable_const
-      suffices h_zero : ∫ᵉ x in {y | f y = ∫⁻ z, f z ∂μ}, (f x - ∫⁻ z, f z ∂μ) ∂μ = 0 by
-        rw [h_zero, zero_add]
-        congr
-      suffices ∀ x ∈ {y | f y = ∫⁻ z, f z ∂μ}, (f x : EReal) - ∫⁻ z, f z ∂μ = 0 by
-        rw [eintegral_congr_ae (ae_restrict_of_forall_mem ?_ this)]
+
+    have eint_sub_eq_zero : ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, (f x - ∫⁻ z, f z ∂μ) ∂μ = 0 := by
+      calc
+      _ = ∫ᵉ x, (f x - ∫⁻ z, f z ∂μ) ∂μ := by
+        nth_rw 2 [eintegral_add_compl (A := {y | f y = ∫⁻ z, f z ∂μ})]
+        swap; · exact measurableSet_eq_fun' hf measurable_const
+        suffices h_zero : ∫ᵉ x in {y | f y = ∫⁻ z, f z ∂μ}, (f x - ∫⁻ z, f z ∂μ) ∂μ = 0 by
+          rw [h_zero, zero_add]
+          congr
+        suffices ∀ x ∈ {y | f y = ∫⁻ z, f z ∂μ}, (f x : EReal) - ∫⁻ z, f z ∂μ = 0 by
+          rw [eintegral_congr_ae (ae_restrict_of_forall_mem ?_ this)]
+          · simp
+          · exact measurableSet_eq_fun' hf measurable_const
+        intro x hx
+        rw [hx, EReal.sub_self (by simp [h_int_top]) (by simp)]
+      _ = 0 := by
+        rw [eintegral_sub]
+        · rw [eintegral_eq_lintegral]
+          simp only [eintegral_const, measure_univ, EReal.coe_ennreal_one, mul_one]
+          rw [EReal.sub_self (by simp [h_int_top]) (by simp)]
+        · exact eintegrable_of_nonneg fun x ↦ by positivity
+        · fun_prop
+        · exact eintegrable_const
+        · fun_prop
+        · simp [h_int_top]
         · simp
-        · exact measurableSet_eq_fun' hf measurable_const
-      intro x hx
-      rw [hx, EReal.sub_self (by simp [h_int_top]) (by simp)]
-    _ = ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ := by
-      suffices ∫ᵉ x, (f x - ∫⁻ z, f z ∂μ) ∂μ = 0 by simp [this]
-      rw [eintegral_sub]
-      · rw [eintegral_eq_lintegral]
-        simp only [eintegral_const, measure_univ, EReal.coe_ennreal_one, mul_one]
-        rw [EReal.sub_self (by simp [h_int_top]) (by simp)]
-      · exact eintegrable_of_nonneg fun x ↦ by positivity
+
+    calc ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((∫⁻ y, f y ∂μ)⁻¹ : ℝ≥0∞) ∂μ
+    _ < ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ},
+        (f x)⁻¹ - Inv.deriv (∫⁻ z, f z ∂μ) * (f x - ∫⁻ z, f z ∂μ) ∂μ := by
+      refine eintegral_strict_mono_ae ?_ ?_ ?_ ?_ ?_ ?_
+      · simp only [ne_eq, Measure.restrict_eq_zero]
+        have : μ {x | f x = ∫⁻ x, f x ∂μ}ᶜ ≠ 0 := hf_const
+        simpa [Set.compl_def]
       · fun_prop
-      · exact eintegrable_const
       · fun_prop
-      · simp [h_int_top]
-      · simp
+      · rw [ae_restrict_iff']
+        swap; · exact (measurableSet_eq_fun' hf measurable_const).compl
+        filter_upwards [hf_top] with x hx hx_ne
+        specialize h_cvx_lt x hx hx_ne
+        rwa [EReal.lt_sub_iff_add_lt (by simp [h_int_ne_zero]) (by simp)]
+      · simp [h_int_ne_zero, lt_top_iff_ne_top, EReal.mul_ne_top]
+      · rw [transform_eint_deriv, ne_eq, EReal.sub_eq_bot, not_or]
+        refine ⟨?_, ?_⟩
+        · suffices 0 ≤ ∫ᵉ x in {y | f y ≠ ∫⁻ (z : α), f z ∂μ}, ↑(f x)⁻¹ ∂μ from
+            (lt_of_le_of_lt' this (by trivial)).ne'
+          refine eintegral_nonneg fun x ↦ ?_
+          positivity
+        · rw [← ne_eq, EReal.mul_ne_top]
+          refine ⟨?_, ?_, ?_, ?_⟩
+          · left
+            simp
+          · right
+            simp [eint_sub_eq_zero]
+          · left
+            exact deriv_inv_ne_top h_int_ne_zero
+          · right
+            simp [eint_sub_eq_zero]
+    _ = ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ
+        - Inv.deriv (∫⁻ z, f z ∂μ) * ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, (f x - ∫⁻ z, f z ∂μ) ∂μ :=
+      transform_eint_deriv
+    _ = ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ :=
+      suffices ∫ᵉ x in {y | f y ≠ ∫⁻ (z : α), f z ∂μ}, (f x - ∫⁻ z, f z ∂μ) ∂μ = 0 by simp [this]
+      eint_sub_eq_zero
 
 theorem Inv.ae_eq_const_or_map_lintegral_lt [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
     (hf_top : ∀ᵐ x ∂μ, f x ≠ ∞) :

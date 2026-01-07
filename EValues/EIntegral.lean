@@ -273,9 +273,9 @@ lemma eintegral_mono_ae (hfg : f ≤ᵐ[μ] g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ 
     rw [← EReal.neg_le_neg_iff] at hfgx
     exact EReal.toENNReal_le_toENNReal hfgx
 
-lemma eintegral_strict_mono_ae (hfg : ∀ᵐ x ∂μ, f x < g x) (hfi : ∫ᵉ x, f x ∂μ < ⊤) :
-    ∫ᵉ x, f x ∂μ < ∫ᵉ x, g x ∂μ := by
-  sorry
+lemma eintegral_neg_eq_top_eq_bot (hf_neg_top : ∫⁻ x, (-f x).toENNReal ∂μ = ⊤) :
+    ∫ᵉ x, f x ∂μ = ⊥ := by
+  simp [eintegral, hf_neg_top]
 
 lemma eintegral_add_compl {A : Set α} (hA : MeasurableSet A) :
     ∫ᵉ x, f x ∂μ = ∫ᵉ x in A, f x ∂μ + ∫ᵉ x in Aᶜ, f x ∂μ := by
@@ -298,6 +298,129 @@ lemma ae_ne_bot_of_eintegral_ne_bot (hf_meas : AEMeasurable f μ) (hf : ∫ᵉ x
   filter_upwards [h] with x hx
   rw [lt_top_iff_ne_top, ne_eq, EReal.toENNReal_eq_top_iff] at hx
   simpa using hx
+
+lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : AEMeasurable f μ)
+    (hfg : ∀ᵐ x ∂μ, f x < g x) (hfi : ∫ᵉ x, f x ∂μ < ⊤) (hgi : ∫ᵉ x, g x ∂μ ≠ ⊥) :
+    ∫ᵉ x, f x ∂μ < ∫ᵉ x, g x ∂μ := by
+  by_cases hg_top : ∫ᵉ x, g x ∂μ = ⊤
+  · simp_all
+  by_cases hf_neg_top : ∫⁻ x, (-f x).toENNReal ∂μ = ⊤
+  · have := eintegral_neg_eq_top_eq_bot hf_neg_top
+    simp_all only [bot_lt_top, gt_iff_lt]
+    exact Ne.bot_lt' hgi.symm
+  obtain ⟨s, hμs, h_cases⟩ : ∃ s, μ s ≠ 0 ∧ (
+      (∀ ⦃x⦄, x ∈ s → 0 ≤ f x ∧ f x < g x)
+      ∨ (∀ ⦃x⦄, x ∈ s → g x ≤ 0 ∧ f x < g x)
+      ∨ (∀ ⦃x⦄, x ∈ s → f x < 0 ∧ 0 < g x ∧ f x < g x)
+    ) := by
+    let S := {x | f x < g x}
+    let S₁ := S ∩ {x | 0 ≤ f x}
+    let S₂ := S ∩ {x | g x ≤ 0}
+    let S₃ := S ∩ {x | f x < 0 ∧ 0 < g x}
+    have : μ S₁ ≠ 0 ∨ μ S₂ ≠ 0 ∨ μ S₃ ≠ 0 := by
+      by_contra! h_zero
+      suffices S = S₁ ∪ S₂ ∪ S₃ by
+        have : 0 < μ (S₁ ∪ S₂ ∪ S₃) := by
+          rw [← this]
+          refine pos_of_ne_zero ?_
+          rw [measure_of_measure_compl_eq_zero hfg]
+          exact μ.measure_univ_ne_zero.mpr hμ
+        have : μ (S₁ ∪ S₂ ∪ S₃) ≤ 0 := by
+          calc
+          _ ≤ μ (S₁ ∪ S₂) + μ S₃ := measure_union_le _ _
+          _ ≤ μ S₁ + μ S₂ + μ S₃ := by
+            gcongr
+            exact measure_union_le _ _
+          _ = 0 := by
+            simp [h_zero]
+        grind
+      ext x
+      constructor
+      · intro hx
+        simp only [Set.mem_union]
+        by_cases hfx : 0 ≤ f x
+        · exact .inl <| .inl ⟨hx, hfx⟩
+        by_cases hgx : g x ≤ 0
+        · exact .inl <| .inr ⟨hx, hgx⟩
+        push_neg at hfx hgx
+        exact .inr ⟨hx, hfx, hgx⟩
+      · intro hx
+        simp only [Set.mem_union] at hx
+        rcases hx with (h | h) | h <;> exact h.1
+    rcases this with hμ1 | hμ2 | hμ3
+    · refine ⟨S₁, hμ1, ?_⟩
+      left
+      grind
+    · refine ⟨S₂, hμ2, ?_⟩
+      right; left
+      grind
+    · refine ⟨S₃, hμ3, ?_⟩
+      right; right
+      grind
+  simp only [eintegral]
+  rcases h_cases with h_pos | h_neg | h_mixed
+  · refine EReal.sub_lt_sub_of_lt_of_le ?_ ?_ ?_ ?_
+    · norm_cast
+      refine lintegral_strict_mono_of_ae_le_of_ae_lt_on ?_ ?_ ?_ hμs ?_
+      · fun_prop
+      · by_contra!
+        simp_all [eintegral]
+      · filter_upwards [hfg] with x hx
+        exact EReal.toENNReal_le_toENNReal hx.le
+      · filter_upwards with x hxs
+        exact EReal.toENNReal_lt_toENNReal (h_pos hxs).1 (h_pos hxs).2
+    · norm_cast
+      refine lintegral_mono_ae ?_
+      filter_upwards [hfg] with x hx
+      refine EReal.toENNReal_le_toENNReal ?_
+      exact EReal.neg_le_neg_iff.mpr hx.le
+    · simp
+    · simp_all
+  · refine EReal.sub_lt_sub_of_le_of_lt ?_ ?_ ?_ ?_
+    · norm_cast
+      refine lintegral_mono_ae ?_
+      filter_upwards [hfg] with x hx
+      exact EReal.toENNReal_le_toENNReal hx.le
+    · norm_cast
+      refine lintegral_strict_mono_of_ae_le_of_ae_lt_on ?_ ?_ ?_ hμs ?_
+      · fun_prop
+      · by_contra!
+        simp_all [eintegral]
+      · filter_upwards [hfg] with x hx
+        refine EReal.toENNReal_le_toENNReal ?_
+        exact EReal.neg_le_neg_iff.mpr hx.le
+      · filter_upwards with x hxs
+        refine EReal.toENNReal_lt_toENNReal ?_ ?_
+        · exact EReal.neg_nonneg.mpr (h_neg hxs).1
+        · exact EReal.neg_lt_neg_iff.mpr (h_neg hxs).2
+    · by_contra! h
+      simp_all only [ne_eq, eintegral, EReal.coe_ennreal_eq_top_iff]
+      cases EReal.top_sub_eq_top_or_bot (a := ∫⁻ (x : α), (-g x).toENNReal ∂μ) <;> simp_all
+    · simp_all
+  · refine EReal.sub_lt_sub_of_lt_of_le ?_ ?_ ?_ ?_
+    · norm_cast
+      refine lintegral_strict_mono_of_ae_le_of_ae_lt_on ?_ ?_ ?_ hμs ?_
+      · fun_prop
+      · by_contra!
+        simp_all [eintegral]
+      · filter_upwards [hfg] with x hx
+        exact EReal.toENNReal_le_toENNReal hx.le
+      · filter_upwards with x hxs
+        specialize h_mixed hxs
+        have : f x ≤ 0 := h_mixed.1.le
+        simp_all
+    · norm_cast
+      refine lintegral_mono_ae ?_
+      filter_upwards [hfg] with x hx
+      refine EReal.toENNReal_le_toENNReal ?_
+      exact EReal.neg_le_neg_iff.mpr hx.le
+    · simp
+    · simp_all
+
+lemma eintegral_strict_mono (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : AEMeasurable f μ)
+    (hfg : ∀ x, f x < g x) (hfi : ∫ᵉ x, f x ∂μ < ⊤) (hgi : ∫ᵉ x, g x ∂μ ≠ ⊥) :
+    ∫ᵉ x, f x ∂μ < ∫ᵉ x, g x ∂μ :=
+  eintegral_strict_mono_ae hμ hg hf (ae_of_all μ hfg) hfi hgi
 
 lemma eintegral_sub_of_nonneg_of_eq_zero (hf : ∀ x, 0 ≤ f x) (hg : ∀ x, 0 ≤ g x)
     (h_or : ∀ x, f x = 0 ∨ g x = 0) :
