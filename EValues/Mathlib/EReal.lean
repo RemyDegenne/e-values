@@ -259,3 +259,7 @@ lemma EReal.sub_eq_bot {a b : EReal} : a - b = ⊥ ↔ a = ⊥ ∨ b = ⊤ := by
   cases a <;> cases b <;> simp_all
   norm_cast
   simp [-coe_sub]
+lemma EReal.add_sub_add_comm {a b c d : EReal} (h1 : c ≠ ⊥ ∨ d ≠ ⊤) (h2 : c ≠ ⊤ ∨ d ≠ ⊥) :
+    (a + b) - (c + d) = (a - c) + (b - d) := by
+  rw [sub_eq_add_neg, sub_eq_add_neg, sub_eq_add_neg, EReal.neg_add h1 h2, sub_eq_add_neg]
+  grind

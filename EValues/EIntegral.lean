@@ -277,6 +277,14 @@ lemma eintegral_neg_eq_top_eq_bot (hf_neg_top : ∫⁻ x, (-f x).toENNReal ∂μ
     ∫ᵉ x, f x ∂μ = ⊥ := by
   simp [eintegral, hf_neg_top]
 
+lemma eintegral_add_compl {A : Set α} (hA : MeasurableSet A) :
+    ∫ᵉ x, f x ∂μ = ∫ᵉ x in A, f x ∂μ + ∫ᵉ x in Aᶜ, f x ∂μ := by
+  simp only [eintegral]
+  rw [← lintegral_add_compl (f := fun x ↦ (f x).toENNReal) hA,
+    ← lintegral_add_compl (f := fun x ↦ (-f x).toENNReal) hA]
+  push_cast
+  rw [EReal.add_sub_add_comm (by simp) (by simp)]
+
 @[gcongr]
 lemma eintegral_mono (hfg : f ≤ g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ :=
   eintegral_mono_ae <| ae_of_all _ hfg
@@ -413,13 +421,6 @@ lemma eintegral_strict_mono (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : AEMe
     (hfg : ∀ x, f x < g x) (hfi : ∫ᵉ x, f x ∂μ < ⊤) (hgi : ∫ᵉ x, g x ∂μ ≠ ⊥) :
     ∫ᵉ x, f x ∂μ < ∫ᵉ x, g x ∂μ :=
   eintegral_strict_mono_ae hμ hg hf (ae_of_all μ hfg) hfi hgi
-
-lemma eintegral_add_compl {A : Set α} (hA : MeasurableSet A) :
-    ∫ᵉ x, f x ∂μ = ∫ᵉ x in A, f x ∂μ + ∫ᵉ x in Aᶜ, f x ∂μ := by
-  simp only [eintegral]
-  rw [← lintegral_add_compl (f := fun x ↦ (f x).toENNReal) hA]
-  rw [← lintegral_add_compl (f := fun x ↦ (-f x).toENNReal) hA]
-  sorry
 
 lemma eintegral_sub_of_nonneg_of_eq_zero (hf : ∀ x, 0 ≤ f x) (hg : ∀ x, 0 ≤ g x)
     (h_or : ∀ x, f x = 0 ∨ g x = 0) :
@@ -1179,7 +1180,11 @@ lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
     rw [eintegral_prod]
     · refine AEMeasurable.comp_aemeasurable ?_ (by fun_prop)
       rwa [Measure.prod_swap]
-    · sorry
+    · convert hf_int using 1
+      unfold MeasureTheory.eintegrable
+      simp only [Function.comp_apply, ne_eq]
+      rw [lintegral_prod_swap (ν := ν) (fun p ↦ (f p).toENNReal),
+        lintegral_prod_swap (ν := ν) (fun p ↦ (-f p).toENNReal)]
   _ = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by simp
 
 end MeasureTheory
