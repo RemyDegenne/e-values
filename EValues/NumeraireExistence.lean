@@ -122,21 +122,39 @@ lemma lintegral_div_numeraire_le (P : Measure 𝓧) [IsProbabilityMeasure P]
   rw [numeraire, dif_pos (by infer_instance), dif_pos hS]
   exact ((Classical.choose_spec (exists_numeraire P S hS)).2 X hX_evar)
 
+lemma lintegral_div_numeraire_le_measure_fsupport (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
+    ∫⁻ x, X x / (numeraire P S x) ∂P ≤ P (numeraire P S).fsupport := by
+  refine (lintegral_div_numeraire_le P hS hX_evar).trans_eq ?_
+  have m_fsupport : MeasurableSet (numeraire P S).fsupport :=
+      (isEVar_numeraire P S).measurable_fsupport
+  rw [← lintegral_add_compl _ m_fsupport, ← add_zero <| P (numeraire P S).fsupport]
+  congr
+  · suffices ∀ x ∈ (numeraire P S).fsupport, (numeraire P S x) / (numeraire P S x) = 1 by
+      rw [setLIntegral_congr_fun m_fsupport this]
+      simp
+    intro x hx
+    exact (ENNReal.div_eq_one_iff hx.2 hx.1).mpr rfl
+  · refine (setLIntegral_eq_zero_iff m_fsupport.compl (by fun_prop)).mpr ?_
+    filter_upwards with x hx
+    rw [Function.fsupport_compl] at hx
+    rcases hx with (hx_top | hx_zero)
+    · simp_all
+    · simp_all
+
 lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
     ∫⁻ x, X x / (numeraire P S x) ∂P ≤ 1 := by
-  refine (lintegral_div_numeraire_le P hS hX_evar).trans ?_
-  calc ∫⁻ x, numeraire P S x / numeraire P S x ∂P
-  _ ≤ ∫⁻ x, 1 ∂P := by
-    gcongr with x
-    exact ENNReal.div_self_le_one
+  calc
+  _ ≤ P (numeraire P S).fsupport := lintegral_div_numeraire_le_measure_fsupport P hS hX_evar
+  _ ≤ P Set.univ := measure_mono (by simp)
   _ = 1 := by simp
 
 /-- `numeraire` is a numeraire. -/
 lemma isNumeraire_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
     (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
     IsNumeraire (numeraire P S) S P :=
-  ⟨isEVar_numeraire P S, hS, fun _ ↦ lintegral_div_numeraire_le_one P hS⟩
+  ⟨isEVar_numeraire P S, hS, fun _ ↦ lintegral_div_numeraire_le_measure_fsupport P hS⟩
 
 lemma IsNumeraire.ae_eq_numeraire [IsProbabilityMeasure P] {X : 𝓧 → ℝ≥0∞}
     (hX : IsNumeraire X S P) :
@@ -151,12 +169,23 @@ lemma lintegral_div_self_le_iff_IsNumeraire [IsProbabilityMeasure P]
     {Y : 𝓧 → ℝ≥0∞} (hY_evar : IsEVar Y S) :
     (∀ X, IsEVar X S → ∫⁻ ω, X ω / Y ω ∂P ≤ ∫⁻ ω, Y ω / Y ω ∂P) ↔ IsNumeraire Y S P := by
   refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
-  · refine ⟨hY_evar, hS, fun X hX_evar ↦ (h X hX_evar).trans ?_⟩
-    calc ∫⁻ ω, Y ω / Y ω ∂P
-    _ ≤ ∫⁻ ω, 1 ∂P := by
-      gcongr with ω
-      exact ENNReal.div_self_le_one
-    _ = 1 := by simp
+  · refine ⟨hY_evar, hS, fun X hX_evar ↦ (h X hX_evar).trans_eq ?_⟩
+    have m_fsupport : MeasurableSet Y.fsupport :=hY_evar.measurable_fsupport
+    rw [← lintegral_add_compl _ m_fsupport, ← add_zero <| P Y.fsupport]
+    congr
+    · suffices ∀ x ∈ Y.fsupport, Y x / Y x = 1 by
+        rw [setLIntegral_congr_fun m_fsupport this]
+        simp
+      intro x hx
+      exact (ENNReal.div_eq_one_iff hx.2 hx.1).mpr rfl
+    · refine (setLIntegral_eq_zero_iff m_fsupport.compl ?_).mpr ?_
+      · have := hY_evar.measurable
+        fun_prop
+      · filter_upwards with x hx
+        rw [Function.fsupport_compl] at hx
+        rcases hx with (hx_top | hx_zero)
+        · simp_all
+        · simp_all
   · intro X hX_evar
     have ae_eq_numeraire := h.ae_eq_numeraire
     calc ∫⁻ ω, X ω / Y ω ∂P
