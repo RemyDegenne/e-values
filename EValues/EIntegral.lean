@@ -1177,7 +1177,7 @@ lemma eintegral_coe_ennreal_sub {α : Type*} [MeasurableSpace α] {μ : Measure 
       (∫⁻ x, u x ∂μ).toEReal - (∫⁻ x, v x ∂μ).toEReal := by
     cases eq_or_ne ( ∫⁻ x, u x - v x ∂μ ) ⊤
     <;> cases eq_or_ne ( ∫⁻ x, v x - u x ∂μ ) ⊤
-    <;> simp_all? [ENNReal.sub_eq_top_iff]
+    <;> simp_all [ENNReal.sub_eq_top_iff]
     · cases h : ∫⁻ x, v x - u x ∂μ
       <;> cases h' : ∫⁻ x, Min.min ( u x ) ( v x ) ∂μ
       <;> simp_all
