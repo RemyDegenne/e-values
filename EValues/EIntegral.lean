@@ -1,18 +1,4 @@
 /-
-This file was edited by Aristotle.
-
-Lean version: leanprover/lean4:v4.24.0
-Mathlib version: f897ebcf72cd16f89ab4577d0c826cd14afaafc7
-This project request had uuid: 7e41b77d-bc36-434c-804e-06256470c095
-
-The following was proved by Aristotle:
-
-- lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [SFinite ν]
-    (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) (hf_int : eintegrable f (μ.prod ν)) :
-    ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ x, ∫ᵉ y, f (x, y) ∂ν ∂μ
--/
-
-/-
 Copyright (c) 2025 Gaëtan Serré. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré, Rémy Degenne
@@ -1220,13 +1206,14 @@ lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [
   set v : α × β → ℝ≥0∞ := fun z => (-f z).toENNReal
   -- By definition of $u$ and $v$, we have $f = u - v$.
   have hf_eq : f = fun z => (u z : EReal) - (v z : EReal) := by
-    simp +zetaDelta at *
-    ext z; cases h : f z <;> simp +decide [ h ]
+    simp only [u, v]
+    ext z
+    cases h : f z <;> simp
     cases max_cases ( ‹_› : ℝ ) 0 <;> cases max_cases ( -‹_› : ℝ ) 0 <;> aesop
   rw [ hf_eq ]
   have h_u_v_aemeasurable : AEMeasurable u (μ.prod ν) ∧ AEMeasurable v (μ.prod ν) := by
     apply And.intro
-    · exact?
+    · exact AEMeasurable.ereal_toENNReal hf
     · fun_prop
   have h_u_v_integrable : (∫⁻ x, u x ∂(μ.prod ν) : EReal) - (∫⁻ x, v x ∂(μ.prod ν) : EReal) =
       (∫⁻ x, (∫⁻ y, u (x, y) ∂ν) ∂μ : EReal) - (∫⁻ x, (∫⁻ y, v (x, y) ∂ν) ∂μ : EReal) := by
