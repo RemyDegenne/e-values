@@ -108,7 +108,8 @@ lemma maxRandUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : K
       infer_instance
     refine ⟨ξ, this, ⟨fun μ hμ ↦ ?_⟩, hξ_int⟩
     rw [hξ, ← μ.comp_assoc]
-    exact hη₂.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
+    convert hη₂.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
+    simp
 
 /-- Data processing inequality for the maximum utility and a Markov kernel. -/
 lemma maxUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)
@@ -157,20 +158,19 @@ lemma IsNumeraire.maxUtility_eq_integral [IsProbabilityMeasure P]
     refine le_sSup ?_
     exact ⟨X, hX.toIsEVar, rfl⟩
 
-lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
-    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P] :
     maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P :=
-  (isNumeraire_numeraire P hS).maxUtility_eq_integral
+  (isNumeraire_numeraire P).maxUtility_eq_integral
 
 /-- The maximum utility is nonnegative. -/
-lemma maxUtility_nonneg (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+lemma maxUtility_nonneg (P : Measure 𝓧) :
     0 ≤ maxUtility P S logUtility := by
   calc 0
   _ ≤ ∫ᵉ (x : 𝓧), (logUtility.toFun ∘ (fun _ ↦ 1)) x ∂P := by simp [logUtility]
   _ ≤ maxUtility P S logUtility := by
     rw [maxUtility]
     refine le_iSup₂ (f := fun X _ ↦ ∫ᵉ (x : 𝓧), (logUtility.toFun ∘ X) x ∂P) (fun _ ↦ 1) ?_
-    exact isEVar_fun_one S hS
+    exact isEVar_fun_one S
 
 /-- The maximum utility is a convex function of the measure. -/
 lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :

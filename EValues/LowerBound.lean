@@ -150,7 +150,7 @@ lemma echernoffDiv_bounded {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
   let φ : I → I := fun x ↦ ⟨1 - x.1, by grind⟩
   have hφ_inv : φ ∘ φ = id := by ext; simp [φ]
   rw [← erenyiDiv_bounded hδ_pos hδ,
-    erenyiDiv_eq_two_mul_echernoffDiv_of_involutive (by fun_prop) hφ_inv (by grind) (by grind),
+    erenyiDiv_eq_two_mul_echernoffDiv_of_involutive (by fun_prop) hφ_inv,
     ← mul_assoc, ENNReal.inv_mul_cancel (by simp) (by simp), one_mul]
   ext μ
   simp only [Set.mem_setOf_eq]

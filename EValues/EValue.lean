@@ -61,14 +61,14 @@ namespace ProbabilityTheory
 /-- A random variable `X` is an e-variable for a set of measures `S` if it is measurable and
 its expectation is at most one for all measures in `S`. -/
 structure IsEVar (X : 𝓧 → ℝ≥0∞) (S : Set (Measure 𝓧)) : Prop where
-  measurable : Measurable X
-  lintegral_le_one : ∀ μ ∈ S, ∫⁻ ω, X ω ∂μ ≤ 1
+  measurable : Measurable X := by fun_prop
+  lintegral_le_one : ∀ μ ∈ S, ∫⁻ ω, X ω ∂μ ≤ μ .univ
 
 /-- A random variables `X` is an e-variable for a set of measures `S` if it is measurable and
 its expectation is at most one for all measures in `S`. -/
 structure IsRandEVar (κ : Kernel 𝓧 ℝ≥0∞) (S : Set (Measure 𝓧)) : Prop where
   [markov : IsMarkovKernel κ]
-  lintegral_le_one : ∀ μ ∈ S, ∫⁻ ω, ω ∂(κ ∘ₘ μ) ≤ 1
+  lintegral_le_one : ∀ μ ∈ S, ∫⁻ ω, ω ∂(κ ∘ₘ μ) ≤ μ .univ
 
 variable {X Y : 𝓧 → ℝ≥0∞} {κ η : Kernel 𝓧 ℝ≥0∞} [IsMarkovKernel κ] {S T : Set (Measure 𝓧)}
 
@@ -92,36 +92,26 @@ lemma IsEVar.isRandEVar_deterministic (hX : IsEVar X S) :
 
 lemma isEVar_of_isEmpty (hS : IsEmpty S) (hX : Measurable X) :
    IsEVar X S where
-  measurable := hX
   lintegral_le_one := by simp_all
 
-lemma isEVar_zero : IsEVar 0 S where
-  measurable := measurable_const
-  lintegral_le_one μ hμ := by simp
+lemma isEVar_zero : IsEVar 0 S where lintegral_le_one μ hμ := by simp
 
-lemma isEVar_one (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
-    IsEVar 1 S where
-  measurable := measurable_const
-  lintegral_le_one μ hμ := by simp [hS μ hμ]
+lemma isEVar_one (S : Set (Measure 𝓧)) : IsEVar 1 S where lintegral_le_one μ hμ := by simp
 
-lemma isEVar_fun_one (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
-    IsEVar (fun _ ↦ 1) S := isEVar_one S hS
+lemma isEVar_fun_one (S : Set (Measure 𝓧)) : IsEVar (fun _ ↦ 1) S := isEVar_one S
 
-lemma IsEVar.ae_lt_top (hX : IsEVar X S) {μ : Measure 𝓧} (hμ : μ ∈ S) : ∀ᵐ ω ∂μ, X ω < ⊤ := by
+lemma IsEVar.ae_lt_top (hX : IsEVar X S) {μ : Measure 𝓧} [IsFiniteMeasure μ] (hμ : μ ∈ S) :
+    ∀ᵐ ω ∂μ, X ω < ⊤ := by
   by_contra h
   suffices ∫⁻ ω, X ω ∂μ = ⊤ by
-    have lintegral_le_one := hX.lintegral_le_one μ hμ
-    rw [this] at lintegral_le_one
-    contradiction
+    have lintegral_le := hX.lintegral_le_one μ hμ
+    simp [this] at lintegral_le
   refine lintegral_eq_top_of_measure_eq_top_ne_zero hX.measurable.aemeasurable ?_
-  · unfold Filter.Eventually at h
-    simp [MeasureTheory.ae] at h
-    suffices {ω | X ω < ⊤}ᶜ = {ω | X ω = ⊤} by
-      rwa [← this]
-    ext ω
-    simp
+  suffices ¬ μ {x | ¬ X x < ⊤} = 0 by simpa [lt_top_iff_ne_top] using this
+  rwa [← ae_iff]
 
-lemma IsEVar.ae_ne_top (hX : IsEVar X S) {μ : Measure 𝓧} (hμ : μ ∈ S) : ∀ᵐ ω ∂μ, X ω ≠ ⊤ := by
+lemma IsEVar.ae_ne_top (hX : IsEVar X S) {μ : Measure 𝓧} [IsFiniteMeasure μ] (hμ : μ ∈ S) :
+    ∀ᵐ ω ∂μ, X ω ≠ ⊤ := by
   filter_upwards [hX.ae_lt_top hμ] with ω hω using hω.ne
 
 lemma IsEVar.measurable_fsupport (hX : IsEVar X S) :
@@ -142,7 +132,6 @@ lemma IsEVar.measurable_fsupport (hX : IsEVar X S) :
     simp
 
 lemma IsEVar.mono (hY : IsEVar Y S) (hX : Measurable X) (hXY : X ≤ Y) : IsEVar X S where
-  measurable := hX
   lintegral_le_one μ hμ := (lintegral_mono hXY).trans (hY.lintegral_le_one μ hμ)
 
 lemma IsRandEVar.mono (hη : IsRandEVar η S) (hκη : κ ≤ η) : IsRandEVar κ S where
@@ -165,9 +154,8 @@ lemma IsEVar.comp {Y : 𝓨 → ℝ≥0∞} {S : Set (Measure 𝓧)} {φ : 𝓧 
     IsEVar (Y ∘ φ) S where
   measurable := h.measurable.comp hφ
   lintegral_le_one μ hμ := by
-    have h' := h.lintegral_le_one (μ.map φ) ?_
-    · rwa [lintegral_map h.measurable hφ] at h'
-    · exact ⟨μ, hμ, rfl⟩
+    have h' := h.lintegral_le_one (μ.map φ) ⟨μ, hμ, rfl⟩
+    rwa [lintegral_map h.measurable hφ, Measure.map_apply (by fun_prop) .univ] at h'
 
 lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
     {κ : Kernel 𝓧 𝓨} [IsMarkovKernel κ] (h : IsRandEVar ξ {κ ∘ₘ μ | μ ∈ S}) :
@@ -175,6 +163,7 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
   markov := have := h.markov; inferInstance
   lintegral_le_one μ hμ := by
     have h' := h.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
-    rwa [Measure.comp_assoc] at h'
+    rw [Measure.comp_assoc, Measure.bind_apply .univ (by fun_prop)] at h'
+    simpa using h'
 
 end ProbabilityTheory

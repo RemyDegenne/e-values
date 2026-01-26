@@ -112,6 +112,7 @@ lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
     simp_rw [mul_add] at h_le_delta
     simp only [mul_ite, mul_zero, Finset.sum_add_distrib, Finset.sum_ite_eq, Finset.mem_univ,
       ↓reduceIte] at h_le_delta
+    simp only [measure_univ] at h_le_zero
     refine ⟨δ⁻¹ * (1 - (X ⟨0, by simp⟩).toReal), ?_, ?_, fun ω ↦ ?_⟩
     · refine mul_nonneg (by positivity) (sub_nonneg.mpr ?_)
       refine ENNReal.toReal_le_of_le_ofReal (by simp) ?_
@@ -154,13 +155,18 @@ lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
         rwa [ENNReal.ofReal_toReal hX_ne_top]
       rw [← ENNReal.ofReal_add (by positivity) (by positivity)]
       simp only [sub_add_cancel, ENNReal.ofReal_one]
-      rwa [ENNReal.le_sub_iff_add_le_left, mul_comm (ENNReal.ofReal δ), mul_comm (ENNReal.ofReal _)]
+      rw [ENNReal.le_sub_iff_add_le_left, mul_comm (ENNReal.ofReal δ), mul_comm (ENNReal.ofReal _)]
+      · convert h_le_delta
+        simp only [measure_univ, mul_one]
+        rw [← ENNReal.ofReal_add (by grind) (by grind)]
+        simp
       · finiteness
       · conv_rhs => rw [← mul_one 1]
         gcongr
         simp [hδ_pos.le]
   · rintro ⟨u, hu_nonneg, hu, hX_le⟩
     refine ⟨by fun_prop, fun μ ⟨hμ, hμ'⟩ ↦ ?_⟩
+    simp only [measure_univ]
     calc ∫⁻ ω, X ω ∂μ
     _ ≤ ∫⁻ ω, ENNReal.ofReal (1 + u * (ω - δ)) ∂μ := lintegral_mono hX_le
     _ = ENNReal.ofReal (1 + u * (∫ ω, (ω : ℝ) ∂μ - δ)) := by
@@ -377,7 +383,7 @@ lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
       = ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ)))) := by
   let φ : ({0, 1} : Set ℝ) → ({0, 1} : Set ℝ) := fun x ↦ ⟨1 - x.1, by grind⟩
   have hφ_inv : φ ∘ φ = id := by ext; simp [φ]
-  rw [erenyiDiv_of_involutive (by fun_prop) hφ_inv (by grind) (by grind)]
+  rw [erenyiDiv_of_involutive (by fun_prop) hφ_inv]
   swap
   · exact map_bernoulli_le_eq_bernoulli_ge δ
   have h_iff R (hR : IsProbabilityMeasure R) :
@@ -428,7 +434,7 @@ lemma echernoffDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹)
   let φ : ({0, 1} : Set ℝ) → ({0, 1} : Set ℝ) := fun x ↦ ⟨1 - x.1, by grind⟩
   have hφ_inv : φ ∘ φ = id := by ext; simp [φ]
   rw [← erenyiDiv_bernoulli hδ_pos hδ,
-    erenyiDiv_eq_two_mul_echernoffDiv_of_involutive (by fun_prop) hφ_inv (by grind) (by grind),
+    erenyiDiv_eq_two_mul_echernoffDiv_of_involutive (by fun_prop) hφ_inv,
     ← mul_assoc, ENNReal.inv_mul_cancel (by simp) (by simp), one_mul]
   exact map_bernoulli_le_eq_bernoulli_ge δ
 
