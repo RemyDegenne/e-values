@@ -185,10 +185,12 @@ lemma erenyiDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measu
     congr with y
     constructor
     · rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
-      rw [maxUtility_prod _ _ hS₁ hT₁, maxUtility_prod _ _ hS₂ hT₂]
+      rw [maxUtility_prod _ _ hS₁ (fun μ hμ ↦  by have := hT₁ μ hμ; infer_instance),
+        maxUtility_prod _ _ hS₂ (fun μ hμ ↦  by have := hT₂ μ hμ; infer_instance)]
       exact ⟨R₁, R₂, hR₁, hR₂, rfl⟩
     · rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
-      rw [← maxUtility_prod _ _ hS₁ hT₁, ← maxUtility_prod _ _ hS₂ hT₂]
+      rw [← maxUtility_prod _ _ hS₁ (fun μ hμ ↦  by have := hT₁ μ hμ; infer_instance),
+        ← maxUtility_prod _ _ hS₂ (fun μ hμ ↦  by have := hT₂ μ hμ; infer_instance)]
       exact ⟨R₁, R₂, hR₁, hR₂, rfl⟩
   _ = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := erenyiDiv_add_eq_sInf _ _ _ _
 
@@ -308,7 +310,8 @@ lemma echernoffDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Me
       refine sInf_le_sInf fun y ↦ ?_
       rintro ⟨R₁, R₂, hR₁, hR₂, rfl⟩
       refine ⟨R₁, R₂, hR₁, hR₂, ?_⟩
-      rw [maxUtility_prod _ _ hS₁ hT₁, maxUtility_prod _ _ hS₂ hT₂]
+      rw [maxUtility_prod _ _ hS₁ (fun μ hμ ↦  by have := hT₁ μ hμ; infer_instance),
+        maxUtility_prod _ _ hS₂ (fun μ hμ ↦  by have := hT₂ μ hμ; infer_instance)]
   _ ≤ echernoffDiv S₁ S₂ + echernoffDiv T₁ T₂ := by
     rw [← iInf₄_eq_sInf, echernoffDiv, echernoffDiv, iInf₂_add]
     refine iInf₂_mono fun R₁ R₂ ↦ iInf₂_mono fun hR₁ hR₂ ↦ ?_
