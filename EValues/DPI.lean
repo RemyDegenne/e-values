@@ -61,7 +61,7 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
       let X := fun x ↦ ∫⁻ y, y ∂(η x)
       refine ⟨X, ⟨by fun_prop, fun μ hμ ↦ ?_⟩, ?_⟩
       · rw [isRandEVar_iff_isEVar] at hη₂
-        exact hη₂.lintegral_le_one μ hμ
+        exact hη₂.lintegral_le_measure_univ μ hμ
       · rw [hy]
         refine (eintegral_comp_measure_le U.measurable).trans ?_
         refine eintegral_mono fun _ ↦ ?_
@@ -77,7 +77,7 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     refine ⟨Kernel.deterministic X hX.measurable, inferInstance, ⟨fun μ hμ ↦ ?_⟩, ?_⟩
     · rw [Measure.deterministic_comp_eq_map hX.measurable,
         lintegral_map (by fun_prop) hX.measurable]
-      exact hX.lintegral_le_one μ hμ
+      exact hX.lintegral_le_measure_univ μ hμ
     · rw [hy, Measure.deterministic_comp_eq_map hX.measurable,
         eintegral_map U.measurable hX.measurable]
       rfl

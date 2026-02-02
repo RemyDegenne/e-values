@@ -8,6 +8,7 @@ import EValues.EValue
 /-!
 # Conditional E-variables
 
+EXPERIMENTAL FILE.
 
 
 ## Main definitions
@@ -29,6 +30,7 @@ variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableS
 
 namespace ProbabilityTheory
 
+-- todo: ≤ κ x .univ ?
 structure Kernel.IsEVar (Y : 𝓧 × 𝓨 → ℝ≥0∞) (T : Set (Kernel 𝓧 𝓨)) (S : Set (Measure 𝓧)) :
     Prop where
   measurable : Measurable Y := by fun_prop
@@ -40,14 +42,14 @@ structure Kernel.IsRandEVar (η : Kernel 𝓨 ℝ≥0∞) (T : Set (Kernel 𝓧 
   lintegral_le_one : ∀ μ ∈ S, ∀ᵐ x ∂μ, ∀ κ ∈ T, ∫⁻ ω, ω ∂(η ∘ₘ κ x) ≤ 1
 
 lemma isEvar_mul_of_kernel_isEvar
-    (hS : ∀ μ ∈ S, SFinite μ) (hT : ∀ κ ∈ T, IsSFiniteKernel κ)
+    (hS : ∀ μ ∈ S, SFinite μ) (hT : ∀ κ ∈ T, IsMarkovKernel κ)
     (hX : ProbabilityTheory.IsEVar X S) (hY : Kernel.IsEVar Y T S) :
     IsEVar (fun p ↦ X p.1 * Y p) {η : Measure (𝓧 × 𝓨) | ∃ μ ∈ S, ∃ κ ∈ T, η = μ ⊗ₘ κ} where
   measurable := by
     have hX_meas := hX.measurable
     have hY_meas := hY.measurable
     fun_prop
-  lintegral_le_one := by
+  lintegral_le_measure_univ := by
     rintro ρ ⟨μ, hμ, κ, hκ, rfl⟩
     have hX_meas := hX.measurable
     have hY_meas := hY.measurable
@@ -64,7 +66,8 @@ lemma isEvar_mul_of_kernel_isEvar
       specialize ha κ hκ
       grw [ha]
       simp
-    _ ≤ 1 := hX.lintegral_le_one μ hμ
+    _ ≤ μ .univ := hX.lintegral_le_measure_univ μ hμ
+    _ ≤ _ := by simp [Measure.compProd_apply .univ]
 
 def todo (μ : Measure 𝓧) (E : Set (𝓧 → ℝ≥0∞)) : Prop := ∀ f ∈ E, ∫⁻ x, f x ∂μ ≤ 1
 

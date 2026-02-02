@@ -162,8 +162,8 @@ lemma erenyiDiv_add_eq_sInf (S₁ S₂ : Set (Measure 𝓧)) (T₁ T₂ : Set (M
 
 /-- Auxiliary lemma for `erenyiDiv_prod`. -/
 lemma erenyiDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
-    (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
-    (hT₁ : ∀ μ ∈ T₁, IsProbabilityMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsProbabilityMeasure μ) :
+    (hS₁ : ∀ μ ∈ S₁, SFinite μ) (hS₂ : ∀ μ ∈ S₂, SFinite μ)
+    (hT₁ : ∀ μ ∈ T₁, SFinite μ) (hT₂ : ∀ μ ∈ T₂, SFinite μ) :
     erenyiDiv α (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) (Measure.prod.uncurry '' (S₂ ×ˢ T₂))
       ≤ erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
   set ST₁ := Measure.prod.uncurry '' (S₁ ×ˢ T₁)
@@ -195,8 +195,8 @@ lemma erenyiDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measu
   _ = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := erenyiDiv_add_eq_sInf _ _ _ _
 
 lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
-    (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
-    (hT₁ : ∀ μ ∈ T₁, IsProbabilityMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsProbabilityMeasure μ) :
+    (hS₁ : ∀ μ ∈ S₁, SFinite μ) (hS₂ : ∀ μ ∈ S₂, SFinite μ)
+    (hT₁ : ∀ μ ∈ T₁, SFinite μ) (hT₂ : ∀ μ ∈ T₂, SFinite μ) :
     erenyiDiv α (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) (Measure.prod.uncurry '' (S₂ ×ˢ T₂))
       = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
   set ST₁ := Measure.prod.uncurry '' (S₁ ×ˢ T₁)
@@ -292,8 +292,8 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
     _ = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := erenyiDiv_add_eq_sInf _ _ _ _
 
 lemma echernoffDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
-    (hS₁ : ∀ μ ∈ S₁, IsProbabilityMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsProbabilityMeasure μ)
-    (hT₁ : ∀ μ ∈ T₁, IsProbabilityMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsProbabilityMeasure μ) :
+    (hS₁ : ∀ μ ∈ S₁, SFinite μ) (hS₂ : ∀ μ ∈ S₂, SFinite μ)
+    (hT₁ : ∀ μ ∈ T₁, SFinite μ) (hT₂ : ∀ μ ∈ T₂, SFinite μ) :
     echernoffDiv (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) (Measure.prod.uncurry '' (S₂ ×ˢ T₂))
       ≤ echernoffDiv S₁ S₂ + echernoffDiv T₁ T₂ := by
   calc

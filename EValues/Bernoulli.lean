@@ -82,7 +82,7 @@ lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
       ∃ (u : ℝ) (_ : 0 ≤ u) (_ : u ≤ δ⁻¹),
         ∀ x, X x ≤ ENNReal.ofReal (1 + u * ((x : ℝ) - δ)) := by
   refine ⟨fun h_evar ↦ ?_, ?_⟩
-  · have h_le := h_evar.lintegral_le_one
+  · have h_le := h_evar.lintegral_le_measure_univ
     simp only [Set.mem_setOf_eq, lintegral_fintype, and_imp] at h_le
     classical
     have h_le_zero := h_le (Measure.dirac ⟨0, by simp⟩) inferInstance

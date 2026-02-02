@@ -90,8 +90,7 @@ lemma _root_.ProbabilityTheory.isNumeraire_of_isEmpty {f : 𝓧 → ℝ≥0∞}
     (hf : Measurable f) (hf_top : ∀ᵐ x ∂μ, f x = ∞)
     (hS : IsEmpty S) : IsNumeraire f S μ where
   measurable := hf
-  lintegral_le_one := by simp_all
-  -- isProbabilityMeasure_set := by simp_all
+  lintegral_le_measure_univ := by simp_all
   lintegral_div_le_measure_fsupport := by
     by_contra! h
     obtain ⟨Y, hY, h⟩ := h

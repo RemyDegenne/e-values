@@ -28,7 +28,7 @@ lemma IsEVar.prod {T : Set (Measure 𝓨)} (hT : ∀ μ ∈ T, SFinite μ)
     have hX_meas := hX.measurable
     have hY_meas := hY.measurable
     fun_prop
-  lintegral_le_one := by
+  lintegral_le_measure_univ := by
     have hX_meas := hX.measurable
     have hY_meas := hY.measurable
     rintro _ ⟨⟨μ, ν⟩, hμS, _, rfl⟩
@@ -36,7 +36,7 @@ lemma IsEVar.prod {T : Set (Measure 𝓨)} (hT : ∀ μ ∈ T, SFinite μ)
     specialize hT ν hνT
     have : Measure.prod.uncurry (μ, ν) = μ.prod ν := by rfl
     rw [this, lintegral_prod_mul (by fun_prop) (by fun_prop)]
-    grw [hX.lintegral_le_one μ hμS, hY.lintegral_le_one ν hνT]
+    grw [hX.lintegral_le_measure_univ μ hμS, hY.lintegral_le_measure_univ ν hνT]
     rw [Measure.prod_apply .univ, mul_comm]
     simp
 
@@ -55,7 +55,7 @@ theorem isNumeraire_mul
   · rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
     specialize hT ν hνT
     rw [lintegral_prod_mul (by fun_prop) (by fun_prop)]
-    grw [hX.toIsEVar.lintegral_le_one μ hμS, hY.toIsEVar.lintegral_le_one ν hνT]
+    grw [hX.toIsEVar.lintegral_le_measure_univ μ hμS, hY.toIsEVar.lintegral_le_measure_univ ν hνT]
     rw [Measure.prod_apply .univ, mul_comm]
     simp
   · have hZ_meas := hZ_evar.measurable
@@ -137,7 +137,7 @@ theorem isNumeraire_mul
     rw [lintegral_const_mul _ (by fun_prop), ENNReal.inv_mul_le_iff _ h_top]
     swap; · simp [hμ]
     rw [lintegral_lintegral_symm (by fun_prop), mul_comm]
-    refine (hZ_evar.lintegral_le_one (μ.prod ν) ⟨μ, hμS, ν, hνT, rfl⟩).trans ?_
+    refine (hZ_evar.lintegral_le_measure_univ (μ.prod ν) ⟨μ, hμS, ν, hνT, rfl⟩).trans ?_
     rw [Measure.prod_apply .univ]
     simp
 
