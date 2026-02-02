@@ -134,6 +134,11 @@ lemma measure_a1Event_diff {Q : Measure 𝓧} {S : Set (Measure 𝓧)} {s : Set 
     suffices sᶜ ∈ ae (Q.acPartSet S) by rwa [mem_ae_iff, compl_compl] at this
     exact ae_acPartSet_le_aeSet Q S hs
 
+lemma ae_imp_mem_a1Event (Q : Measure 𝓧) {S : Set (Measure 𝓧)} {s : Set 𝓧} (hs : sᶜ ∈ aeSet S) :
+    ∀ᵐ x ∂Q, x ∈ s → x ∈ a1Event Q S := by
+  have h_diff := measure_a1Event_diff (Q := Q) hs
+  simpa [measure_eq_zero_iff_ae_notMem] using h_diff
+
 lemma measure_a1Event {Q μ : Measure 𝓧} (hS : μ ∈ S) :
     μ (a1Event Q S) = 0 := by
   rw [← compl_compl (x := a1Event Q S), ← mem_ae_iff]
@@ -141,6 +146,11 @@ lemma measure_a1Event {Q μ : Measure 𝓧} (hS : μ ∈ S) :
     simp only [aeSet]
     sorry
   exact h_le (compl_a1Event_mem_aeSet Q S)
+
+lemma ae_mem_compl_a1Event (Q : Measure 𝓧) {μ : Measure 𝓧} (hS : μ ∈ S) :
+    ∀ᵐ x ∂μ, x ∈ (a1Event Q S)ᶜ := by
+  simp only [Set.mem_compl_iff, ae_iff, not_not, Set.setOf_mem_eq]
+  exact measure_a1Event hS
 
 /-- There exists a utility-maximizing e-variable which is infinite whenever another e-variable
 is infinite. -/
@@ -155,16 +165,10 @@ lemma exists_eq_iSup_eintegral_of_le (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
   have hY' : Measurable Y' :=
     Measurable.ite (measurableSet_a1Event P S) measurable_const hY_evar.measurable
   have hY'_evar : IsEVar Y' S := by
-    refine ⟨hY', fun μ hμ ↦ ?_⟩
-    rw [← lintegral_add_compl _ (measurableSet_a1Event P S),
-      setLIntegral_measure_zero _ _ (measure_a1Event hμ), zero_add]
-    calc ∫⁻ x in (a1Event P S)ᶜ, Y' x ∂μ
-    _ = ∫⁻ x in (a1Event P S)ᶜ, Y x ∂μ := by
-      refine setLIntegral_congr_fun (measurableSet_a1Event P S).compl fun x hx ↦ ?_
-      simp only [Set.mem_compl_iff] at hx
-      simp [Y', hx]
-    _ ≤ ∫⁻ x, Y x ∂μ := setLIntegral_le_lintegral (a1Event P S)ᶜ Y
-    _ ≤ μ .univ := hY_evar.lintegral_le_measure_univ μ hμ
+    refine hY_evar.congr hY' fun μ hμ ↦ ?_
+    filter_upwards [ae_mem_compl_a1Event P hμ] with x hx
+    simp only [Set.mem_compl_iff] at hx
+    simp [Y', hx]
   refine ⟨Y', hY'_evar, fun X hX_evar ↦ ⟨?_, ?_⟩⟩
   · refine (h_opt X hX_evar).trans ?_
     gcongr
@@ -180,9 +184,7 @@ lemma exists_eq_iSup_eintegral_of_le (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
       rw [mem_ae_iff, compl_compl]
       have h_ne_top := hX_evar.ae_ne_top hμ
       simpa only [ne_eq, ae_iff, Decidable.not_not] using h_ne_top
-    have h_diff := measure_a1Event_diff hs_compl (Q := P)
-    rw [measure_eq_zero_iff_ae_notMem] at h_diff
-    simp only [Set.mem_diff, Set.mem_setOf_eq, not_and, Decidable.not_not, s] at h_diff
+    have h_diff := ae_imp_mem_a1Event P hs_compl
     filter_upwards [h_diff] with x hx h_lt_top
     by_contra! h_eq_top
     simp only [top_le_iff] at h_eq_top

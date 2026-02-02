@@ -100,6 +100,13 @@ lemma isEVar_one (S : Set (Measure 𝓧)) : IsEVar 1 S where lintegral_le_measur
 
 lemma isEVar_fun_one (S : Set (Measure 𝓧)) : IsEVar (fun _ ↦ 1) S := isEVar_one S
 
+lemma IsEVar.congr (hX : IsEVar X S) (hY : Measurable Y) (hXY : ∀ μ ∈ S, X =ᵐ[μ] Y) :
+    IsEVar Y S where
+  measurable := hY
+  lintegral_le_measure_univ μ hμ := by
+    rw [lintegral_congr_ae (hXY μ hμ).symm]
+    exact hX.lintegral_le_measure_univ μ hμ
+
 lemma IsEVar.ae_lt_top (hX : IsEVar X S) {μ : Measure 𝓧} [IsFiniteMeasure μ] (hμ : μ ∈ S) :
     ∀ᵐ ω ∂μ, X ω < ⊤ := by
   by_contra h
