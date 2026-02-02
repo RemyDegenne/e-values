@@ -31,11 +31,13 @@ variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableS
 namespace ProbabilityTheory
 
 -- todo: ≤ κ x .univ ?
+/-- A conditional e-variable. -/
 structure Kernel.IsEVar (Y : 𝓧 × 𝓨 → ℝ≥0∞) (T : Set (Kernel 𝓧 𝓨)) (S : Set (Measure 𝓧)) :
     Prop where
   measurable : Measurable Y := by fun_prop
   lintegral_le_one : ∀ μ ∈ S, ∀ᵐ x ∂μ, ∀ κ ∈ T, ∫⁻ ω, Y (x, ω) ∂(κ x) ≤ 1
 
+/-- A randomized conditional e-variable. -/
 structure Kernel.IsRandEVar (η : Kernel 𝓨 ℝ≥0∞) (T : Set (Kernel 𝓧 𝓨))
     (S : Set (Measure 𝓧)) : Prop where
   [markov : IsMarkovKernel η]
@@ -69,8 +71,10 @@ lemma isEvar_mul_of_kernel_isEvar
     _ ≤ μ .univ := hX.lintegral_le_measure_univ μ hμ
     _ ≤ _ := by simp [Measure.compProd_apply .univ]
 
+/-- TODO: measure for which some functions are e-vars -/
 def todo (μ : Measure 𝓧) (E : Set (𝓧 → ℝ≥0∞)) : Prop := ∀ f ∈ E, ∫⁻ x, f x ∂μ ≤ 1
 
+/-- TODO: kernel for which some functions are conditional e-vars -/
 def Kernel.todo (κ : Kernel 𝓧 𝓨) (μ : Measure 𝓧) (E : Set (𝓧 × 𝓨 → ℝ≥0∞)) : Prop :=
     ∀ᵐ x ∂μ, ∀ g ∈ E, ∫⁻ y, g (x, y) ∂(κ x) ≤ 1
 

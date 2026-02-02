@@ -50,13 +50,13 @@ namespace IsNumeraire
 
 variable {X Y : 𝓧 → ℝ≥0∞} {μ : Measure 𝓧} {S : Set (Measure 𝓧)}
 
-protected lemma smul [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) (c : ℝ≥0∞) :
-    IsNumeraire X S (c • μ) := by
-  constructor
-  · exact hX.toIsEVar
-  intro Y hY
-  rw [lintegral_smul_measure, Measure.smul_apply]
-  grw [hX.lintegral_div_le_measure_fsupport hY]
+protected lemma smul (hX : IsNumeraire X S μ) (c : ℝ≥0∞) :
+    IsNumeraire X S (c • μ) where
+  measurable := hX.measurable
+  lintegral_le_measure_univ := hX.lintegral_le_measure_univ
+  lintegral_div_le_measure_fsupport Y hY := by
+    rw [lintegral_smul_measure, Measure.smul_apply]
+    grw [hX.lintegral_div_le_measure_fsupport hY]
 
 lemma lintegral_inv_le_measure_fsupport (hX : IsNumeraire X S μ) :
     ∫⁻ ω, (X ω)⁻¹ ∂μ ≤ μ X.fsupport := by
