@@ -15,6 +15,14 @@ open scoped ENNReal NNReal Topology
 
 namespace ProbabilityTheory
 
+-- proved in the Brownian motion project
+lemma komlos_ennreal {Ω : Type*} {mΩ : MeasurableSpace Ω} {X : ℕ → Ω → ℝ≥0∞}
+    (hX : ∀ n, Measurable (X n)) (P : Measure Ω) [IsProbabilityMeasure P] :
+    ∃ (Y : ℕ → Ω → ℝ≥0∞) (Y_lim : Ω → ℝ≥0∞),
+      (∀ n, Y n ∈ convexHull ℝ≥0∞ (Set.range fun m ↦ X (n + m))) ∧ Measurable Y_lim ∧
+      ∀ᵐ ω ∂P, Tendsto (Y · ω) atTop (𝓝 (Y_lim ω)) := by
+  sorry
+
 variable {𝓧 : Type*} {m𝓧 : MeasurableSpace 𝓧} {P : Measure 𝓧} {S : Set (Measure 𝓧)}
 
 section
@@ -24,7 +32,7 @@ variable {U : ℝ≥0∞ → EReal}
 -- `(u n).sum (fun i x ↦ x • X (n + i) ω)` is a convex combination of `X (n + i) ω` for `i` in the
 -- support of `u n`.
 lemma exists_convex_sum_tendsto_ae (X : ℕ → 𝓧 → ℝ≥0∞) :
-    ∃ (u : ℕ → (ℕ →₀ ℝ≥0)) (Y : 𝓧 → ℝ≥0∞), (∀ n,  (u n).sum (fun _ x ↦ x) = 1) ∧
+    ∃ (u : ℕ → (ℕ →₀ ℝ≥0)) (Y : 𝓧 → ℝ≥0∞), (∀ n, (u n).sum (fun _ x ↦ x) = 1) ∧
       ∀ᵐ ω ∂P, Tendsto (fun n ↦ (u n).sum (fun i x ↦ x • X (n + i) ω)) atTop (𝓝 (Y ω)) := by
   sorry
 
