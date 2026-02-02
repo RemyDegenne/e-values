@@ -50,6 +50,14 @@ namespace IsNumeraire
 
 variable {X Y : 𝓧 → ℝ≥0∞} {μ : Measure 𝓧} {S : Set (Measure 𝓧)}
 
+protected lemma smul [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) (c : ℝ≥0∞) :
+    IsNumeraire X S (c • μ) := by
+  constructor
+  · exact hX.toIsEVar
+  intro Y hY
+  rw [lintegral_smul_measure, Measure.smul_apply]
+  grw [hX.lintegral_div_le_measure_fsupport hY]
+
 lemma lintegral_inv_le_measure_fsupport (hX : IsNumeraire X S μ) :
     ∫⁻ ω, (X ω)⁻¹ ∂μ ≤ μ X.fsupport := by
   simpa using hX.lintegral_div_le_measure_fsupport (isEVar_one S)
@@ -308,15 +316,18 @@ theorem eintegral_log_div_nonpos' [IsFiniteMeasure μ]
   by_cases hμ : μ = 0
   · simp [hμ]
   suffices ∫ᵉ ω, ENNReal.log (Y ω / X ω) ∂μ[|univ] ≤ 0 by
-    -- todo lemma about eintegral_cond
-    unfold eintegral at this
-    simp only [cond, Measure.restrict_univ, lintegral_smul_measure, smul_eq_mul,
-      EReal.coe_ennreal_mul] at this
-    sorry
+    -- todo lemma about eintegral_cond?
+    rw [cond, eintegral_smul_measure (by simpa), Measure.restrict_univ, EReal.mul_nonpos_iff]
+      at this
+    cases this with
+    | inl h => exact h.2
+    | inr h =>
+      norm_cast at h
+      simp at h
   have : IsProbabilityMeasure μ[|univ] := cond_isProbabilityMeasure_of_finite (by simpa) (by simp)
-  refine eintegral_log_div_nonpos ?_ ?_ (S := S)
-  · sorry
-  · sorry
+  refine eintegral_log_div_nonpos ?_ hY (S := S)
+  rw [cond, Measure.restrict_univ]
+  exact hX.smul _
 
 lemma eintegral_eq_setEIntegral_of_eq_zero {f : 𝓧 → EReal}
     {s : Set 𝓧} (hs : MeasurableSet s) (h_zero : ∀ᵐ ω ∂μ, ω ∈ sᶜ → f ω = 0) :
