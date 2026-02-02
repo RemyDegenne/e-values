@@ -61,7 +61,7 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
       let X := fun x ↦ ∫⁻ y, y ∂(η x)
       refine ⟨X, ⟨by fun_prop, fun μ hμ ↦ ?_⟩, ?_⟩
       · rw [isRandEVar_iff_isEVar] at hη₂
-        exact hη₂.lintegral_le_measure_univ μ hμ
+        exact hη₂.eintegral_nonpos μ hμ
       · rw [hy]
         refine (eintegral_comp_measure_le U.measurable).trans ?_
         refine eintegral_mono fun _ ↦ ?_
@@ -75,9 +75,8 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     refine sSup_le_sSup ?_
     rintro y ⟨X, hX, hy⟩
     refine ⟨Kernel.deterministic X hX.measurable, inferInstance, ⟨fun μ hμ ↦ ?_⟩, ?_⟩
-    · rw [Measure.deterministic_comp_eq_map hX.measurable,
-        lintegral_map (by fun_prop) hX.measurable]
-      exact hX.lintegral_le_measure_univ μ hμ
+    · simp only [Kernel.lintegral_deterministic]
+      exact hX.eintegral_nonpos μ hμ
     · rw [hy, Measure.deterministic_comp_eq_map hX.measurable,
         eintegral_map U.measurable hX.measurable]
       rfl
@@ -107,9 +106,11 @@ lemma maxRandUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : K
       rw [hξ]
       infer_instance
     refine ⟨ξ, this, ⟨fun μ hμ ↦ ?_⟩, hξ_int⟩
-    rw [hξ, ← μ.comp_assoc]
-    convert hη₂.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
-    simp
+    rw [hξ]
+    sorry
+    -- rw [← μ.comp_assoc]
+    -- convert hη₂.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
+    -- simp
 
 /-- Data processing inequality for the maximum utility and a Markov kernel. -/
 lemma maxUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)

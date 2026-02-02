@@ -152,11 +152,17 @@ lemma ae_mem_compl_a1Event (Q : Measure 𝓧) {μ : Measure 𝓧} (hS : μ ∈ S
   simp only [Set.mem_compl_iff, ae_iff, not_not, Set.setOf_mem_eq]
   exact measure_a1Event hS
 
+theorem setEIntegral_measure_zero {μ : Measure 𝓧} (s : Set 𝓧) (f : 𝓧 → EReal) (hs' : μ s = 0) :
+    ∫ᵉ x in s, f x ∂μ = 0 := by
+  sorry
+  -- convert lintegral_zero_measure _
+  -- exact Measure.restrict_eq_zero.2 hs'
+
 /-- There exists a utility-maximizing e-variable which is infinite whenever another e-variable
 is infinite. -/
 lemma exists_eq_iSup_eintegral_of_le (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
     {b : ℝ} (hU_cont : Continuous U) (hU_mono : Monotone U) (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S →
       (∫ᵉ x, U (X x) ∂P ≤ ∫ᵉ x, U (Y x) ∂P) ∧ (∀ᵐ x ∂P, Y x < ∞ → X x < ∞) := by
   obtain ⟨Y, hY_evar, h_opt⟩ := exists_eq_iSup_eintegral_of_le' hU_ccv hU_cont hU_mono hU_le P S
@@ -180,7 +186,6 @@ lemma exists_eq_iSup_eintegral_of_le (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
     have hs_compl : sᶜ ∈ aeSet S := by
       simp only [aeSet, mem_iSup, s]
       intro μ hμ
-      specialize hS μ hμ
       rw [mem_ae_iff, compl_compl]
       have h_ne_top := hX_evar.ae_ne_top hμ
       simpa only [ne_eq, ae_iff, Decidable.not_not] using h_ne_top
@@ -198,7 +203,7 @@ noncomputable
 def numeraireOfBounded (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
     (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     𝓧 → ℝ≥0∞ :=
-  Classical.choose (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS)
+  Classical.choose (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S)
 
 lemma isEVar_numeraireOfBounded (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
     (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :

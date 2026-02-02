@@ -10,6 +10,7 @@ import Mathlib.Order.CompletePartialOrder
 import Mathlib.Probability.Kernel.Composition.MeasureComp
 import Mathlib.Probability.Kernel.Composition.IntegralCompProd
 import Mathlib.Probability.Notation
+import EValues.EIntegral
 import EValues.Mathlib.ENNReal
 import EValues.Mathlib.unitInterval
 
@@ -62,62 +63,129 @@ namespace ProbabilityTheory
 its expectation is at most one for all measures in `S`. -/
 structure IsEVar (X : 𝓧 → ℝ≥0∞) (S : Set (Measure 𝓧)) : Prop where
   measurable : Measurable X := by fun_prop
-  lintegral_le_measure_univ : ∀ μ ∈ S, ∫⁻ ω, X ω ∂μ ≤ μ .univ
+  eintegral_ne_bot : ∀ μ ∈ S, ∫ᵉ ω, X ω - 1 ∂μ ≠ ⊥
+  eintegral_nonpos : ∀ μ ∈ S, ∫ᵉ ω, X ω - 1 ∂μ ≤ 0
+
+lemma IsEVar.lintegral_le_measure_univ {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S)
+    (μ : Measure 𝓧) (hμ : μ ∈ S) :
+    ∫⁻ ω, X ω ∂μ ≤ μ .univ := by
+  have h_nonpos := hX.eintegral_nonpos μ hμ
+  by_cases hμ : IsFiniteMeasure μ
+  swap
+  · simp only [not_isFiniteMeasure_iff] at hμ
+    simp [hμ]
+  rw [eintegral_sub_of_nonneg] at h_nonpos
+  rotate_left
+  · exact fun _ ↦ by positivity
+  · simp
+  · have := hX.measurable; fun_prop
+  · fun_prop
+  · refine ne_top_of_le_ne_top (b := ∫⁻ ω, 1 ∂μ) ?_ ?_
+    · simp
+    rw [← eintegral_eq_lintegral]
+    gcongr
+    intro x
+    simp
+  rw [eintegral_eq_lintegral] at h_nonpos
+  simpa only [eintegral_const, one_mul, EReal.sub_nonpos, EReal.coe_ennreal_le_coe_ennreal_iff]
+    using h_nonpos
 
 /-- A random variables `X` is an e-variable for a set of measures `S` if it is measurable and
 its expectation is at most one for all measures in `S`. -/
 structure IsRandEVar (κ : Kernel 𝓧 ℝ≥0∞) (S : Set (Measure 𝓧)) : Prop where
   [markov : IsMarkovKernel κ]
-  lintegral_le_one : ∀ μ ∈ S, ∫⁻ ω, ω ∂(κ ∘ₘ μ) ≤ μ .univ
+  eintegral_ne_bot : ∀ μ ∈ S, ∫ᵉ ω, ∫⁻ x, x ∂(κ ω) - 1 ∂μ ≠ ⊥
+  eintegral_nonpos : ∀ μ ∈ S, ∫ᵉ ω, ∫⁻ x, x ∂(κ ω) - 1 ∂μ ≤ 0
+
+lemma IsRandEVar.lintegral_le_one {κ : Kernel 𝓧 ℝ≥0∞} (hκ : IsRandEVar κ S)
+    (μ : Measure 𝓧) (hμ : μ ∈ S) :
+    ∫⁻ ω, ∫⁻ x, x ∂(κ ω) ∂μ ≤ μ .univ := by
+  have h_nonpos := hκ.eintegral_nonpos μ hμ
+  by_cases hμ : IsFiniteMeasure μ
+  swap
+  · simp only [not_isFiniteMeasure_iff] at hμ
+    simp [hμ]
+  rw [eintegral_sub_of_nonneg] at h_nonpos
+  rotate_left
+  · exact fun _ ↦ by positivity
+  · simp
+  · have : Measurable (fun ω ↦ ∫⁻ x, x ∂κ ω) := sorry; fun_prop
+  · fun_prop
+  · refine ne_top_of_le_ne_top (b := ∫⁻ ω, 1 ∂μ) ?_ ?_
+    · simp
+    rw [← eintegral_eq_lintegral]
+    gcongr
+    intro x
+    simp
+  rw [eintegral_eq_lintegral] at h_nonpos
+  simpa only [eintegral_const, one_mul, EReal.sub_nonpos, EReal.coe_ennreal_le_coe_ennreal_iff]
+    using h_nonpos
 
 variable {X Y : 𝓧 → ℝ≥0∞} {κ η : Kernel 𝓧 ℝ≥0∞} [IsMarkovKernel κ] {S T : Set (Measure 𝓧)}
 
 /-- A kernel `κ` is a randomized e-variable iff its mean function `x ↦ ∫⁻ y, y ∂κ x` is an
 e-variable. -/
-lemma isRandEVar_iff_isEVar : IsRandEVar κ S ↔ IsEVar (fun x ↦ ∫⁻ y, y ∂κ x) S := by
-  refine ⟨fun h ↦ ⟨by fun_prop, fun μ hμ ↦ ?_⟩, fun h ↦ ⟨fun μ hμ ↦ ?_⟩⟩
-  · have h' := h.lintegral_le_one μ hμ
-    rwa [Measure.lintegral_bind (by fun_prop)] at h'
-    exact measurable_id.aemeasurable
-  · rw [Measure.lintegral_bind (by fun_prop)]
-    · exact h.lintegral_le_measure_univ μ hμ
-    · exact measurable_id.aemeasurable
+lemma isRandEVar_iff_isEVar : IsRandEVar κ S ↔ IsEVar (fun x ↦ ∫⁻ y, y ∂κ x) S :=
+  ⟨fun h ↦ ⟨by fun_prop, h.eintegral_ne_bot, h.eintegral_nonpos⟩,
+    fun h ↦ ⟨h.eintegral_ne_bot, h.eintegral_nonpos⟩⟩
 
 lemma IsEVar.isRandEVar_deterministic (hX : IsEVar X S) :
     IsRandEVar (Kernel.deterministic X hX.measurable) S where
-  lintegral_le_one μ hμ := by
-    rw [Measure.lintegral_bind (Kernel.measurable _).aemeasurable]
-    · simpa using hX.lintegral_le_measure_univ μ hμ
-    · exact measurable_id.aemeasurable
+  eintegral_ne_bot μ hμ := by
+    simp only [Kernel.lintegral_deterministic]
+    exact hX.eintegral_ne_bot μ hμ
+  eintegral_nonpos μ hμ := by
+    simp only [Kernel.lintegral_deterministic]
+    exact hX.eintegral_nonpos μ hμ
 
 lemma isEVar_of_isEmpty (hS : IsEmpty S) (hX : Measurable X) :
-   IsEVar X S where
-  lintegral_le_measure_univ := by simp_all
+    IsEVar X S where
+  eintegral_ne_bot := by simp_all
+  eintegral_nonpos := by simp_all
 
-lemma isEVar_zero : IsEVar 0 S where lintegral_le_measure_univ μ hμ := by simp
+lemma isEVar_zero (hS : ∀ μ ∈ S, IsFiniteMeasure μ) : IsEVar 0 S where
+  eintegral_ne_bot μ hμ := by specialize hS μ hμ; simp
+  eintegral_nonpos μ hμ := by
+    simp only [Pi.zero_apply, EReal.coe_ennreal_zero, zero_sub, eintegral_const, neg_mul, one_mul,
+      EReal.neg_le_zero]
+    positivity
 
-lemma isEVar_one (S : Set (Measure 𝓧)) : IsEVar 1 S where lintegral_le_measure_univ μ hμ := by simp
+lemma isEVar_one (S : Set (Measure 𝓧)) : IsEVar 1 S where
+  eintegral_ne_bot μ hμ := by
+    simp only [Pi.one_apply, EReal.coe_ennreal_one, eintegral_const]
+    rw [EReal.sub_self (by norm_cast) (by norm_cast)]
+    simp
+  eintegral_nonpos μ hμ := by
+    simp only [Pi.one_apply, EReal.coe_ennreal_one, eintegral_const]
+    rw [EReal.sub_self (by norm_cast) (by norm_cast)]
+    simp
 
 lemma isEVar_fun_one (S : Set (Measure 𝓧)) : IsEVar (fun _ ↦ 1) S := isEVar_one S
 
 lemma IsEVar.congr (hX : IsEVar X S) (hY : Measurable Y) (hXY : ∀ μ ∈ S, X =ᵐ[μ] Y) :
     IsEVar Y S where
   measurable := hY
-  lintegral_le_measure_univ μ hμ := by
-    rw [lintegral_congr_ae (hXY μ hμ).symm]
-    exact hX.lintegral_le_measure_univ μ hμ
+  eintegral_ne_bot μ hμ := by
+    have : ∀ᵐ ω ∂μ, (Y ω : EReal) - 1 = X ω - 1 := by
+      filter_upwards [hXY μ hμ] with ω hω
+      rw [hω]
+    rw [eintegral_congr_ae this]
+    exact hX.eintegral_ne_bot μ hμ
+  eintegral_nonpos μ hμ := by
+    have : ∀ᵐ ω ∂μ, (Y ω : EReal) - 1 = X ω - 1 := by
+      filter_upwards [hXY μ hμ] with ω hω
+      rw [hω]
+    rw [eintegral_congr_ae this]
+    exact hX.eintegral_nonpos μ hμ
 
-lemma IsEVar.ae_lt_top (hX : IsEVar X S) {μ : Measure 𝓧} [IsFiniteMeasure μ] (hμ : μ ∈ S) :
+lemma IsEVar.ae_lt_top (hX : IsEVar X S) {μ : Measure 𝓧} (hμ : μ ∈ S) :
     ∀ᵐ ω ∂μ, X ω < ⊤ := by
   by_contra h
-  suffices ∫⁻ ω, X ω ∂μ = ⊤ by
-    have lintegral_le := hX.lintegral_le_measure_univ μ hμ
-    simp [this] at lintegral_le
-  refine lintegral_eq_top_of_measure_eq_top_ne_zero hX.measurable.aemeasurable ?_
-  suffices ¬ μ {x | ¬ X x < ⊤} = 0 by simpa [lt_top_iff_ne_top] using this
-  rwa [← ae_iff]
+  have hX_le := hX.eintegral_nonpos μ hμ
+  suffices ∫ᵉ ω, X ω - 1 ∂μ = ⊤ by simp [this] at hX_le
+  sorry
 
-lemma IsEVar.ae_ne_top (hX : IsEVar X S) {μ : Measure 𝓧} [IsFiniteMeasure μ] (hμ : μ ∈ S) :
+lemma IsEVar.ae_ne_top (hX : IsEVar X S) {μ : Measure 𝓧} (hμ : μ ∈ S) :
     ∀ᵐ ω ∂μ, X ω ≠ ⊤ := by
   filter_upwards [hX.ae_lt_top hμ] with ω hω using hω.ne
 
@@ -138,39 +206,82 @@ lemma IsEVar.measurable_fsupport (hX : IsEVar X S) :
     ext ω
     simp
 
-lemma IsEVar.mono (hY : IsEVar Y S) (hX : Measurable X) (hXY : X ≤ Y) : IsEVar X S where
-  lintegral_le_measure_univ μ hμ := (lintegral_mono hXY).trans (hY.lintegral_le_measure_univ μ hμ)
+lemma IsEVar.mono (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+    (hY : IsEVar Y S) (hX : Measurable X) (hXY : X ≤ Y) : IsEVar X S where
+  eintegral_ne_bot μ hμ := by
+    sorry
+  eintegral_nonpos μ hμ := by
+    refine (eintegral_mono ?_).trans (hY.eintegral_nonpos μ hμ)
+    intro x
+    simp only
+    refine EReal.sub_le_sub ?_ le_rfl
+    exact mod_cast hXY x
 
-lemma IsRandEVar.mono (hη : IsRandEVar η S) (hκη : κ ≤ η) : IsRandEVar κ S where
-  lintegral_le_one μ hμ := by
-    refine (lintegral_mono' ?_ le_rfl).trans (hη.lintegral_le_one μ hμ)
-    rw [MeasureTheory.Measure.le_iff]
-    intro A hA
-    rw [μ.bind_apply hA κ.aemeasurable, μ.bind_apply hA η.aemeasurable]
-    exact lintegral_mono fun x ↦ hκη x A
+lemma IsRandEVar.mono (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+    (hη : IsRandEVar η S) (hκη : κ ≤ η) : IsRandEVar κ S where
+  eintegral_ne_bot μ hμ := by sorry
+  eintegral_nonpos μ hμ := by
+    refine le_trans ?_ (hη.eintegral_nonpos μ hμ)
+    gcongr
+    intro x
+    refine EReal.sub_le_sub ?_ le_rfl
+    norm_cast
+    refine lintegral_mono' ?_ le_rfl
+    exact hκη x
 
 lemma IsEVar.anti_set (hST : S ⊆ T) (hX : IsEVar X T) : IsEVar X S where
   measurable := hX.measurable
-  lintegral_le_measure_univ μ hμ := hX.lintegral_le_measure_univ μ (hST hμ)
+  eintegral_ne_bot μ hμ := hX.eintegral_ne_bot μ (hST hμ)
+  eintegral_nonpos μ hμ := hX.eintegral_nonpos μ (hST hμ)
 
 lemma IsRandEVar.anti_set (hST : S ⊆ T) (hκ : IsRandEVar κ T) : IsRandEVar κ S where
-  lintegral_le_one μ hμ := hκ.lintegral_le_one μ (hST hμ)
+  eintegral_ne_bot μ hμ := hκ.eintegral_ne_bot μ (hST hμ)
+  eintegral_nonpos μ hμ := hκ.eintegral_nonpos μ (hST hμ)
 
 lemma IsEVar.comp {Y : 𝓨 → ℝ≥0∞} {S : Set (Measure 𝓧)} {φ : 𝓧 → 𝓨}
     (hφ : Measurable φ) (h : IsEVar Y {μ.map φ | μ ∈ S}) :
     IsEVar (Y ∘ φ) S where
   measurable := h.measurable.comp hφ
-  lintegral_le_measure_univ μ hμ := by
-    have h' := h.lintegral_le_measure_univ (μ.map φ) ⟨μ, hμ, rfl⟩
-    rwa [lintegral_map h.measurable hφ, Measure.map_apply (by fun_prop) .univ] at h'
+  eintegral_ne_bot μ hμ := by
+    have h' := h.eintegral_ne_bot (μ.map φ) ⟨μ, hμ, rfl⟩
+    have h_meas := h.measurable
+    rwa [eintegral_map (by fun_prop) hφ] at h'
+  eintegral_nonpos μ hμ := by
+    have h' := h.eintegral_nonpos (μ.map φ) ⟨μ, hμ, rfl⟩
+    have h_meas := h.measurable
+    rwa [eintegral_map (by fun_prop) hφ] at h'
 
 lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
     {κ : Kernel 𝓧 𝓨} [IsMarkovKernel κ] (h : IsRandEVar ξ {κ ∘ₘ μ | μ ∈ S}) :
     IsRandEVar (ξ ∘ₖ κ) S where
   markov := have := h.markov; inferInstance
-  lintegral_le_one μ hμ := by
-    have h' := h.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
-    rw [Measure.comp_assoc, Measure.bind_apply .univ (by fun_prop)] at h'
-    simpa using h'
+  eintegral_ne_bot μ hμ := by
+    have h' := h.eintegral_ne_bot (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
+    rw [eintegral_comp_measure] at h'
+    rotate_left
+    · sorry
+    · sorry
+    sorry
+  eintegral_nonpos μ hμ := by
+    have h' := h.eintegral_nonpos (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
+    rw [eintegral_comp_measure] at h'
+    rotate_left
+    · sorry
+    · sorry
+    refine le_trans ?_ h'
+    gcongr
+    intro ω
+    simp only
+    rw [eintegral_sub_of_nonneg]
+    rotate_left
+    · exact fun _ ↦ by positivity
+    · simp
+    · sorry
+    · fun_prop
+    · sorry
+    simp only [eintegral_const, measure_univ, EReal.coe_ennreal_one, mul_one]
+    refine EReal.sub_le_sub ?_ le_rfl
+    rw [eintegral_eq_lintegral, Kernel.comp_apply,
+      Measure.lintegral_bind (by fun_prop) (by fun_prop)]
 
 end ProbabilityTheory
