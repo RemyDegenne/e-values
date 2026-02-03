@@ -55,6 +55,24 @@ def aeSet (S : Set (Measure 𝓧)) : Filter 𝓧 := ⨆ m ∈ S, ae m
 
 lemma mem_aeSet_iff {t : Set 𝓧} : t ∈ aeSet S ↔ ∀ m ∈ S, m tᶜ = 0 := by simp [aeSet, mem_ae_iff]
 
+structure nullSet (s : Set 𝓧) (S : Set (Measure 𝓧)) : Prop where
+  measurableSet : MeasurableSet s
+  null : ∀ μ ∈ S, μ s = 0
+
+@[simp]
+lemma nullSet_empty : nullSet (∅ : Set 𝓧) S where
+  measurableSet := MeasurableSet.empty
+  null μ hμ := by simp
+
+lemma nullSet.union {s t : Set 𝓧} (hs : nullSet s S) (ht : nullSet t S) :
+    nullSet (s ∪ t) S where
+  measurableSet := hs.measurableSet.union ht.measurableSet
+  null μ hμ := by simp [hs.null μ hμ, ht.null μ hμ]
+
+lemma compl_mem_aeSet_of_nullSet {s : Set 𝓧} {S : Set (Measure 𝓧)} (hs : nullSet s S) :
+    sᶜ ∈ aeSet S := by
+  simpa [mem_aeSet_iff] using hs.null
+
 end MeasureTheory
 
 namespace ProbabilityTheory
