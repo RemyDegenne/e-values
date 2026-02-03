@@ -39,12 +39,38 @@ lemma measure_fsupport_eq_zero_of_ae_eq_top {μ : Measure 𝓧} {X : 𝓧 → �
   filter_upwards [hX_top] with x hx
   simp [hx]
 
+lemma lintegral_div_self_eq_measure_fsupport {Y : 𝓧 → ℝ≥0∞} (hY : Measurable Y) {P : Measure 𝓧} :
+    ∫⁻ ω, Y ω / Y ω ∂P = P Y.fsupport := by
+  have m_fsupport : MeasurableSet Y.fsupport := hY.measurable_fsupport
+  rw [← lintegral_add_compl _ m_fsupport, ← add_zero <| P Y.fsupport]
+  congr
+  · suffices ∀ x ∈ Y.fsupport, Y x / Y x = 1 by
+      rw [setLIntegral_congr_fun m_fsupport this]
+      simp
+    intro x hx
+    exact (ENNReal.div_eq_one_iff hx.2 hx.1).mpr rfl
+  · refine (setLIntegral_eq_zero_iff m_fsupport.compl (by fun_prop)).mpr ?_
+    filter_upwards with x hx
+    rw [Function.fsupport_compl] at hx
+    rcases hx with hx_top | hx_zero
+    · simp_all
+    · simp_all
+
 /-- A random variable `X` is the numeraire for a set of measures `S` and a measure `μ`
 if it is an E-variable for `S` and the expectation of the ratio of any E-variable `Y` over `X`
 is at most one under `μ`. -/
 structure IsNumeraire (X : 𝓧 → ℝ≥0∞) (S : Set (Measure 𝓧)) (μ : Measure 𝓧) : Prop
     extends IsEVar X S where
   lintegral_div_le_measure_fsupport : ∀ ⦃Y⦄, IsEVar Y S → ∫⁻ ω, Y ω / X ω ∂μ ≤ μ X.fsupport
+
+/-- For a given e-variable `Y`, the property of being a numeraire is equivalent to the property
+that the expectation of the ratio of any e-variable `X` over `Y` is less
+than the expectation of the ratio of `Y` over itself. -/
+lemma lintegral_div_self_le_iff_IsNumeraire {P : Measure 𝓧} {S : Set (Measure 𝓧)}
+    {Y : 𝓧 → ℝ≥0∞} (hY_evar : IsEVar Y S) :
+    (∀ X, IsEVar X S → ∫⁻ ω, X ω / Y ω ∂P ≤ ∫⁻ ω, Y ω / Y ω ∂P) ↔ IsNumeraire Y S P := by
+  simp_rw [lintegral_div_self_eq_measure_fsupport hY_evar.measurable]
+  exact ⟨fun h ↦ ⟨hY_evar, h⟩, fun h ↦ h.lintegral_div_le_measure_fsupport⟩
 
 namespace IsNumeraire
 

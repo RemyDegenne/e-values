@@ -40,7 +40,8 @@ section
 variable {U : ℝ≥0∞ → EReal}
 
 -- needs only two things about IsEVar: convex and closed under a.e. limits
-/-- There exists a utility-maximizing e-variable which is infinite whenever another e-variable -/
+/-- There exists a utility-maximizing e-variable which is infinite whenever another e-variable
+is infinite. -/
 lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
     {b : ℝ} (hU_cont : Continuous U) (hU_mono : Monotone U) (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
     (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) :
@@ -452,13 +453,13 @@ open Classical in
 /-- The numeraire e-variable. -/
 noncomputable
 def numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) : 𝓧 → ℝ≥0∞ :=
-  if _ : IsFiniteMeasure P then Classical.choose (exists_numeraire P S) else 1
+  if _ : IsFiniteMeasure P then (exists_numeraire P S).choose else 1
 
 lemma isEVar_numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     IsEVar (numeraire P S) S := by
   unfold numeraire
   split_ifs with _
-  · exact (Classical.choose_spec (exists_numeraire P S)).1
+  · exact (exists_numeraire P S).choose_spec.1
   · exact isEVar_one _
 
 @[fun_prop]
@@ -469,7 +470,7 @@ lemma lintegral_div_numeraire_le (P : Measure 𝓧) {X : 𝓧 → ℝ≥0∞} (h
     ∫⁻ x, X x / (numeraire P S x) ∂P ≤ ∫⁻ x, (numeraire P S x) / (numeraire P S x) ∂P := by
   unfold numeraire
   split_ifs with h_fin
-  · exact (Classical.choose_spec (exists_numeraire P S)).2 X hX_evar
+  · exact (exists_numeraire P S).choose_spec.2 X hX_evar
   · simp only [Pi.one_apply, div_one, lintegral_const, one_mul]
     have : P .univ = ∞ := by rwa [not_isFiniteMeasure_iff] at h_fin
     simp [this]
@@ -478,21 +479,7 @@ lemma lintegral_div_numeraire_le_measure_fsupport (P : Measure 𝓧)
     {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
     ∫⁻ x, X x / (numeraire P S x) ∂P ≤ P (numeraire P S).fsupport := by
   refine (lintegral_div_numeraire_le P hX_evar).trans_eq ?_
-  have m_fsupport : MeasurableSet (numeraire P S).fsupport :=
-      (isEVar_numeraire P S).measurable_fsupport
-  rw [← lintegral_add_compl _ m_fsupport, ← add_zero <| P (numeraire P S).fsupport]
-  congr
-  · suffices ∀ x ∈ (numeraire P S).fsupport, (numeraire P S x) / (numeraire P S x) = 1 by
-      rw [setLIntegral_congr_fun m_fsupport this]
-      simp
-    intro x hx
-    exact (ENNReal.div_eq_one_iff hx.2 hx.1).mpr rfl
-  · refine (setLIntegral_eq_zero_iff m_fsupport.compl (by fun_prop)).mpr ?_
-    filter_upwards with x hx
-    rw [Function.fsupport_compl] at hx
-    rcases hx with (hx_top | hx_zero)
-    · simp_all
-    · simp_all
+  rw [lintegral_div_self_eq_measure_fsupport (by fun_prop)]
 
 lemma lintegral_div_numeraire_le_measure_univ (P : Measure 𝓧)
     {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
@@ -515,42 +502,5 @@ lemma IsNumeraire.ae_eq_numeraire [IsFiniteMeasure P] {X : 𝓧 → ℝ≥0∞}
     (hX : IsNumeraire X S P) :
     X =ᵐ[P] numeraire P S :=
   hX.ae_unique (isNumeraire_numeraire P)
-
-/-- For a given e-variable `Y`, the property of being a numeraire is equivalent to the property
-that the expectation of the ratio of any e-variable `X` over `Y` is less
-than the expectation of the ratio of `Y` over itself. -/
-lemma lintegral_div_self_le_iff_IsNumeraire [IsFiniteMeasure P]
-    {Y : 𝓧 → ℝ≥0∞} (hY_evar : IsEVar Y S) :
-    (∀ X, IsEVar X S → ∫⁻ ω, X ω / Y ω ∂P ≤ ∫⁻ ω, Y ω / Y ω ∂P) ↔ IsNumeraire Y S P := by
-  refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
-  · refine ⟨hY_evar, fun X hX_evar ↦ (h X hX_evar).trans_eq ?_⟩
-    have m_fsupport : MeasurableSet Y.fsupport :=hY_evar.measurable_fsupport
-    rw [← lintegral_add_compl _ m_fsupport, ← add_zero <| P Y.fsupport]
-    congr
-    · suffices ∀ x ∈ Y.fsupport, Y x / Y x = 1 by
-        rw [setLIntegral_congr_fun m_fsupport this]
-        simp
-      intro x hx
-      exact (ENNReal.div_eq_one_iff hx.2 hx.1).mpr rfl
-    · refine (setLIntegral_eq_zero_iff m_fsupport.compl ?_).mpr ?_
-      · have := hY_evar.measurable
-        fun_prop
-      · filter_upwards with x hx
-        rw [Function.fsupport_compl] at hx
-        rcases hx with (hx_top | hx_zero)
-        · simp_all
-        · simp_all
-  · intro X hX_evar
-    have ae_eq_numeraire := h.ae_eq_numeraire
-    calc ∫⁻ ω, X ω / Y ω ∂P
-    _ = ∫⁻ ω, X ω / (numeraire P S ω) ∂P := by
-      refine lintegral_congr_ae ?_
-      filter_upwards [ae_eq_numeraire] with ω hω
-      rw [hω]
-    _ ≤ ∫⁻ ω, (numeraire P S ω) / (numeraire P S ω) ∂P := lintegral_div_numeraire_le P hX_evar
-    _ = ∫⁻ ω, Y ω / Y ω ∂P := by
-      refine lintegral_congr_ae ?_
-      filter_upwards [ae_eq_numeraire] with ω hω
-      rw [hω]
 
 end ProbabilityTheory
