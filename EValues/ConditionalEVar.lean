@@ -44,15 +44,23 @@ structure Kernel.IsRandEVar (η : Kernel 𝓨 ℝ≥0∞) (T : Set (Kernel 𝓧 
   lintegral_le_one : ∀ μ ∈ S, ∀ᵐ x ∂μ, ∀ κ ∈ T, ∫⁻ ω, ω ∂(η ∘ₘ κ x) ≤ 1
 
 lemma isEvar_mul_of_kernel_isEvar
-    (hS : ∀ μ ∈ S, SFinite μ) (hT : ∀ κ ∈ T, IsMarkovKernel κ)
+    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) (hT : ∀ κ ∈ T, IsMarkovKernel κ)
     (hX : ProbabilityTheory.IsEVar X S) (hY : Kernel.IsEVar Y T S) :
-    IsEVar (fun p ↦ X p.1 * Y p) {η : Measure (𝓧 × 𝓨) | ∃ μ ∈ S, ∃ κ ∈ T, η = μ ⊗ₘ κ} where
-  measurable := by
-    have hX_meas := hX.measurable
-    have hY_meas := hY.measurable
-    fun_prop
-  lintegral_le_measure_univ := by
-    rintro ρ ⟨μ, hμ, κ, hκ, rfl⟩
+    IsEVar (fun p ↦ X p.1 * Y p) {η : Measure (𝓧 × 𝓨) | ∃ μ ∈ S, ∃ κ ∈ T, η = μ ⊗ₘ κ} := by
+  have hX_meas := hX.measurable
+  have hY_meas := hY.measurable
+  refine isEvar_of_lintegral_le_measure_univ ?_ (by fun_prop) ?_
+  · intro ρ ⟨μ, hμ, κ, hκ, h_eq⟩
+    rw [h_eq]
+    haveI : IsFiniteMeasure μ := hS μ hμ
+    haveI : IsMarkovKernel κ := hT κ hκ
+    infer_instance
+  -- measurable := by
+  --   have hX_meas := hX.measurable
+  --   have hY_meas := hY.measurable
+  --   fun_prop
+  -- lintegral_le_measure_univ := by
+  · rintro ρ ⟨μ, hμ, κ, hκ, rfl⟩
     have hX_meas := hX.measurable
     have hY_meas := hY.measurable
     specialize hS μ hμ

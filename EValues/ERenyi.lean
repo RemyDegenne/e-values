@@ -162,8 +162,8 @@ lemma erenyiDiv_add_eq_sInf (S₁ S₂ : Set (Measure 𝓧)) (T₁ T₂ : Set (M
 
 /-- Auxiliary lemma for `erenyiDiv_prod`. -/
 lemma erenyiDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
-    (hS₁ : ∀ μ ∈ S₁, SFinite μ) (hS₂ : ∀ μ ∈ S₂, SFinite μ)
-    (hT₁ : ∀ μ ∈ T₁, SFinite μ) (hT₂ : ∀ μ ∈ T₂, SFinite μ) :
+    (hS₁ : ∀ μ ∈ S₁, IsFiniteMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsFiniteMeasure μ)
+    (hT₁ : ∀ μ ∈ T₁, IsFiniteMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsFiniteMeasure μ) :
     erenyiDiv α (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) (Measure.prod.uncurry '' (S₂ ×ˢ T₂))
       ≤ erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
   set ST₁ := Measure.prod.uncurry '' (S₁ ×ˢ T₁)
@@ -195,8 +195,8 @@ lemma erenyiDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measu
   _ = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := erenyiDiv_add_eq_sInf _ _ _ _
 
 lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
-    (hS₁ : ∀ μ ∈ S₁, SFinite μ) (hS₂ : ∀ μ ∈ S₂, SFinite μ)
-    (hT₁ : ∀ μ ∈ T₁, SFinite μ) (hT₂ : ∀ μ ∈ T₂, SFinite μ) :
+    (hS₁ : ∀ μ ∈ S₁, IsFiniteMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsFiniteMeasure μ)
+    (hT₁ : ∀ μ ∈ T₁, IsFiniteMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsFiniteMeasure μ) :
     erenyiDiv α (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) (Measure.prod.uncurry '' (S₂ ×ˢ T₂))
       = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := by
   set ST₁ := Measure.prod.uncurry '' (S₁ ×ˢ T₁)
@@ -212,9 +212,9 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
       gcongr 1
       refine iInf₂_mono fun R _ ↦ add_le_add ?_ ?_
       · gcongr 1
-        exact EReal.toENNReal_le_toENNReal <| iSup_prod_le_maxUtility _ hT₁
+        exact EReal.toENNReal_le_toENNReal <| iSup_prod_le_maxUtility _ hS₁ hT₁
       · gcongr 1
-        exact EReal.toENNReal_le_toENNReal <| iSup_prod_le_maxUtility _ hT₂
+        exact EReal.toENNReal_le_toENNReal <| iSup_prod_le_maxUtility _ hS₂ hT₂
     _ = (1 - α)⁻¹ * ⨅ (R) (_ : IsProbabilityMeasure R),
         α * (maxUtility (R.map Prod.fst) S₁ logUtility
             + maxUtility (R.map Prod.snd) T₁ logUtility).toENNReal +
@@ -292,8 +292,8 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
     _ = erenyiDiv α S₁ S₂ + erenyiDiv α T₁ T₂ := erenyiDiv_add_eq_sInf _ _ _ _
 
 lemma echernoffDiv_prod_le {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 𝓨)}
-    (hS₁ : ∀ μ ∈ S₁, SFinite μ) (hS₂ : ∀ μ ∈ S₂, SFinite μ)
-    (hT₁ : ∀ μ ∈ T₁, SFinite μ) (hT₂ : ∀ μ ∈ T₂, SFinite μ) :
+    (hS₁ : ∀ μ ∈ S₁, IsFiniteMeasure μ) (hS₂ : ∀ μ ∈ S₂, IsFiniteMeasure μ)
+    (hT₁ : ∀ μ ∈ T₁, IsFiniteMeasure μ) (hT₂ : ∀ μ ∈ T₂, IsFiniteMeasure μ) :
     echernoffDiv (Measure.prod.uncurry '' (S₁ ×ˢ T₁)) (Measure.prod.uncurry '' (S₂ ×ˢ T₂))
       ≤ echernoffDiv S₁ S₂ + echernoffDiv T₁ T₂ := by
   calc

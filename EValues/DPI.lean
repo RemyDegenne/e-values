@@ -59,7 +59,9 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     rintro y ⟨η, hη₁, hη₂, hy⟩
     obtain ⟨X, hX, h_le⟩ : ∃ X, IsEVar X S ∧ y ≤ ∫ᵉ x, (U ∘ X) x ∂P := by
       let X := fun x ↦ ∫⁻ y, y ∂(η x)
-      refine ⟨X, ⟨by fun_prop, fun μ hμ ↦ ?_⟩, ?_⟩
+      refine ⟨X, ⟨by fun_prop, fun μ hμ ↦ ?_, fun μ hμ ↦ ?_⟩, ?_⟩
+      · rw [isRandEVar_iff_isEVar] at hη₂
+        exact hη₂.eintegral_ne_bot μ hμ
       · rw [isRandEVar_iff_isEVar] at hη₂
         exact hη₂.eintegral_nonpos μ hμ
       · rw [hy]
@@ -74,7 +76,9 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
   · rw [maxRandUtility_eq_sSup, maxUtility_eq_sSup]
     refine sSup_le_sSup ?_
     rintro y ⟨X, hX, hy⟩
-    refine ⟨Kernel.deterministic X hX.measurable, inferInstance, ⟨fun μ hμ ↦ ?_⟩, ?_⟩
+    refine ⟨Kernel.deterministic X hX.measurable, inferInstance, ⟨fun μ hμ ↦ ?_, fun μ hμ ↦ ?_⟩, ?_⟩
+    · simp only [Kernel.lintegral_deterministic]
+      exact hX.eintegral_ne_bot μ hμ
     · simp only [Kernel.lintegral_deterministic]
       exact hX.eintegral_nonpos μ hμ
     · rw [hy, Measure.deterministic_comp_eq_map hX.measurable,
@@ -105,12 +109,9 @@ lemma maxRandUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : K
     haveI : IsMarkovKernel ξ := by
       rw [hξ]
       infer_instance
-    refine ⟨ξ, this, ⟨fun μ hμ ↦ ?_⟩, hξ_int⟩
+    refine ⟨ξ, this, ?_, hξ_int⟩
     rw [hξ]
-    sorry
-    -- rw [← μ.comp_assoc]
-    -- convert hη₂.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
-    -- simp
+    exact IsRandEVar.comp hη₂
 
 /-- Data processing inequality for the maximum utility and a Markov kernel. -/
 lemma maxUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)

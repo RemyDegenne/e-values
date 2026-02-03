@@ -53,7 +53,8 @@ variable {X Y : 𝓧 → ℝ≥0∞} {μ : Measure 𝓧} {S : Set (Measure 𝓧)
 protected lemma smul (hX : IsNumeraire X S μ) (c : ℝ≥0∞) :
     IsNumeraire X S (c • μ) where
   measurable := hX.measurable
-  lintegral_le_measure_univ := hX.lintegral_le_measure_univ
+  eintegral_ne_bot := hX.eintegral_ne_bot
+  eintegral_nonpos := hX.eintegral_nonpos
   lintegral_div_le_measure_fsupport Y hY := by
     rw [lintegral_smul_measure, Measure.smul_apply]
     grw [hX.lintegral_div_le_measure_fsupport hY]
@@ -90,7 +91,8 @@ lemma _root_.ProbabilityTheory.isNumeraire_of_isEmpty {f : 𝓧 → ℝ≥0∞}
     (hf : Measurable f) (hf_top : ∀ᵐ x ∂μ, f x = ∞)
     (hS : IsEmpty S) : IsNumeraire f S μ where
   measurable := hf
-  lintegral_le_measure_univ := by simp_all
+  eintegral_ne_bot := by simp_all
+  eintegral_nonpos := by simp_all
   lintegral_div_le_measure_fsupport := by
     by_contra! h
     obtain ⟨Y, hY, h⟩ := h
