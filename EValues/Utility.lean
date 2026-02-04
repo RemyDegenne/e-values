@@ -311,6 +311,15 @@ instance : (𝓝[<] ∞).NeBot := by
   have : NeZero ∞ := by constructor; simp
   exact ENNReal.nhdsLT_neBot
 
+lemma ENNReal.tendsto_toReal_atTop : Tendsto (fun x : ℝ≥0∞ ↦ x.toReal) (𝓝[<] ∞) atTop := by
+  rw [tendsto_atTop]
+  intro y
+  rw [eventually_nhdsWithin_iff]
+  simp only [Set.mem_Iio]
+  have h_ge : ∀ᶠ (x : ℝ≥0∞) in 𝓝 ⊤, ENNReal.ofReal y ≤ x := eventually_ge_nhds (by simp)
+  filter_upwards [h_ge] with x hx hx_lt_top
+  rwa [← ENNReal.ofReal_le_iff_le_toReal hx_lt_top.ne]
+
 lemma deriv_logUtility (x : ℝ≥0∞) :
     logUtility.deriv x = if x = 0 then ⊤ else 1 / x := by
   by_cases hx0 : x = 0
@@ -356,14 +365,7 @@ lemma deriv_logUtility (x : ℝ≥0∞) :
       simp [deriv_real_logUtility hx_pos]
     suffices h_tendsto_toReal : Tendsto (fun x : ℝ≥0∞ ↦ x.toReal) (𝓝[<] ∞) atTop from
       tendsto_inv_atTop_zero.comp h_tendsto_toReal
-    -- todo: extract lemma, tendsto_toReal_atTop
-    rw [tendsto_atTop]
-    intro y
-    rw [eventually_nhdsWithin_iff]
-    simp only [Set.mem_Iio]
-    have h_ge : ∀ᶠ (x : ℝ≥0∞) in 𝓝 ⊤, ENNReal.ofReal y ≤ x := eventually_ge_nhds (by simp)
-    filter_upwards [h_ge] with x hx hx_lt_top
-    rwa [← ENNReal.ofReal_le_iff_le_toReal hx_lt_top.ne]
+    exact ENNReal.tendsto_toReal_atTop
   simp only [Utility.deriv, hx0, ↓reduceIte, hx_top, one_div]
   have hx_pos : 0 < x.toReal := by
     rw [ENNReal.toReal_pos_iff]
