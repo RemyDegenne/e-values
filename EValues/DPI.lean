@@ -160,9 +160,10 @@ lemma IsNumeraire.maxUtility_eq_integral [IsProbabilityMeasure P]
     refine le_sSup ?_
     exact ⟨X, hX.toIsEVar, rfl⟩
 
-lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P] :
+lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P :=
-  (isNumeraire_numeraire P).maxUtility_eq_integral
+  (isNumeraire_numeraire P hS).maxUtility_eq_integral
 
 /-- The maximum utility is nonnegative. -/
 lemma maxUtility_nonneg (P : Measure 𝓧) :

@@ -44,7 +44,7 @@ variable {U : ℝ≥0∞ → EReal}
 is infinite. -/
 lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
     {b : ℝ} (hU_cont : Continuous U) (hU_mono : Monotone U) (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) :
+    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S → ∫ᵉ x, U (X x) ∂P ≤ ∫ᵉ x, U (Y x) ∂P := by
   let S' := {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, U (X x) ∂P}
   have hS' : S'.Nonempty := ⟨∫ᵉ x, U 1 ∂P, ⟨1, isEVar_one _, rfl⟩⟩
@@ -52,17 +52,42 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
   obtain ⟨u, hu_mono, hu_tendsto, hu_mem⟩ := exists_seq_tendsto_sSup hS' hS'_bdd
   simp only [Set.mem_setOf_eq, S'] at hu_mem
   choose X hX_evar hu_eq using hu_mem
-  obtain ⟨Y, Ylim, hY_mem, HY_lim_meas, hY_tendsto⟩ :=
+  obtain ⟨Y, Ylim, hY_mem, hY_lim_meas, hY_tendsto⟩ :=
     komlos_ennreal' (fun n ↦ (hX_evar n).measurable) P
-  refine ⟨Ylim, ?_, ?_⟩
-  · -- todo: isEvar_of_mem_convexHull
-    sorry
+  have hY_evar n : IsEVar (Y n) S := by
+    specialize hY_mem n
+    rw [mem_convexHull_iff] at hY_mem
+    refine hY_mem {Z | IsEVar Z S} ?_ (convex_isEVar S)
+    rintro _ ⟨m, rfl⟩
+    exact hX_evar (n + m)
+  let Yliminf := fun x ↦ liminf (fun n ↦ Y n x) atTop
+  have hYliminf_meas : Measurable Yliminf := Measurable.liminf fun n ↦ (hY_evar n).measurable
+  refine ⟨Yliminf, ?_, ?_⟩
+  · -- todo: extract lemma IsEVar.liminf
+    refine ⟨hYliminf_meas, fun μ hμ ↦ ?_, fun μ hμ ↦ ?_⟩
+    · exact eintegral_sub_one_ne_bot_of_isFiniteMeasure hS hμ
+    · calc ∫ᵉ ω, Yliminf ω - 1 ∂μ
+      _ = ∫ᵉ ω, liminf (fun n ↦ Y n ω - 1) atTop ∂μ := by
+        congr with ω
+        simp only [Yliminf]
+        sorry
+      _ ≤ liminf (fun n ↦ ∫ᵉ ω, Y n ω - 1 ∂μ) atTop := by
+        sorry  -- Fatou's lemma, like `lintegral_liminf_le`.
+        -- Needs lower bound on the integrals. ok since μ is finite.
+      _ ≤ 0 := by
+        refine liminf_le_of_frequently_le ?_
+        exact .of_forall fun n ↦ (hY_evar n).eintegral_nonpos μ hμ
   · suffices ⨆ n, ∫ᵉ x, U (X n x) ∂P ≤ ∫ᵉ x, U (Ylim x) ∂P by
       intro Z hZ_evar
-      refine le_trans ?_ this
-      simp_rw [← hu_eq]
-      rw [iSup_eq_of_tendsto hu_mono hu_tendsto]
-      exact le_sSup ⟨Z, hZ_evar, rfl⟩
+      refine le_trans ?_ (this.trans_eq ?_)
+      · simp_rw [← hu_eq]
+        rw [iSup_eq_of_tendsto hu_mono hu_tendsto]
+        exact le_sSup ⟨Z, hZ_evar, rfl⟩
+      · refine eintegral_congr_ae ?_
+        filter_upwards [hY_tendsto] with x hx
+        congr
+        unfold Yliminf
+        rwa [Tendsto.liminf_eq]
     calc ⨆ n, ∫ᵉ x, U (X n x) ∂P
     _ = limsup (fun n ↦ ∫ᵉ x, U (X n x) ∂P) atTop := by
       sorry
@@ -70,7 +95,7 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
       refine limsup_le_limsup (.of_forall fun n ↦ ?_)
       simp only
       sorry  -- concavity of U, Jensen
-    _ ≤ ∫ᵉ x, limsup (fun n => U (Y n x)) atTop ∂P := by
+    _ ≤ ∫ᵉ x, limsup (fun n ↦ U (Y n x)) atTop ∂P := by
       -- eintegral version of Fatou's lemma `limsup_lintegral_le`
       sorry
     _ = ∫ᵉ x, U (Ylim x) ∂P := by
@@ -318,10 +343,10 @@ lemma setEIntegral_measure_zero {μ : Measure 𝓧} (s : Set 𝓧) (f : 𝓧 →
 is infinite. -/
 lemma exists_eq_iSup_eintegral_of_le (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
     {b : ℝ} (hU_cont : Continuous U) (hU_mono : Monotone U) (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) :
+    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S →
       (∫ᵉ x, U (X x) ∂P ≤ ∫ᵉ x, U (Y x) ∂P) ∧ (∀ᵐ x ∂P, Y x < ∞ → X x < ∞) := by
-  obtain ⟨Y, hY_evar, h_opt⟩ := exists_eq_iSup_eintegral_of_le' hU_ccv hU_cont hU_mono hU_le P S
+  obtain ⟨Y, hY_evar, h_opt⟩ := exists_eq_iSup_eintegral_of_le' hU_ccv hU_cont hU_mono hU_le P S hS
   classical
   let Y' := fun x ↦ if x ∈ a1Event P S then ∞ else Y x
   have hY' : Measurable Y' :=
@@ -356,48 +381,50 @@ end
 /-- The numeraire associated with a bounded utility function. -/
 noncomputable
 def numeraireOfBounded (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) :
+    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     𝓧 → ℝ≥0∞ :=
-  (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S).choose
+  (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS).choose
 
 lemma isEVar_numeraireOfBounded (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) :
-    IsEVar (numeraireOfBounded U hU_le P S) S :=
+    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    IsEVar (numeraireOfBounded U hU_le P S hS) S :=
   (Classical.choose_spec
-    (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S)).1
+    (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS)).1
 
 lemma eintegral_le_numeraireOfBounded (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧))
+    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
-    ∫ᵉ x, U (X x) ∂P ≤ ∫ᵉ x, U (numeraireOfBounded U hU_le P S x) ∂P :=
+    ∫ᵉ x, U (X x) ∂P ≤ ∫ᵉ x, U (numeraireOfBounded U hU_le P S hS x) ∂P :=
   ((Classical.choose_spec
-    (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S)).2 X hX_evar).1
+    (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS)).2 X hX_evar).1
 
 lemma lt_top_of_numeraireOfBounded_lt_top (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧))
+    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
-    ∀ᵐ x ∂P, (numeraireOfBounded U hU_le P S x) < ∞ → X x < ∞ :=
+    ∀ᵐ x ∂P, (numeraireOfBounded U hU_le P S hS x) < ∞ → X x < ∞ :=
   ((Classical.choose_spec
-    (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S)).2 X hX_evar).2
+    (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS)).2 X hX_evar).2
 
 -- first order optimality condition for bounded utility functions
 lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧))
+    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {Y : 𝓧 → ℝ≥0∞} (hY : IsEVar Y S) :
-    ∫ᵉ x, U.deriv (numeraireOfBounded U hU_le P S x)
-      * (Y x - numeraireOfBounded U hU_le P S x) ∂P ≤ 0 := by
+    ∫ᵉ x, U.deriv (numeraireOfBounded U hU_le P S hS x)
+      * (Y x - numeraireOfBounded U hU_le P S hS x) ∂P ≤ 0 := by
   sorry
 
 -- first order optimality condition for log utility
-lemma eintegral_deriv_log_mul_le (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) :
+lemma eintegral_deriv_log_mul_le (P : Measure 𝓧) [SFinite P]
+    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S →
       ∫ᵉ x, logUtility.deriv (Y x) * (X x - Y x) ∂P ≤ 0 := by
   sorry
 
-lemma exists_numeraire' (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) :
+lemma exists_numeraire' (P : Measure 𝓧) [SFinite P]
+    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S →
       ∫ᵉ x, (X x / Y x : ℝ≥0∞) - (Y x / Y x : ℝ≥0∞) ∂P ≤ 0 := by
-  obtain ⟨Y, hY_evar, h_opt⟩ := eintegral_deriv_log_mul_le P S
+  obtain ⟨Y, hY_evar, h_opt⟩ := eintegral_deriv_log_mul_le P S hS
   refine ⟨Y, hY_evar, fun X hX_evar ↦ ?_⟩
   specialize h_opt X hX_evar
   simp_rw [deriv_logUtility_eq_ennreal] at h_opt
@@ -423,10 +450,11 @@ lemma exists_numeraire' (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) 
   simp_rw [h_sub] at h_opt
   exact h_opt
 
-lemma exists_numeraire (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) :
+lemma exists_numeraire (P : Measure 𝓧) [IsFiniteMeasure P]
+    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S →
       ∫⁻ x, X x / Y x ∂P ≤ ∫⁻ x, Y x / Y x ∂P := by -- todo change conclusion to most convenient
-  obtain ⟨Y, hY_evar, h_opt⟩ := exists_numeraire' P S
+  obtain ⟨Y, hY_evar, h_opt⟩ := exists_numeraire' P S hS
   refine ⟨Y, hY_evar, fun X hX_evar ↦ ?_⟩
   specialize h_opt X hX_evar
   rw [eintegral_sub_of_nonneg] at h_opt
@@ -453,54 +481,60 @@ open Classical in
 /-- The numeraire e-variable. -/
 noncomputable
 def numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) : 𝓧 → ℝ≥0∞ :=
-  if _ : IsFiniteMeasure P then (exists_numeraire P S).choose else 1
+  if _ : IsFiniteMeasure P then
+    if hS : ∀ μ ∈ S, IsFiniteMeasure μ then
+      (exists_numeraire P S hS).choose
+    else 1
+  else 1
 
 lemma isEVar_numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     IsEVar (numeraire P S) S := by
   unfold numeraire
-  split_ifs with _
-  · exact (exists_numeraire P S).choose_spec.1
+  split_ifs with _ hS
+  · exact (exists_numeraire P S hS).choose_spec.1
+  · exact isEVar_one _
   · exact isEVar_one _
 
 @[fun_prop]
 lemma measurable_numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     Measurable (numeraire P S) := (isEVar_numeraire P S).measurable
 
-lemma lintegral_div_numeraire_le (P : Measure 𝓧) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
+lemma lintegral_div_numeraire_le (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+    {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
     ∫⁻ x, X x / (numeraire P S x) ∂P ≤ ∫⁻ x, (numeraire P S x) / (numeraire P S x) ∂P := by
   unfold numeraire
   split_ifs with h_fin
-  · exact (exists_numeraire P S).choose_spec.2 X hX_evar
+  · exact (exists_numeraire P S hS).choose_spec.2 X hX_evar
   · simp only [Pi.one_apply, div_one, lintegral_const, one_mul]
     have : P .univ = ∞ := by rwa [not_isFiniteMeasure_iff] at h_fin
     simp [this]
 
-lemma lintegral_div_numeraire_le_measure_fsupport (P : Measure 𝓧)
+lemma lintegral_div_numeraire_le_measure_fsupport (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
     ∫⁻ x, X x / (numeraire P S x) ∂P ≤ P (numeraire P S).fsupport := by
-  refine (lintegral_div_numeraire_le P hX_evar).trans_eq ?_
+  refine (lintegral_div_numeraire_le P hS hX_evar).trans_eq ?_
   rw [lintegral_div_self_eq_measure_fsupport (by fun_prop)]
 
-lemma lintegral_div_numeraire_le_measure_univ (P : Measure 𝓧)
+lemma lintegral_div_numeraire_le_measure_univ (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
     ∫⁻ x, X x / (numeraire P S x) ∂P ≤ P .univ := by
   calc
-  _ ≤ P (numeraire P S).fsupport := lintegral_div_numeraire_le_measure_fsupport P hX_evar
+  _ ≤ P (numeraire P S).fsupport := lintegral_div_numeraire_le_measure_fsupport P hS hX_evar
   _ ≤ P Set.univ := measure_mono (by simp)
 
 lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
-    {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
+    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
     ∫⁻ x, X x / (numeraire P S x) ∂P ≤ 1 := by
-  simpa using lintegral_div_numeraire_le_measure_univ P hX_evar
+  simpa using lintegral_div_numeraire_le_measure_univ P hS hX_evar
 
 /-- `numeraire` is a numeraire. -/
-lemma isNumeraire_numeraire (P : Measure 𝓧) :
+lemma isNumeraire_numeraire (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     IsNumeraire (numeraire P S) S P :=
-  ⟨isEVar_numeraire P S, fun _ ↦ lintegral_div_numeraire_le_measure_fsupport P⟩
+  ⟨isEVar_numeraire P S, fun _ ↦ lintegral_div_numeraire_le_measure_fsupport P hS⟩
 
-lemma IsNumeraire.ae_eq_numeraire [IsFiniteMeasure P] {X : 𝓧 → ℝ≥0∞}
-    (hX : IsNumeraire X S P) :
+lemma IsNumeraire.ae_eq_numeraire [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+    {X : 𝓧 → ℝ≥0∞} (hX : IsNumeraire X S P) :
     X =ᵐ[P] numeraire P S :=
-  hX.ae_unique (isNumeraire_numeraire P)
+  hX.ae_unique (isNumeraire_numeraire P hS)
 
 end ProbabilityTheory

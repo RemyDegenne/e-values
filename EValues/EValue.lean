@@ -11,6 +11,7 @@ import Mathlib.Probability.Kernel.Composition.MeasureComp
 import Mathlib.Probability.Kernel.Composition.IntegralCompProd
 import Mathlib.Probability.Notation
 import EValues.EIntegral
+import EValues.Mathlib.Convex
 import EValues.Mathlib.ENNReal
 import EValues.Mathlib.unitInterval
 
@@ -156,6 +157,10 @@ lemma eintegral_sub_one_ne_bot_of_isFiniteMeasure {X : 𝓧 → ℝ≥0∞} {S :
       conv_lhs => rw [← zero_sub (1 : EReal)]
       refine EReal.sub_le_sub ?_ le_rfl -- add gcongr tag?
       positivity
+
+lemma IsEVar.eintegrable_sub_one {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S) (μ : Measure 𝓧) (hμ : μ ∈ S) :
+    eintegrable (fun ω ↦ (X ω : EReal) - 1) μ :=
+  eintegrable_of_eintegral_ne_bot (hX.eintegral_ne_bot μ hμ)
 
 lemma IsEVar.lintegral_le_measure_univ {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S)
     (μ : Measure 𝓧) (hμ : μ ∈ S) :
@@ -424,5 +429,72 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
     refine EReal.sub_le_sub ?_ le_rfl
     rw [eintegral_eq_lintegral, Kernel.comp_apply,
       Measure.lintegral_bind (by fun_prop) (by fun_prop)]
+
+/-- The set of e-variables is convex. -/
+lemma convex_isEVar (S : Set (Measure 𝓧)) : Convex ℝ≥0∞ {Z | IsEVar Z S} := by
+  intro X hX Y hY a b ha hb hab
+  simp only [Set.mem_setOf_eq]
+  have := hX.measurable
+  have := hY.measurable
+  have ha_top' : a ≠ ⊤ := by
+    by_contra ha_top
+    simp [ha_top] at hab
+  have ha_top : (a : EReal) ≠ ⊤ := by simp [ha_top']
+  have hb_top : (b : EReal) ≠ ⊤ := by
+    simp only [ne_eq, EReal.coe_ennreal_eq_top_iff]
+    by_contra hb_top
+    simp [hb_top] at hab
+  have h_eq {μ : Measure 𝓧} (hμ : μ ∈ S) :
+      ∫ᵉ ω, (a • X + b • Y) ω - 1 ∂μ = a * ∫ᵉ ω, X ω - 1 ∂μ + b * ∫ᵉ ω, Y ω - 1 ∂μ := by
+    calc ∫ᵉ ω, (a • X + b • Y) ω - 1 ∂μ
+    _ = ∫ᵉ ω, a • (X ω - 1) + b • (Y ω - 1) ∂μ := by
+      congr with ω
+      simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul, EReal.coe_ennreal_add,
+        EReal.coe_ennreal_mul, EReal.smul_ennreal_eq_mul]
+      rw [EReal.mul_sub_of_nonneg_of_ne_top (by positivity) ha_top,
+        EReal.mul_sub_of_nonneg_of_ne_top (by positivity) hb_top]
+      simp only [mul_one]
+      rw [← EReal.add_sub_add_comm (by simp) (by simp)]
+      congr
+      norm_cast
+      rw [hab]
+    _ = a * ∫ᵉ ω, X ω - 1 ∂μ + b * ∫ᵉ ω, Y ω - 1 ∂μ := by
+      have := hX.measurable
+      have := hY.measurable
+      simp only [EReal.smul_ennreal_eq_mul]
+      rw [eintegral_add (by fun_prop) (by fun_prop)]
+      rotate_left
+      · exact (hX.eintegrable_sub_one μ hμ).const_mul (by simp) ha_top
+      · exact (hY.eintegrable_sub_one μ hμ).const_mul (by simp) hb_top
+      · left
+        rw [eintegral_mul_const (by simp) ha_top]
+        · rw [ne_eq, EReal.mul_eq_bot]
+          have : ¬ (a : EReal) < 0 := by norm_cast; simp
+          simp [hX.eintegral_ne_bot μ hμ, ha_top, this]
+        · exact hX.eintegrable_sub_one μ hμ
+      · right
+        rw [eintegral_mul_const (by simp) hb_top]
+        · rw [ne_eq, EReal.mul_eq_bot]
+          have : ¬ (b : EReal) < 0 := by norm_cast; simp
+          simp [hY.eintegral_ne_bot μ hμ, hb_top, this]
+        · exact hY.eintegrable_sub_one μ hμ
+      rw [eintegral_mul_const (by simp) ha_top, eintegral_mul_const (by simp) hb_top]
+      · exact hY.eintegrable_sub_one μ hμ
+      · exact hX.eintegrable_sub_one μ hμ
+  refine ⟨by fun_prop, fun μ hμ ↦ ?_, fun μ hμ ↦ ?_⟩
+  · rw [h_eq hμ]
+    have ha_not_lt : ¬ (a : EReal) < 0 := by norm_cast; simp
+    have hb_not_lt : ¬ (b : EReal) < 0 := by norm_cast; simp
+    simp [EReal.mul_eq_bot, ha_not_lt, hb_not_lt, hX.eintegral_ne_bot μ hμ,
+      hY.eintegral_ne_bot μ hμ, ha_top, hb_top]
+  · rw [h_eq hμ]
+    conv_rhs => rw [← add_zero 0]
+    gcongr
+    · refine EReal.mul_nonpos_iff.mpr ?_
+      norm_cast
+      exact .inl ⟨ha, hX.eintegral_nonpos μ hμ⟩
+    · refine EReal.mul_nonpos_iff.mpr ?_
+      norm_cast
+      exact .inl ⟨hb, hY.eintegral_nonpos μ hμ⟩
 
 end ProbabilityTheory

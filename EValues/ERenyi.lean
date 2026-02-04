@@ -262,18 +262,18 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
         · exact numeraire R₂ T₁
         · exact isEVar_numeraire R₂ T₁
         · haveI := R.isProbabilityMeasure_map measurable_fst.aemeasurable
-          exact (maxUtility_eq_integral_numeraire R₁).symm
+          exact (maxUtility_eq_integral_numeraire R₁ hS₁).symm
         · haveI := R.isProbabilityMeasure_map measurable_snd.aemeasurable
-          exact (maxUtility_eq_integral_numeraire R₂).symm
+          exact (maxUtility_eq_integral_numeraire R₂ hT₁).symm
       · rw [sup_prod_sum S₂ T₂, ← exists_iSup₂_EReal_add]
         · rfl
         · exact isEVar_numeraire R₁ S₂
         · exact numeraire R₂ T₂
         · exact isEVar_numeraire R₂ T₂
         · haveI := R.isProbabilityMeasure_map measurable_fst.aemeasurable
-          exact (maxUtility_eq_integral_numeraire R₁).symm
+          exact (maxUtility_eq_integral_numeraire R₁ hS₂).symm
         · haveI := R.isProbabilityMeasure_map measurable_snd.aemeasurable
-          exact (maxUtility_eq_integral_numeraire R₂).symm
+          exact (maxUtility_eq_integral_numeraire R₂ hT₂).symm
     _ = (1 - α)⁻¹ * sInf {y | ∃ R₁ R₂,
         IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
         y = α * (maxUtility R₁ S₁ logUtility + maxUtility R₂ T₁ logUtility).toENNReal +

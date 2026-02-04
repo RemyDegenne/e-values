@@ -32,7 +32,8 @@ lemma IsEVar.prod (hS : ∀ μ ∈ S, IsFiniteMeasure μ) (hT : ∀ μ ∈ T, Is
     specialize hT ν hνT
     have : Measure.prod.uncurry (μ, ν) = μ.prod ν := by rfl
     rw [this]
-    sorry
+    specialize hS μ hμS
+    infer_instance
   -- measurable := by
   --   have hX_meas := hX.measurable
   --   have hY_meas := hY.measurable
@@ -206,7 +207,7 @@ theorem isNumeraire_mul_numeraire
     (hS : ∀ μ ∈ S, IsFiniteMeasure μ) (hT : ∀ μ ∈ T, IsFiniteMeasure μ) :
     IsNumeraire (fun (x : 𝓧 × 𝓨) ↦ numeraire P S x.1 * numeraire Q T x.2)
       {ρ | ∃ μ ∈ S, ∃ ν ∈ T, μ.prod ν = ρ} (P.prod Q) :=
-  isNumeraire_mul P Q hS hT (isNumeraire_numeraire P) (isNumeraire_numeraire Q)
+  isNumeraire_mul P Q hS hT (isNumeraire_numeraire P hS) (isNumeraire_numeraire Q hT)
 
 /-- The logarithmic utility of the numeraire on a product is the sum of the two logarithmic
 utilities. -/
@@ -216,22 +217,26 @@ theorem logUtility_numeraire_prod (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
       = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P + ∫ᵉ x, ENNReal.log (numeraire Q T x) ∂Q := by
   have h_int1 : eintegrable (fun p ↦ (numeraire P S p.1).log) (P.prod Q) := by
     have hP : eintegrable (fun x ↦ ENNReal.log (numeraire P S x)) P :=
-      (isNumeraire_numeraire P).eintegrable_log
+      (isNumeraire_numeraire P hS).eintegrable_log
     change eintegrable ((fun p ↦ (numeraire P S p).log) ∘ Prod.fst) (P.prod Q)
     rw [← eintegrable_map (by fun_prop) (by fun_prop)]
     simpa
   have h_int2 : eintegrable (fun p ↦ (numeraire Q T p.2).log) (P.prod Q) := by
     have hQ : eintegrable (fun y ↦ ENNReal.log (numeraire Q T y)) Q :=
-      (isNumeraire_numeraire Q).eintegrable_log
+      (isNumeraire_numeraire Q hT).eintegrable_log
     change eintegrable ((fun p ↦ (numeraire Q T p).log) ∘ Prod.snd) (P.prod Q)
     rw [← eintegrable_map (by fun_prop) (by fun_prop)]
     simpa
   have h_ae_eq : numeraire (P.prod Q) (Measure.prod.uncurry '' (S ×ˢ T))
       =ᵐ[P.prod Q] (fun x ↦ numeraire P S x.1 * numeraire Q T x.2) := by
     symm
-    convert (isNumeraire_mul_numeraire P Q hS hT).ae_eq_numeraire
-    ext
-    simp
+    convert (isNumeraire_mul_numeraire P Q hS hT).ae_eq_numeraire ?_
+    · ext
+      simp
+    · rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
+      specialize hS μ hμS
+      specialize hT ν hνT
+      infer_instance
   calc ∫ᵉ p, ENNReal.log (numeraire (P.prod Q) (Function.uncurry Measure.prod '' S ×ˢ T) p)
       ∂P.prod Q
   _ = ∫ᵉ p, ENNReal.log (numeraire P S p.1 * numeraire Q T p.2) ∂P.prod Q := by
@@ -252,14 +257,14 @@ theorem logUtility_numeraire_prod (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
         rw [← eintegral_map (f := fun x ↦ (numeraire P S x).log) (by fun_prop) measurable_fst]
         simp
       rw [this]
-      exact (isNumeraire_numeraire P).eintegral_log_nonneg
+      exact (isNumeraire_numeraire P hS).eintegral_log_nonneg
     · refine .inr (EReal.ne_bot_of_nonneg ?_)
       have : ∫ᵉ (y : 𝓧 × 𝓨), (numeraire Q T y.2).log ∂P.prod Q
           = ∫ᵉ y, ENNReal.log (numeraire Q T y) ∂Q := by
         rw [← eintegral_map (f := fun x ↦ (numeraire Q T x).log) (by fun_prop) measurable_snd]
         simp
       rw [this]
-      exact (isNumeraire_numeraire Q).eintegral_log_nonneg
+      exact (isNumeraire_numeraire Q hT).eintegral_log_nonneg
   _ = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P + ∫ᵉ y, ENNReal.log (numeraire Q T y) ∂Q := by
     rw [eintegral_prod _ (by fun_prop), eintegral_prod_symm _ (by fun_prop)]
     · simp
@@ -272,8 +277,13 @@ lemma maxUtility_prod (P : Measure 𝓧) (Q : Measure 𝓨) [IsProbabilityMeasur
     maxUtility (P.prod Q) (Measure.prod.uncurry '' (S ×ˢ T)) logUtility =
       maxUtility P S logUtility + maxUtility Q T logUtility := by
   rw [maxUtility_eq_integral_numeraire (P.prod Q),
-    maxUtility_eq_integral_numeraire, maxUtility_eq_integral_numeraire]
-  exact logUtility_numeraire_prod hS hT
+    maxUtility_eq_integral_numeraire _ hS, maxUtility_eq_integral_numeraire _ hT]
+  · exact logUtility_numeraire_prod hS hT
+  · simp only [Set.image_uncurry_prod, Set.mem_image2, forall_exists_index, and_imp]
+    rintro ρ μ hμS ν hνT rfl
+    specialize hS μ hμS
+    specialize hT ν hνT
+    infer_instance
 
 lemma iSup_prod_le_maxUtility (P : Measure (𝓧 × 𝓨))
     (hS : ∀ μ ∈ S, IsFiniteMeasure μ) (hT : ∀ μ ∈ T, IsFiniteMeasure μ) :
