@@ -44,7 +44,7 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
         exact μ.isProbabilityMeasure_map measurable_doubleton.aemeasurable
       · have := hμ.2
         rw [integral_map (by fun_prop) (by fun_prop)]
-        simpa [doubleton]
+        simp_all [doubleton]
   · let BerI (p : I) : Measure ({0, 1} : Set ℝ) := Ber (ENNReal.ofReal p)
     have BerI_is_prob p : IsProbabilityMeasure (BerI p) := by unfold BerI; infer_instance
     let κ : Kernel I ({0, 1} : Set ℝ) := ⟨BerI, by unfold BerI Ber; fun_prop⟩
