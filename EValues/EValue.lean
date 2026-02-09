@@ -118,22 +118,13 @@ lemma IsEVar.ae_lt_top (hX : IsEVar X S) {μ : Measure 𝓧} (hμ : μ ∈ S) : 
 lemma IsEVar.ae_ne_top (hX : IsEVar X S) {μ : Measure 𝓧} (hμ : μ ∈ S) : ∀ᵐ ω ∂μ, X ω ≠ ⊤ := by
   filter_upwards [hX.ae_lt_top hμ] with ω hω using hω.ne
 
-lemma IsEVar.measurable_fsupport (hX : IsEVar X S) :
+lemma _root_.Measurable.measurable_fsupport (hX : Measurable X) :
     MeasurableSet X.fsupport := by
   suffices MeasurableSet {ω | X ω ≠ ⊤} ∧ MeasurableSet {ω | X ω ≠ 0} from this.1.inter this.2
-  constructor
-  · rw [← MeasurableSet.compl_iff]
-    suffices {ω | X ω ≠ ⊤}ᶜ = {ω | X ω = ⊤} by
-      rw [this]
-      exact hX.measurable <| measurableSet_singleton ⊤
-    ext ω
-    simp
-  · rw [← MeasurableSet.compl_iff]
-    suffices {ω | X ω ≠ 0}ᶜ = {ω | X ω = 0} by
-      rw [this]
-      exact hX.measurable <| measurableSet_singleton 0
-    ext ω
-    simp
+  constructor <;> exact ((measurableSet_singleton _).preimage hX).compl
+
+lemma IsEVar.measurable_fsupport (hX : IsEVar X S) :
+    MeasurableSet X.fsupport := hX.measurable.measurable_fsupport
 
 lemma IsEVar.mono (hY : IsEVar Y S) (hX : Measurable X) (hXY : X ≤ Y) : IsEVar X S where
   measurable := hX

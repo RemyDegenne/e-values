@@ -161,42 +161,4 @@ lemma IsNumeraire.ae_eq_numeraire [IsProbabilityMeasure P] {X : 𝓧 → ℝ≥0
     X =ᵐ[P] numeraire P S :=
   hX.ae_unique (isNumeraire_numeraire P hX.isProbabilityMeasure_set)
 
-/-- For a given e-variable `Y`, the property of being a numeraire is equivalent to the property
-that the expectation of the ratio of any e-variable `X` over `Y` is less
-than the expectation of the ratio of `Y` over itself. -/
-lemma lintegral_div_self_le_iff_IsNumeraire [IsProbabilityMeasure P]
-    (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
-    {Y : 𝓧 → ℝ≥0∞} (hY_evar : IsEVar Y S) :
-    (∀ X, IsEVar X S → ∫⁻ ω, X ω / Y ω ∂P ≤ ∫⁻ ω, Y ω / Y ω ∂P) ↔ IsNumeraire Y S P := by
-  refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
-  · refine ⟨hY_evar, hS, fun X hX_evar ↦ (h X hX_evar).trans_eq ?_⟩
-    have m_fsupport : MeasurableSet Y.fsupport :=hY_evar.measurable_fsupport
-    rw [← lintegral_add_compl _ m_fsupport, ← add_zero <| P Y.fsupport]
-    congr
-    · suffices ∀ x ∈ Y.fsupport, Y x / Y x = 1 by
-        rw [setLIntegral_congr_fun m_fsupport this]
-        simp
-      intro x hx
-      exact (ENNReal.div_eq_one_iff hx.2 hx.1).mpr rfl
-    · refine (setLIntegral_eq_zero_iff m_fsupport.compl ?_).mpr ?_
-      · have := hY_evar.measurable
-        fun_prop
-      · filter_upwards with x hx
-        rw [Function.fsupport_compl] at hx
-        rcases hx with (hx_top | hx_zero)
-        · simp_all
-        · simp_all
-  · intro X hX_evar
-    have ae_eq_numeraire := h.ae_eq_numeraire
-    calc ∫⁻ ω, X ω / Y ω ∂P
-    _ = ∫⁻ ω, X ω / (numeraire P S ω) ∂P := by
-      refine lintegral_congr_ae ?_
-      filter_upwards [ae_eq_numeraire] with ω hω
-      rw [hω]
-    _ ≤ ∫⁻ ω, (numeraire P S ω) / (numeraire P S ω) ∂P := lintegral_div_numeraire_le P hS hX_evar
-    _ = ∫⁻ ω, Y ω / Y ω ∂P := by
-      refine lintegral_congr_ae ?_
-      filter_upwards [ae_eq_numeraire] with ω hω
-      rw [hω]
-
 end ProbabilityTheory
