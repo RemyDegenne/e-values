@@ -186,20 +186,20 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
     simp only [lintegral_const, MeasurableSet.univ, Measure.restrict_apply, univ_inter, ne_eq]
     change _ = _ * μ {x | f x = ∫⁻ y, f y ∂μ} + _ * μ {x | f x = ∫⁻ y, f y ∂μ}ᶜ
     rw [← mul_add, measure_add_measure_compl, measure_univ, mul_one]
-    exact measurableSet_eq_fun' hf measurable_const
+    exact measurableSet_eq_fun hf measurable_const
   have h_right_eq_add : ∫⁻ x, (f x)⁻¹ ∂μ
       = ∫⁻ x in {y | f y = ∫⁻ z, f z ∂μ}, (f x)⁻¹ ∂μ
         + ∫⁻ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, (f x)⁻¹ ∂μ := by
     change _ = _ + ∫⁻ x in {y | f y = ∫⁻ z, f z ∂μ}ᶜ, (f x)⁻¹ ∂μ
     rw [lintegral_add_compl]
-    exact measurableSet_eq_fun' hf measurable_const
+    exact measurableSet_eq_fun hf measurable_const
   rw [h_left_eq_add, h_right_eq_add]
   refine ENNReal.add_lt_add_of_le_of_lt ?_ ?_ ?_
   · simp only [lintegral_const, MeasurableSet.univ, Measure.restrict_apply, univ_inter, ne_eq]
     exact ENNReal.mul_ne_top (by simpa) (by simp)
   · refine le_of_eq ?_
     refine setLIntegral_congr_fun ?_ fun x hx ↦ ?_
-    · exact measurableSet_eq_fun' hf measurable_const
+    · exact measurableSet_eq_fun hf measurable_const
     simp only [mem_setOf_eq] at hx
     rw [hx]
   · have h_cvx_lt x (hx : f x ≠ ∞) := Inv.lt_add_deriv_mul (y := ∫⁻ x, f x ∂μ) hx h_int_ne_zero
@@ -207,7 +207,6 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
     refine EReal.toENNReal_lt_toENNReal ?_ ?_
     · rw [eintegral_eq_lintegral]
       exact EReal.coe_ennreal_nonneg _
-
     have transform_eint_deriv : ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ},
         (f x)⁻¹ - Inv.deriv (∫⁻ z, f z ∂μ) * (f x - (∫⁻ z, f z ∂μ)) ∂μ =
         ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ
@@ -230,19 +229,18 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
       congr
       rw [eintegral_mul_const (by simp) _ h_eint]
       exact deriv_inv_ne_top h_int_ne_zero
-
     have eint_sub_eq_zero : ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, (f x - ∫⁻ z, f z ∂μ) ∂μ = 0 := by
       calc
       _ = ∫ᵉ x, (f x - ∫⁻ z, f z ∂μ) ∂μ := by
         nth_rw 2 [eintegral_add_compl (A := {y | f y = ∫⁻ z, f z ∂μ})]
-        swap; · exact measurableSet_eq_fun' hf measurable_const
+        swap; · exact measurableSet_eq_fun hf measurable_const
         suffices h_zero : ∫ᵉ x in {y | f y = ∫⁻ z, f z ∂μ}, (f x - ∫⁻ z, f z ∂μ) ∂μ = 0 by
           rw [h_zero, zero_add]
           congr
         suffices ∀ x ∈ {y | f y = ∫⁻ z, f z ∂μ}, (f x : EReal) - ∫⁻ z, f z ∂μ = 0 by
           rw [eintegral_congr_ae (ae_restrict_of_forall_mem ?_ this)]
           · simp
-          · exact measurableSet_eq_fun' hf measurable_const
+          · exact measurableSet_eq_fun hf measurable_const
         intro x hx
         rw [hx, EReal.sub_self (by simp [h_int_top]) (by simp)]
       _ = 0 := by
@@ -256,7 +254,6 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
         · fun_prop
         · simp [h_int_top]
         · simp
-
     calc ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((∫⁻ y, f y ∂μ)⁻¹ : ℝ≥0∞) ∂μ
     _ < ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ},
         (f x)⁻¹ - Inv.deriv (∫⁻ z, f z ∂μ) * (f x - ∫⁻ z, f z ∂μ) ∂μ := by
@@ -267,7 +264,7 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
       · fun_prop
       · fun_prop
       · rw [ae_restrict_iff']
-        swap; · exact (measurableSet_eq_fun' hf measurable_const).compl
+        swap; · exact (measurableSet_eq_fun hf measurable_const).compl
         filter_upwards [hf_top] with x hx hx_ne
         specialize h_cvx_lt x hx hx_ne
         rwa [EReal.lt_sub_iff_add_lt (by simp [h_int_ne_zero]) (by simp)]
@@ -337,9 +334,8 @@ theorem Inv.ae_eq_const_or_map_set_lintegral_lt (ht : MeasurableSet t)
     change μ {x | x ∈ t → f x = ((μ t)⁻¹ * ∫⁻ x in t, f x ∂μ)}ᶜ = 0
     replace h : μ[|t] {x | f x = ∫⁻ x, f x ∂μ[|t]}ᶜ = 0 := h
     simp_all only [ne_eq, ProbabilityTheory.cond, ENNReal.inv_eq_zero, not_false_eq_true,
-      aemeasurable_smul_measure_iff, Measure.ae_smul_measure_eq, ae_restrict_eq,
-      lintegral_smul_measure, smul_eq_mul, Measure.smul_apply, Measure.restrict_apply', mul_eq_zero,
-      false_or]
+      aemeasurable_smul_measure_iff, lintegral_smul_measure, smul_eq_mul, Measure.smul_apply,
+      Measure.restrict_apply', mul_eq_zero, false_or]
     rw [← h]
     congr
     simp only [compl_def, mem_setOf_eq, Classical.not_imp]

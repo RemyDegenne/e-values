@@ -164,14 +164,14 @@ lemma echernoffDiv_bounded {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
     rw [integral_map (by fun_prop) (by fun_prop)]
     simp only [φ]
     rw [integral_sub (by fun_prop) (by fun_prop)]
-    simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+    simp only [integral_const, probReal_univ, smul_eq_mul, mul_one]
     linarith
   · rintro ⟨hμ, h_int⟩
     refine ⟨μ.map φ, ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩, ?_⟩
     · rw [integral_map (by fun_prop) (by fun_prop)]
       simp only [φ]
       rw [integral_sub (by fun_prop) (by fun_prop)]
-      simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+      simp only [integral_const, probReal_univ, smul_eq_mul, mul_one]
       linarith
     · rw [Measure.map_map (by fun_prop) (by fun_prop), hφ_inv, Measure.map_id]
 

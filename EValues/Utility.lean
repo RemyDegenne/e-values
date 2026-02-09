@@ -88,7 +88,7 @@ lemma Utility.coe_real_toReal (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx
 lemma Utility.contDiffOn (U : Utility) : ContDiffOn ℝ 1 U.real (Set.Ioi 0) := U.differentiable'
 
 lemma Utility.differentiableOn (U : Utility) : DifferentiableOn ℝ U.real (Set.Ioi 0) :=
-  U.contDiffOn.differentiableOn le_rfl
+  U.contDiffOn.differentiableOn (by simp)
 
 lemma Utility.monotoneOn_Ioi_real (U : Utility) : MonotoneOn U.real (Set.Ioi 0) := by
   intro x hx y hy hxy
@@ -142,7 +142,7 @@ lemma Utility.concaveOn_Ici_real (U : Utility) (h0 : U 0 ≠ ⊥) : ConcaveOn �
   intro x hx y hy a b ha hb hab
   have hx_nonneg : 0 ≤ x := Set.mem_Ici.mp hx
   have hy_nonneg : 0 ≤ y := Set.mem_Ici.mp hy
-  have hU_ne_bot x : U x ≠ ⊥ := ne_bot_of_le_ne_bot (b := U 0) h0 (U.monotone zero_le')
+  have hU_ne_bot x : U x ≠ ⊥ := ne_bot_of_le_ne_bot (b := U 0) h0 (U.monotone (zero_le _))
   simp only [smul_eq_mul]
   have h_ccv := U.concave.2 (Set.mem_univ (ENNReal.ofReal x)) (Set.mem_univ (ENNReal.ofReal y))
     (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by ext; simp [hab])
