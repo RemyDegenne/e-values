@@ -109,15 +109,15 @@ structure IsEVar (X : 𝓧 → ℝ≥0∞) (S : Set (Measure 𝓧)) : Prop where
 lemma eintegral_sub_one_ne_bot_of_isFiniteMeasure {X : 𝓧 → ℝ≥0∞} {S : Set (Measure 𝓧)}
     (hS : ∀ μ ∈ S, IsFiniteMeasure μ) {μ : Measure 𝓧} (hμ : μ ∈ S) :
     ∫ᵉ ω, X ω - 1 ∂μ ≠ ⊥ := by
-    refine ne_bot_of_le_ne_bot (b := ∫ᵉ ω, - 1 ∂μ) ?_ ?_
-    · specialize hS μ hμ
-      simp
-    · gcongr
-      intro x
-      simp only
-      conv_lhs => rw [← zero_sub (1 : EReal)]
-      refine EReal.sub_le_sub ?_ le_rfl -- add gcongr tag?
-      positivity
+  refine ne_bot_of_le_ne_bot (b := ∫ᵉ ω, - 1 ∂μ) ?_ ?_
+  · specialize hS μ hμ
+    simp
+  · gcongr
+    intro x
+    simp only
+    conv_lhs => rw [← zero_sub (1 : EReal)]
+    refine EReal.sub_le_sub ?_ le_rfl -- add gcongr tag?
+    positivity
 
 lemma IsEVar.eintegrable_sub_one {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S) (μ : Measure 𝓧) (hμ : μ ∈ S) :
     eintegrable (fun ω ↦ (X ω : EReal) - 1) μ :=
