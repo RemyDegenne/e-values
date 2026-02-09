@@ -198,6 +198,10 @@ lemma eintegrable_of_eintegral_ne_bot (hf : ∫ᵉ x, f x ∂μ ≠ ⊥) : einte
 @[simp]
 lemma eintegral_zero (μ : Measure α) : ∫ᵉ _, (0 : EReal) ∂μ = 0 := by simp [eintegral]
 
+@[simp]
+lemma eintegral_zero_measure (f : α → EReal) : ∫ᵉ x, f x ∂(0 : Measure α) = 0 := by
+  simp [eintegral]
+
 lemma eintegral_congr (h : ∀ x, f x = g x) : ∫ᵉ x, f x ∂μ = ∫ᵉ x, g x ∂μ := by
   simp_rw [h]
 
