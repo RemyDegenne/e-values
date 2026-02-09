@@ -253,6 +253,10 @@ lemma eintegral_nonpos' (hf_meas : AEMeasurable f μ) (hf : ∀ᵐ x ∂μ, f x 
   simp only [EReal.neg_le_zero]
   positivity
 
+lemma setEIntegral_measure_zero {μ : Measure α} (s : Set α) (f : α → EReal) (hs' : μ s = 0) :
+    ∫ᵉ x in s, f x ∂μ = 0 := by
+  simp [eintegral, setLIntegral_measure_zero s _ hs']
+
 @[simp]
 lemma eintegral_const (c : EReal) (μ : Measure α) : ∫ᵉ _, c ∂μ = c * (μ Set.univ : EReal) := by
   rcases le_total 0 c with hc | hc

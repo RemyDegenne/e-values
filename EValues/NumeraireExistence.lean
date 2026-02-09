@@ -3,6 +3,7 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Gaëtan Serré
 -/
+import EValues.LebesgueDecomposition
 import EValues.Numeraire
 import Mathlib.MeasureTheory.Measure.WithDensityFinite
 import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
@@ -104,241 +105,6 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
       rw [Tendsto.limsup_eq]
       exact (hU_cont.tendsto _).comp hx
 
-section A1Proof
-/-! Copied and adapted from the exhaustion file. Should probably be generalized. -/
-
-variable {α : Type*} {mα : MeasurableSpace α} {ν : Measure α} {S : Set (Measure α)}
-
-/-- Let `C` be the supremum of `ν s` over all measurable sets `s` such that `μ.restrict s` is
-sigma-finite. `C` is finite since `ν` is a finite measure. Then there exists a measurable set `t`
-with `μ.restrict t` sigma-finite such that `ν t ≥ C - 1/n`. -/
-lemma exists_todoSet_measure_ge (ν : Measure α) [IsFiniteMeasure ν]
-    (S : Set (Measure α)) (n : ℕ) :
-    ∃ t, MeasurableSet t ∧ nullSet t S
-      ∧ (⨆ (s) (_ : MeasurableSet s) (_ : nullSet s S), ν s) - 1 / n ≤ ν t := by
-  by_cases hC_lt : 1 / n < ⨆ (s) (_ : MeasurableSet s) (_ : nullSet s S), ν s
-  · have h_lt_top : ⨆ (s) (_ : MeasurableSet s) (_ : nullSet s S), ν s < ∞ := by
-      refine (?_ : ⨆ (s) (_ : MeasurableSet s)
-        (_ : nullSet s S), ν s ≤ ν Set.univ).trans_lt (measure_lt_top _ _)
-      refine iSup_le (fun s ↦ ?_)
-      exact iSup_le (fun _ ↦ iSup_le (fun _ ↦ measure_mono (Set.subset_univ s)))
-    obtain ⟨t, ht⟩ := exists_lt_of_lt_ciSup
-      (ENNReal.sub_lt_self h_lt_top.ne hC_lt.ne_bot (by simp) :
-          (⨆ (s) (_ : MeasurableSet s) (_ : nullSet s S), ν s) - 1 / n
-        < ⨆ (s) (_ : MeasurableSet s) (_ : nullSet s S), ν s)
-    have ht_meas : MeasurableSet t := by
-      by_contra h_notMem
-      simp only [h_notMem] at ht
-      simp at ht
-    have ht_mem : nullSet t S := by
-      by_contra h_notMem
-      simp only [h_notMem] at ht
-      simp at ht
-    refine ⟨t, ht_meas, ht_mem, ?_⟩
-    simp only [ht_meas, ht_mem, iSup_true] at ht
-    exact ht.le
-  · refine ⟨∅, MeasurableSet.empty, by simp, ?_⟩
-    push_neg at hC_lt
-    rw [tsub_eq_zero_of_le hC_lt]
-    exact zero_le _
-
-/-- A measurable set such that `μ.restrict (μ.sigmaFiniteSetGE ν n)` is sigma-finite and
-for `C` the supremum of `ν s` over all measurable sets `s` with `μ.restrict s` sigma-finite,
-`ν (μ.sigmaFiniteSetGE ν n) ≥ C - 1/n`. -/
-def _root_.MeasureTheory.Measure.todoSet (ν : Measure α) [IsFiniteMeasure ν]
-    (S : Set (Measure α)) (n : ℕ) : Set α :=
-  (exists_todoSet_measure_ge ν S n).choose
-
-lemma measurableSet_todoSet [IsFiniteMeasure ν] (n : ℕ) :
-    MeasurableSet (ν.todoSet S n) :=
-  (exists_todoSet_measure_ge ν S n).choose_spec.1
-
-lemma nullSet_todoSet (ν : Measure α) [IsFiniteMeasure ν]
-    (S : Set (Measure α)) (n : ℕ) :
-    nullSet (ν.todoSet S n) S :=
-  (exists_todoSet_measure_ge ν S n).choose_spec.2.1
-
-lemma measure_todoSet_le (ν : Measure α) [IsFiniteMeasure ν] (S : Set (Measure α)) (n : ℕ) :
-    ν (ν.todoSet S n)
-      ≤ ⨆ (s) (_ : MeasurableSet s) (_ : nullSet s S), ν s := by
-  refine (le_iSup (f := fun s ↦ _) (nullSet_todoSet ν S n)).trans ?_
-  exact le_iSup₂ (f := fun s _ ↦ ⨆ (_ : nullSet s S), ν s) (ν.todoSet S n)
-    (measurableSet_todoSet n)
-
-lemma measure_todoSet_ge (ν : Measure α) [IsFiniteMeasure ν] (S : Set (Measure α)) (n : ℕ) :
-    (⨆ (s) (_ : MeasurableSet s) (_ : nullSet s S), ν s) - 1 / n
-      ≤ ν (ν.todoSet S n) :=
-  (exists_todoSet_measure_ge ν S n).choose_spec.2.2
-
-lemma tendsto_measure_todoSet (ν : Measure α) [IsFiniteMeasure ν] (S : Set (Measure α)) :
-    Tendsto (fun n ↦ ν (ν.todoSet S n)) atTop
-      (𝓝 (⨆ (s) (_ : MeasurableSet s) (_ : nullSet s S), ν s)) := by
-  refine tendsto_of_tendsto_of_tendsto_of_le_of_le ?_
-    tendsto_const_nhds (measure_todoSet_ge ν S) (measure_todoSet_le ν S)
-  nth_rewrite 2 [← tsub_zero (⨆ (s) (_ : MeasurableSet s) (_ : nullSet s S), ν s)]
-  refine ENNReal.Tendsto.sub tendsto_const_nhds ?_ (Or.inr ENNReal.zero_ne_top)
-  simp only [one_div]
-  exact ENNReal.tendsto_inv_nat_nhds_zero
-
-/-- A measurable set such that `μ.restrict (μ.sigmaFiniteSetWRT' ν)` is sigma-finite and
-`ν (μ.sigmaFiniteSetWRT' ν)` has maximal measure among such sets. -/
-def _root_.MeasureTheory.Measure.todoSet' (ν : Measure α) [IsFiniteMeasure ν]
-    (S : Set (Measure α)) :
-    Set α :=
-  ⋃ n, ν.todoSet S n
-
-lemma measurableSet_todoSet' [IsFiniteMeasure ν] :
-    MeasurableSet (ν.todoSet' S) :=
-  MeasurableSet.iUnion measurableSet_todoSet
-
-lemma todoSet'_nullSet (ν : Measure α) [IsFiniteMeasure ν] (S : Set (Measure α)) :
-    nullSet (ν.todoSet' S) S where
-  measurableSet := measurableSet_todoSet'
-  null μ hμ := by
-    unfold Measure.todoSet'
-    simp only [measure_iUnion_null_iff]
-    intro n
-    have h_mem := nullSet_todoSet ν S n
-    exact h_mem.null μ hμ
-
-/-- `μ.sigmaFiniteSetWRT' ν` has maximal `ν`-measure among all measurable sets `s` with sigma-finite
-`μ.restrict s`. -/
-lemma measure_todoSet' (ν : Measure α) [IsFiniteMeasure ν] (S : Set (Measure α)) :
-    ν (ν.todoSet' S)
-      = ⨆ (s) (_ : MeasurableSet s) (_ : nullSet s S), ν s := by
-  apply le_antisymm
-  · refine (le_iSup (f := fun _ ↦ _) (todoSet'_nullSet ν S)).trans ?_
-    exact le_iSup₂ (f := fun s _ ↦ ⨆ (_ : nullSet s S), ν s) (ν.todoSet' S)
-      measurableSet_todoSet'
-  · exact le_of_tendsto' (tendsto_measure_todoSet ν S)
-      (fun _ ↦ measure_mono (Set.subset_iUnion _ _))
-
-end A1Proof
-
-lemma A1' (Q : Measure 𝓧) [IsFiniteMeasure Q] (S : Set (Measure 𝓧)) :
-    ∃ (ρ : Measure 𝓧 × Measure 𝓧), (∀ t, nullSet t S → ρ.1 t = 0) ∧
-      (∃ s, nullSet s S ∧ ρ.2 sᶜ = 0) ∧
-      Q = ρ.1 + ρ.2 := by
-  let N := Q.todoSet' S
-  have hN : MeasurableSet N := measurableSet_todoSet'
-  have hN_mem : nullSet N S := todoSet'_nullSet Q S
-  refine ⟨(Q.restrict Nᶜ, Q.restrict N), ?_, ?_, ?_⟩
-  · simp only
-    intro s hs
-    by_contra h_pos
-    suffices Q N < Q (N ∪ s) by
-      unfold N at this
-      rw [measure_todoSet'] at this
-      refine not_le.mpr this ?_
-      refine le_iSup_of_le (Q.todoSet' S ∪ s) ?_
-      refine le_iSup_of_le (measurableSet_todoSet'.union hs.measurableSet) ?_
-      have h_mem : nullSet (Q.todoSet' S ∪ s) S := hN_mem.union hs
-      exact le_iSup_of_le h_mem le_rfl
-    calc Q N
-    _ < Q.restrict N N + Q.restrict Nᶜ s := by
-      conv_lhs => rw [← add_zero (Q N)]
-      refine ENNReal.add_lt_add_of_le_of_lt (by simp) (le_of_eq (by simp)) ?_
-      exact lt_of_le_of_ne' (zero_le _) h_pos
-    _ ≤ Q.restrict N (N ∪ s) + Q.restrict Nᶜ (N ∪ s) := by gcongr <;> simp
-    _ = Q (N ∪ s) := by rw [← Measure.add_apply, Measure.restrict_add_restrict_compl hN]
-  · refine ⟨N, hN_mem, ?_⟩
-    simp [Measure.restrict_apply hN.compl]
-  · simp only
-    rw [add_comm, Measure.restrict_add_restrict_compl hN]
-
-lemma A1 (Q : Measure 𝓧) [SFinite Q] (S : Set (Measure 𝓧)) :
-    ∃ (ρ : Measure 𝓧 × Measure 𝓧), (∀ t, nullSet t S → ρ.1 t = 0) ∧
-      (∃ s, nullSet s S ∧ ρ.2 sᶜ = 0) ∧
-      Q = ρ.1 + ρ.2 := by
-  obtain ⟨ρ, h1, h2, h3⟩ := A1' Q.toFinite S
-  let f := Q.rnDeriv Q.toFinite
-  refine ⟨(ρ.1.withDensity f, ρ.2.withDensity f), fun t ht ↦ ?_, ?_, ?_⟩
-  · simp only
-    specialize h1 t ht
-    rw [withDensity_apply_eq_zero (Measure.measurable_rnDeriv _ _)]
-    refine measure_mono_null ?_ h1
-    exact Set.inter_subset_right
-  · obtain ⟨s, hs_null, hs_eq⟩ := h2
-    refine ⟨s,  hs_null, ?_⟩
-    rw [withDensity_apply_eq_zero (Measure.measurable_rnDeriv _ _)]
-    refine measure_mono_null ?_ hs_eq
-    exact Set.inter_subset_right
-  · simp only
-    rw [← withDensity_add_measure, ← h3, Measure.withDensity_rnDeriv_eq]
-    exact absolutelyContinuous_toFinite Q
-
-noncomputable
-def _root_.MeasureTheory.Measure.acPartSet (Q : Measure 𝓧) [SFinite Q] (S : Set (Measure 𝓧)) :
-    Measure 𝓧 :=
-  (A1 Q S).choose.1
-
-noncomputable
-def _root_.MeasureTheory.Measure.singularPartSet (Q : Measure 𝓧) [SFinite Q] (S : Set (Measure 𝓧)) :
-    Measure 𝓧 :=
-  (A1 Q S).choose.2
-
-def a1Event (Q : Measure 𝓧) [SFinite Q] (S : Set (Measure 𝓧)) : Set 𝓧 :=
-  (A1 Q S).choose_spec.2.1.choose
-
-lemma ae_acPartSet_le_aeSet (Q : Measure 𝓧) [SFinite Q] (S : Set (Measure 𝓧)) :
-    ∀ t, nullSet t S → Q.acPartSet S t = 0 := (A1 Q S).choose_spec.1
-
-lemma nullSet_a1Event (Q : Measure 𝓧) [SFinite Q] (S : Set (Measure 𝓧)) :
-    nullSet (a1Event Q S) S :=
-  (A1 Q S).choose_spec.2.1.choose_spec.1
-
-lemma measurableSet_a1Event (Q : Measure 𝓧) [SFinite Q] (S : Set (Measure 𝓧)) :
-    MeasurableSet (a1Event Q S) := (nullSet_a1Event Q S).measurableSet
-
-@[simp]
-lemma acPartSet_a1Event (Q : Measure 𝓧) [SFinite Q] (S : Set (Measure 𝓧)) :
-    Q.acPartSet S (a1Event Q S) = 0 :=
-  ae_acPartSet_le_aeSet Q S _ (nullSet_a1Event Q S)
-
-@[simp]
-lemma singularPartSet_a1Event_compl (Q : Measure 𝓧) [SFinite Q] (S : Set (Measure 𝓧)) :
-    Q.singularPartSet S (a1Event Q S)ᶜ = 0 := (A1 Q S).choose_spec.2.1.choose_spec.2
-
-lemma singular_singularPartSet (Q : Measure 𝓧) [SFinite Q] (S : Set (Measure 𝓧)) :
-    Q.acPartSet S ⟂ₘ Q.singularPartSet S := by
-  refine ⟨a1Event Q S, measurableSet_a1Event Q S, by simp, by simp⟩
-
-lemma acPartSet_add_singularPartSet (Q : Measure 𝓧) [SFinite Q] (S : Set (Measure 𝓧)) :
-    Q.acPartSet S + Q.singularPartSet S = Q := (A1 Q S).choose_spec.2.2.symm
-
-lemma measure_a1Event_diff {Q : Measure 𝓧} [SFinite Q] {S : Set (Measure 𝓧)}
-    {s : Set 𝓧} (hs : nullSet s S) :
-    Q (s \ a1Event Q S) = 0 := by
-  refine le_antisymm ?_ (zero_le _)
-  calc Q (s \ a1Event Q S)
-  _ = Q.acPartSet S (s \ a1Event Q S) + Q.singularPartSet S (s \ a1Event Q S) := by
-    rw [← Measure.add_apply, acPartSet_add_singularPartSet Q S]
-  _ ≤ Q.acPartSet S s + Q.singularPartSet S (a1Event Q S)ᶜ := by gcongr <;> grind
-  _ = 0 := by
-    simp only [singularPartSet_a1Event_compl, add_zero]
-    exact ae_acPartSet_le_aeSet Q S _ hs
-
-lemma ae_imp_mem_a1Event (Q : Measure 𝓧) [SFinite Q] {S : Set (Measure 𝓧)}
-    {s : Set 𝓧} (hs : nullSet s S) :
-    ∀ᵐ x ∂Q, x ∈ s → x ∈ a1Event Q S := by
-  have h_diff := measure_a1Event_diff (Q := Q) hs
-  simpa [measure_eq_zero_iff_ae_notMem] using h_diff
-
-lemma measure_a1Event {Q μ : Measure 𝓧} [SFinite Q] (hS : μ ∈ S) :
-    μ (a1Event Q S) = 0 := by
-  rw [← compl_compl (x := a1Event Q S), ← mem_ae_iff]
-  have h_le : ae μ ≤ aeSet S := le_iSup₂ μ hS (f := fun μ _ ↦ ae μ)
-  exact h_le (compl_mem_aeSet_of_nullSet (nullSet_a1Event Q S))
-
-lemma ae_mem_compl_a1Event (Q : Measure 𝓧) [SFinite Q] {μ : Measure 𝓧} (hS : μ ∈ S) :
-    ∀ᵐ x ∂μ, x ∈ (a1Event Q S)ᶜ := by
-  simp only [Set.mem_compl_iff, ae_iff, not_not, Set.setOf_mem_eq]
-  exact measure_a1Event hS
-
-lemma setEIntegral_measure_zero {μ : Measure 𝓧} (s : Set 𝓧) (f : 𝓧 → EReal) (hs' : μ s = 0) :
-    ∫ᵉ x in s, f x ∂μ = 0 := by
-  simp [eintegral, setLIntegral_measure_zero s _ hs']
-
 /-- There exists a utility-maximizing e-variable which is infinite whenever another e-variable
 is infinite. -/
 lemma exists_eq_iSup_eintegral_of_le (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
@@ -348,12 +114,12 @@ lemma exists_eq_iSup_eintegral_of_le (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
       (∫ᵉ x, U (X x) ∂P ≤ ∫ᵉ x, U (Y x) ∂P) ∧ (∀ᵐ x ∂P, Y x < ∞ → X x < ∞) := by
   obtain ⟨Y, hY_evar, h_opt⟩ := exists_eq_iSup_eintegral_of_le' hU_ccv hU_cont hU_mono hU_le P S hS
   classical
-  let Y' := fun x ↦ if x ∈ a1Event P S then ∞ else Y x
+  let Y' := fun x ↦ if x ∈ acSet P S then ∞ else Y x
   have hY' : Measurable Y' :=
-    Measurable.ite (measurableSet_a1Event P S) measurable_const hY_evar.measurable
+    Measurable.ite (measurableSet_acSet P S) measurable_const hY_evar.measurable
   have hY'_evar : IsEVar Y' S := by
     refine hY_evar.congr hY' fun μ hμ ↦ ?_
-    filter_upwards [ae_mem_compl_a1Event P hμ] with x hx
+    filter_upwards [ae_mem_compl_acSet P hμ] with x hx
     simp only [Set.mem_compl_iff] at hx
     simp [Y', hx]
   refine ⟨Y', hY'_evar, fun X hX_evar ↦ ⟨?_, ?_⟩⟩
@@ -369,7 +135,7 @@ lemma exists_eq_iSup_eintegral_of_le (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
       refine ⟨hs, fun μ hμ ↦ ?_⟩
       have h_ne_top := hX_evar.ae_ne_top hμ
       simpa only [ne_eq, ae_iff, Decidable.not_not] using h_ne_top
-    have h_diff := ae_imp_mem_a1Event P hs_compl
+    have h_diff := ae_imp_mem_acSet P hs_compl
     filter_upwards [h_diff] with x hx h_lt_top
     by_contra! h_eq_top
     simp only [top_le_iff] at h_eq_top
