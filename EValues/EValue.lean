@@ -48,12 +48,6 @@ lemma Measure.integrable_comp_iff
   · simp
   · simpa [Kernel.comp_apply]
 
-/-- The almost everywhere filter with respect to a set of measures, defined as the supremum of the
-almost everywhere filters of the measures in the set. -/
-def aeSet (S : Set (Measure 𝓧)) : Filter 𝓧 := ⨆ m ∈ S, ae m
-
-lemma mem_aeSet_iff {t : Set 𝓧} : t ∈ aeSet S ↔ ∀ m ∈ S, m tᶜ = 0 := by simp [aeSet, mem_ae_iff]
-
 end MeasureTheory
 
 namespace ProbabilityTheory
