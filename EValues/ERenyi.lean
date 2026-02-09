@@ -41,6 +41,47 @@ lemma erenyiDiv_eq_sInf : erenyiDiv α S T =
       + (1 - α) * (maxUtility R T logUtility).toENNReal} := by
   simp [erenyiDiv, iInf₂_eq_sInf]
 
+lemma erenyiDiv_empty_eq_top (hS : IsEmpty S) (hT : IsEmpty T) : erenyiDiv α S T = ⊤ := by
+  by_cases hR_prob : ¬ (∃ (R : Measure 𝓧), IsProbabilityMeasure R)
+  · rw [erenyiDiv_eq_sInf]
+    have : (1 - α)⁻¹ * ⊤ = ⊤ := ENNReal.mul_top (by simp)
+    rw [← this]
+    congr
+    suffices {y | ∃ R, IsProbabilityMeasure R ∧ y = α * (maxUtility R S logUtility).toENNReal +
+          (1 - α) * (maxUtility R T logUtility).toENNReal} = ∅ by
+      rw [this, sInf_empty]
+    simp_all
+  · calc
+    _ = (1 - α)⁻¹ * ⨅ (R : Measure 𝓧) (_ : IsProbabilityMeasure R),
+      α * ⊤ + (1 - α) * ⊤ := by
+        unfold erenyiDiv
+        congr with R
+        congr with hR
+        have hlog : ∃ c, logUtility c = ⊤ := ⟨⊤, by simp [logUtility]⟩
+        rw [maxUtility_empty_eq_top (NeZero.ne R) hS hlog,
+          maxUtility_empty_eq_top (NeZero.ne R) hT hlog]
+        simp
+    _ = ⊤ := by
+      have : ⨅ (R : Measure 𝓧), ⨅ (_ : IsProbabilityMeasure R), α * ⊤ + (1 - α) * ⊤ =
+        α * ⊤ + (1 - α) * ⊤ := by
+        rw [iInf₂_eq_sInf]
+        suffices {y | ∃ x, IsProbabilityMeasure x ∧ y = α * ⊤ + (1 - α) * ⊤} =
+          {α * ⊤ + (1 - α) * ⊤} by
+          rw [this, sInf_singleton]
+        ext y
+        constructor
+        · rintro ⟨R, hR, rfl⟩
+          rfl
+        · intro rfl
+          push_neg at hR_prob
+          obtain ⟨R, hR⟩ := hR_prob
+          exact ⟨R, hR, rfl⟩
+      rw [this, ENNReal.mul_eq_top]
+      left
+      refine ⟨by simp, ?_⟩
+      rw [ENNReal.add_eq_top]
+      by_cases hα : α = 0 <;> simp [hα]
+
 /-- The e-Chernoff divergence between two sets of measures. -/
 noncomputable
 def echernoffDiv (S T : Set (Measure 𝓧)) : ℝ≥0∞ :=
@@ -238,10 +279,48 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
           ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
             ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
             ∫ᵉ x, (logUtility ∘ X) x ∂R₁ + ∫ᵉ x, (logUtility ∘ Y) x ∂R₂ := by
+
+        have : ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
+            ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
+            ∫ᵉ x, (logUtility ∘ fun x ↦ X x.1 * Y x.2) x ∂R =
+          ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
+            ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
+            ⨆ (_ : ∫ᵉ (x : 𝓧 × 𝓨), (X x.1).log ∂R ≠ ⊥ ∧ ∫ᵉ (x : 𝓧 × 𝓨), (Y x.2).log ∂R ≠ ⊥),
+            ∫ᵉ x, (logUtility ∘ fun x ↦ X x.1 * Y x.2) x ∂R := by
+              congr with X
+              congr with Y
+              congr with hX
+              congr with hY
+              simp only [Function.comp_apply]
+              by_cases h : ∫ᵉ (x : 𝓧 × 𝓨), (X x.1).log ∂R ≠ ⊥ ∧
+                  ∫ᵉ (x : 𝓧 × 𝓨), (Y x.2).log ∂R ≠ ⊥
+              · simp [h]
+              · simp only [ne_eq, h, not_false_eq_true, iSup_neg]
+                rw [not_and_or] at h
+                cases h with
+                | inl hXh =>
+                  -- Pas sûr que ça passe...
+                  sorry
+                | inr hYh => sorry
+
+        rw [this]
+        clear this
+
+        have : ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
+            ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
+            ∫ᵉ x, (logUtility ∘ X) x ∂R₁ + ∫ᵉ x, (logUtility ∘ Y) x ∂R₂ =
+          ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
+            ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
+            ⨆ (_ : ∫ᵉ (x : 𝓧 × 𝓨), (X x.1).log ∂R ≠ ⊥ ∧ ∫ᵉ (x : 𝓧 × 𝓨), (Y x.2).log ∂R ≠ ⊥),
+            ∫ᵉ x, (logUtility ∘ X) x ∂R₁ + ∫ᵉ x, (logUtility ∘ Y) x ∂R₂ := by sorry
+        rw [this]
+        clear this
+
         congr with X
         congr with Y
         congr with hX
         congr with hY
+        congr with hXY
         calc
         _ = ∫ᵉ x, logUtility (X x.1) ∂R + ∫ᵉ x, logUtility (Y x.2) ∂R := by
           simp_rw [logUtility, Function.comp, ENNReal.log_mul_add]
@@ -260,10 +339,8 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
               rwa [lintegral_map (by fun_prop) measurable_snd] at hYe
             · right
               rwa [lintegral_map (by fun_prop) measurable_snd] at hYe
-          · refine .inl (EReal.ne_bot_of_nonneg ?_)
-            sorry
-          · refine .inr (EReal.ne_bot_of_nonneg ?_)
-            sorry
+          · exact Or.inl hXY.1
+          · exact Or.inr hXY.2
         _ = ∫ᵉ x, logUtility (X x) ∂R₁ + ∫ᵉ x, logUtility (Y x) ∂R₂ := by
             congr
             · rw [eintegral_map ?_ measurable_fst]
