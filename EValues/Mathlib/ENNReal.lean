@@ -12,7 +12,7 @@ open ENNReal
 namespace Function
 
 /-- The finite support of a function `X : α → β` with top and zero elements is the set of points
-where `X` is neither `⊤` nor `0`. -/
+where `X` is neither `⊤` or `0`. -/
 abbrev fsupport {α β : Type*} [Top β] [Zero β] (f : α → β) := {x | f x ≠ ⊤} ∩ {x | f x ≠ 0}
 
 lemma fsupport_compl {α β : Type*} [Top β] [Zero β] (X : α → β) :
