@@ -20,19 +20,11 @@ namespace ProbabilityTheory
 
 -- proved in the Brownian motion project
 lemma komlos_ennreal {Ω : Type*} {mΩ : MeasurableSpace Ω} {X : ℕ → Ω → ℝ≥0∞}
-    (hX : ∀ n, Measurable (X n)) (P : Measure Ω) [IsFiniteMeasure P] :
-    ∃ (Y : ℕ → Ω → ℝ≥0∞) (Y_lim : Ω → ℝ≥0∞),
-      (∀ n, Y n ∈ convexHull ℝ≥0∞ (Set.range fun m ↦ X (n + m))) ∧ Measurable Y_lim ∧
-      ∀ᵐ ω ∂P, Tendsto (Y · ω) atTop (𝓝 (Y_lim ω)) := by
-  sorry
-
-lemma komlos_ennreal' {Ω : Type*} {mΩ : MeasurableSpace Ω} {X : ℕ → Ω → ℝ≥0∞}
     (hX : ∀ n, Measurable (X n)) (P : Measure Ω) [SFinite P] :
     ∃ (Y : ℕ → Ω → ℝ≥0∞) (Y_lim : Ω → ℝ≥0∞),
       (∀ n, Y n ∈ convexHull ℝ≥0∞ (Set.range fun m ↦ X (n + m))) ∧ Measurable Y_lim ∧
       ∀ᵐ ω ∂P, Tendsto (Y · ω) atTop (𝓝 (Y_lim ω)) := by
-  obtain ⟨Y, Ylim, hY_cvx, hYlim_meas, hY_tendsto⟩ := komlos_ennreal hX P.toFinite
-  exact ⟨Y, Ylim, hY_cvx, hYlim_meas, absolutelyContinuous_toFinite P hY_tendsto⟩
+  sorry
 
 variable {𝓧 : Type*} {m𝓧 : MeasurableSpace 𝓧} {P : Measure 𝓧} {S : Set (Measure 𝓧)}
 
@@ -54,7 +46,7 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
   simp only [Set.mem_setOf_eq, S'] at hu_mem
   choose X hX_evar hu_eq using hu_mem
   obtain ⟨Y, Ylim, hY_mem, hY_lim_meas, hY_tendsto⟩ :=
-    komlos_ennreal' (fun n ↦ (hX_evar n).measurable) P
+    komlos_ennreal (fun n ↦ (hX_evar n).measurable) P
   have hY_evar n : IsEVar (Y n) S := by
     specialize hY_mem n
     rw [mem_convexHull_iff] at hY_mem
