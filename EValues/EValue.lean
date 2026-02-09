@@ -37,21 +37,6 @@ open MeasureTheory ProbabilityTheory
 variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableSpace 𝓨}
   {μ : Measure 𝓧} {S : Set (Measure 𝓧)}
 
-namespace MeasureTheory
-
--- was added to Mathlib. Remove in a future bump.
-lemma Measure.integrable_comp_iff
-    {α β E : Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β}
-    [NormedAddCommGroup E] {κ : Kernel α β} {μ : Measure α} {f : β → E}
-    (h_meas : AEStronglyMeasurable f (κ ∘ₘ μ)) :
-    Integrable f (κ ∘ₘ μ)
-      ↔ (∀ᵐ x ∂μ, Integrable f (κ x)) ∧ Integrable (fun x ↦ ∫ y, ‖f y‖ ∂κ x) μ := by
-  rw [Measure.comp_eq_comp_const_apply, ProbabilityTheory.integrable_comp_iff]
-  · simp
-  · simpa [Kernel.comp_apply]
-
-end MeasureTheory
-
 namespace ProbabilityTheory
 
 -- section NegFun

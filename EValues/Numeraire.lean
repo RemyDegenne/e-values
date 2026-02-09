@@ -289,7 +289,7 @@ theorem ae_unique [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) (hY : IsNumerai
         · simp_all
         · contradiction
     · simp only [Pi.div_apply, const_apply]
-      refine measurableSet_eq_fun' ?_ measurable_const
+      refine measurableSet_eq_fun ?_ measurable_const
       have := hX.measurable
       have := hY.measurable
       fun_prop

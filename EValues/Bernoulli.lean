@@ -144,7 +144,7 @@ lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
           ≤ ENNReal.ofReal δ
             * (1 + (ENNReal.ofReal δ)⁻¹ * (1 - ENNReal.ofReal (X ⟨0, by simp⟩).toReal)
               * ENNReal.ofReal (1 - δ)) by
-        rwa [ENNReal.mul_le_mul_left (by simp [hδ_pos]) (by simp)] at this
+        rwa [ENNReal.mul_le_mul_iff_right (by simp [hδ_pos]) (by simp)] at this
       ring_nf
       rw [ENNReal.mul_inv_cancel (by simp [hδ_pos]) (by simp), one_mul, mul_comm (1 - _),
         ENNReal.mul_sub (by simp), mul_one, add_comm, ENNReal.sub_add_eq_add_sub _ (by finiteness),
@@ -187,7 +187,7 @@ lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
         exact add_nonneg (by simp) (mul_nonneg hu_nonneg (sub_nonneg.mpr hδ))
       congr
       rw [integral_add (by fun_prop) (by fun_prop), integral_const_mul]
-      simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one, add_right_inj,
+      simp only [integral_const, probReal_univ, smul_eq_mul, mul_one, add_right_inj,
         mul_eq_mul_left_iff]
       rw [integral_sub (by fun_prop) (by fun_prop)]
       simp
@@ -370,14 +370,14 @@ lemma map_bernoulli_le_eq_bernoulli_ge (δ : ℝ) :
   · rintro ⟨ν, ⟨⟨hν, h_int⟩, rfl⟩⟩
     refine ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩
     rw [integral_map (by fun_prop) (by fun_prop), integral_sub (by fun_prop) (by fun_prop)]
-    simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+    simp only [integral_const, probReal_univ, smul_eq_mul, mul_one]
     linarith
   · rintro ⟨hμ, h_int⟩
     refine ⟨μ.map φ, ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩, ?_⟩
     · rw [integral_map (by fun_prop) (by fun_prop)]
       simp only [φ]
       rw [integral_sub (by fun_prop) (by fun_prop)]
-      simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+      simp only [integral_const, probReal_univ, smul_eq_mul, mul_one]
       linarith
     · rw [Measure.map_map (by fun_prop) (by fun_prop), hφ_inv, Measure.map_id]
 

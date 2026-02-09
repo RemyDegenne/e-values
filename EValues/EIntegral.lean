@@ -534,7 +534,7 @@ lemma eintegral_eq_integral {f : α → ℝ} (hf : Integrable f μ) :
     eintegral_of_nonneg (by simp)]
   simp only [posPartFun, ne_eq, max_eq_top, EReal.coe_ne_top, EReal.zero_ne_top, or_self,
     not_false_eq_true, EReal.toENNReal_of_ne_top, negPartFun, EReal.neg_eq_top_iff, min_eq_bot,
-    EReal.coe_ne_bot, EReal.zero_ne_bot, EReal.toReal_neg]
+    EReal.coe_ne_bot, EReal.zero_ne_bot]
   have h_int_max : Integrable (fun x ↦ (max (f x : EReal) 0).toReal) μ := by
     refine hf.mono ?_ ?_
     · exact AEMeasurable.aestronglyMeasurable (by fun_prop)
@@ -549,7 +549,7 @@ lemma eintegral_eq_integral {f : α → ℝ} (hf : Integrable f μ) :
   rotate_left
   · exact h_int_min
   · filter_upwards with x
-    simp only [Pi.zero_apply, Left.nonneg_neg_iff]
+    simp only [Pi.zero_apply]
     rw [← EReal.toReal_zero]
     exact EReal.toReal_le_toReal (by simp) (by simp) (by simp)
   · exact h_int_max
@@ -602,7 +602,7 @@ lemma integrable_toReal (hf_meas : AEMeasurable f μ) (h_int_bot : ∫ᵉ x, f x
     -- todo: extract a lemma?
     simp only [enorm, nnnorm, EReal.toReal_coe, Real.norm_eq_abs, abs, ne_eq, max_eq_top,
       EReal.coe_ne_top, EReal.zero_ne_top, or_self, not_false_eq_true, EReal.toENNReal_of_ne_top,
-      EReal.neg_eq_top_iff, min_eq_bot, EReal.coe_ne_bot, EReal.zero_ne_bot, EReal.toReal_neg]
+      EReal.neg_eq_top_iff, min_eq_bot, EReal.coe_ne_bot, EReal.zero_ne_bot]
     rcases le_total 0 r with h | h <;> simp [ENNReal.ofReal, Real.toNNReal, h]
   rw [h_eq, lintegral_enorm_eq_posPartFun_add_negPartFun hf_meas]
   refine EReal.add_lt_top ?_ ?_
@@ -652,7 +652,7 @@ lemma eintegral_mul_const_of_nonneg {c : EReal} (hc_bot : c ≠ ⊥) (hc_top : c
     have : 0 ≤ - (c : EReal) := by simp [hc']
     simp_rw [← EReal.neg_mul, EReal.toENNReal_mul this]
     simp only [ne_eq, EReal.neg_eq_top_iff, EReal.coe_ne_bot, not_false_eq_true,
-      EReal.toENNReal_of_ne_top, EReal.toReal_neg, EReal.toReal_coe]
+      EReal.toENNReal_of_ne_top]
     rw [lintegral_const_mul' _ _ (by simp)]
     simp [hc]
 
@@ -1138,7 +1138,7 @@ lemma eintegral_smul_measure {c : ℝ≥0∞} (hc : c ≠ ∞) (f : α → EReal
   simp only [eintegral, lintegral_smul_measure, smul_eq_mul, EReal.coe_ennreal_mul]
   rw [EReal.mul_sub_of_nonneg_of_ne_top _ (by simp [hc])]
   norm_cast
-  exact zero_le'
+  exact zero_le _
 
 @[simp]
 lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClass α]

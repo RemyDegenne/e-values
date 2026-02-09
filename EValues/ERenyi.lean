@@ -362,14 +362,14 @@ lemma erenyiDiv_of_involutive_aux {S T : Set (Measure 𝓧)}
       gcongr
       · refine EReal.toENNReal_le_toENNReal ?_
         have h_conv := (convexOn_maxUtility S (U := logUtility)).2 (by simp : R ∈ Set.univ)
-          (by simp : R.map φ ∈ Set.univ) (zero_le' : 0 ≤ (2 : ℝ≥0∞)⁻¹) (zero_le' : 0 ≤ (2 : ℝ≥0∞)⁻¹)
-          (by simpa using ENNReal.add_halves 1)
+          (by simp : R.map φ ∈ Set.univ) (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹)
+          (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹) (by simpa using ENNReal.add_halves 1)
         unfold R'
         rwa [smul_add]
       · refine EReal.toENNReal_le_toENNReal ?_
         have h_conv := (convexOn_maxUtility T (U := logUtility)).2 (by simp : R ∈ Set.univ)
-          (by simp : R.map φ ∈ Set.univ) (zero_le' : 0 ≤ (2 : ℝ≥0∞)⁻¹) (zero_le' : 0 ≤ (2 : ℝ≥0∞)⁻¹)
-          (by simpa using ENNReal.add_halves 1)
+          (by simp : R.map φ ∈ Set.univ) (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹)
+          (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹) (by simpa using ENNReal.add_halves 1)
         unfold R'
         rwa [smul_add]
     _ = (2 : ℝ≥0∞)⁻¹ * ((2 : ℝ≥0∞)⁻¹ * maxUtility R S logUtility
@@ -451,14 +451,14 @@ lemma echernoffDiv_of_involutive_aux {S T : Set (Measure 𝓧)}
       gcongr
       · refine EReal.toENNReal_le_toENNReal ?_
         have h_conv := (convexOn_maxUtility S (U := logUtility)).2 (by simp : R ∈ Set.univ)
-          (by simp : R.map φ ∈ Set.univ) (zero_le' : 0 ≤ (2 : ℝ≥0∞)⁻¹) (zero_le' : 0 ≤ (2 : ℝ≥0∞)⁻¹)
-          (by simpa using ENNReal.add_halves 1)
+          (by simp : R.map φ ∈ Set.univ) (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹)
+          (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹) (by simpa using ENNReal.add_halves 1)
         unfold R'
         rwa [smul_add]
       · refine EReal.toENNReal_le_toENNReal ?_
         have h_conv := (convexOn_maxUtility T (U := logUtility)).2 (by simp : R ∈ Set.univ)
-          (by simp : R.map φ ∈ Set.univ) (zero_le' : 0 ≤ (2 : ℝ≥0∞)⁻¹) (zero_le' : 0 ≤ (2 : ℝ≥0∞)⁻¹)
-          (by simpa using ENNReal.add_halves 1)
+          (by simp : R.map φ ∈ Set.univ) (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹)
+          (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹) (by simpa using ENNReal.add_halves 1)
         unfold R'
         rwa [smul_add]
     _ ≤ max ((2 : ℝ≥0∞)⁻¹ * max (maxUtility R S logUtility) (maxUtility R T logUtility)
