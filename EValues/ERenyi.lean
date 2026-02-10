@@ -318,11 +318,7 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
         calc
         _ = ∫ᵉ x, logUtility (X x.1) ∂R + ∫ᵉ x, logUtility (Y x.2) ∂R := by
           simp_rw [logUtility, Function.comp, ENNReal.log_mul_add]
-          have := hX.measurable
-          have := hY.measurable
-          rw [eintegral_add]
-          · fun_prop
-          · fun_prop
+          rw [eintegral_add (by fun_prop) (by fun_prop)]
           · have hXe := hX.eintegral_ne_bot
             refine eintegrable_of_eintegral_ne_bot ?_
             rwa [eintegral_map (by fun_prop) measurable_fst] at hXe
@@ -332,28 +328,22 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
           · exact Or.inl hXY1
           · exact Or.inr hXY2
         _ = ∫ᵉ x, logUtility (X x) ∂R₁ + ∫ᵉ x, logUtility (Y x) ∂R₂ := by
-            congr
-            · rw [eintegral_map ?_ measurable_fst]
-              have : Measurable X := hX.measurable
-              fun_prop
-            · rw [eintegral_map ?_ measurable_snd]
-              have : Measurable Y := hY.measurable
-              fun_prop
+            congr <;> rw [eintegral_map (by fun_prop) (by fun_prop)]
       congr
       · rw [sup_prod_sum S₁ T₁, ← exists_iSup₂_EReal_add,
             ← maxUtility_eq_iSup_neBotUtilityEVar, ← maxUtility_eq_iSup_neBotUtilityEVar]
-        · exact NeBotUtilityEVar_numeraire hS₁
+        · exact neBotUtilityEVar_numeraire hS₁
         · exact numeraire R₂ T₁
-        · exact NeBotUtilityEVar_numeraire hT₁
+        · exact neBotUtilityEVar_numeraire hT₁
         · rw [← maxUtility_eq_iSup_neBotUtilityEVar, maxUtility_eq_integral_numeraire R₁ hS₁]
           rfl
         · rw [← maxUtility_eq_iSup_neBotUtilityEVar, maxUtility_eq_integral_numeraire R₂ hT₁]
           rfl
       · rw [sup_prod_sum S₂ T₂, ← exists_iSup₂_EReal_add,
             ← maxUtility_eq_iSup_neBotUtilityEVar, ← maxUtility_eq_iSup_neBotUtilityEVar]
-        · exact NeBotUtilityEVar_numeraire hS₂
+        · exact neBotUtilityEVar_numeraire hS₂
         · exact numeraire R₂ T₂
-        · exact NeBotUtilityEVar_numeraire hT₂
+        · exact neBotUtilityEVar_numeraire hT₂
         · rw [← maxUtility_eq_iSup_neBotUtilityEVar, maxUtility_eq_integral_numeraire R₁ hS₂]
           rfl
         · rw [← maxUtility_eq_iSup_neBotUtilityEVar, maxUtility_eq_integral_numeraire R₂ hT₂]
