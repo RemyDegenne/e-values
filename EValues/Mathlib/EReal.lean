@@ -27,8 +27,7 @@ lemma EReal.mul_add_ENNReal {a : ℝ≥0∞} {b c : EReal} (hb₀ : 0 ≤ b) (hc
     · simp [ha₀]
     · simp_all only [toENNReal_top, ne_eq, not_false_eq_true, mul_top]
       have : b = ⊤ ∨ c = ⊤ := by
-        by_contra h
-        push_neg at h
+        by_contra! h
         exact add_ne_top h.1 h.2 hₜ
       cases this with
       | inl hbₜ =>
@@ -255,7 +254,22 @@ lemma EReal.sub_eq_bot {a b : EReal} : a - b = ⊥ ↔ a = ⊥ ∨ b = ⊤ := by
   cases a <;> cases b <;> simp_all
   norm_cast
   simp [-coe_sub]
+
 lemma EReal.add_sub_add_comm {a b c d : EReal} (h1 : c ≠ ⊥ ∨ d ≠ ⊤) (h2 : c ≠ ⊤ ∨ d ≠ ⊥) :
     (a + b) - (c + d) = (a - c) + (b - d) := by
   rw [sub_eq_add_neg, sub_eq_add_neg, sub_eq_add_neg, EReal.neg_add h1 h2, sub_eq_add_neg]
   grind
+
+lemma EReal.coe_ennreal_sub_toENNReal (a b : ℝ≥0∞) :
+    ((a : EReal) - (b : EReal)).toENNReal = a - b := by
+  cases a <;> cases b <;> aesop
+
+lemma EReal.neg_coe_ennreal_sub_toENNReal {a b : ℝ≥0∞} (h : a ≠ ∞ ∨ b ≠ ∞) :
+    (-((a : EReal) - (b : EReal))).toENNReal = b - a := by
+  by_contra h_contra;
+  rcases a with ( _ | a ) <;> rcases b with ( _ | b ) <;> norm_cast at *;
+  · aesop;
+  · refine h_contra ?_;
+    convert EReal.coe_ennreal_sub_toENNReal _ _ using 1;
+    congr! 1;
+    exact EReal.coe_eq_coe_iff.mpr (by norm_num)

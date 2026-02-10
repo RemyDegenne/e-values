@@ -91,6 +91,20 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
         eintegral_map U.measurable hX.measurable]
       rfl
 
+/-- The maximum utility over e-variables equals the supremum over e-variables that has eintegral
+of the composition with the utility function not equal to ⊥. -/
+lemma maxUtility_eq_iSup_neBotUtilityEVar : maxUtility P S U =
+    ⨆ (X : 𝓧 → ℝ≥0∞) (_hX : NeBotUtilityEVar X P S U), ∫ᵉ x, (U ∘ X) x ∂P := by
+  unfold maxUtility
+  congr with X
+  by_cases hX : IsEVar X S
+  · by_cases hX_int : NeBotUtilityEVar X P S U
+    · simp [hX, hX_int]
+    · simp only [hX, Function.comp_apply, iSup_pos, hX_int, not_false_eq_true, iSup_neg]
+      simpa [hX.neBotUtilityEVar_iff] using hX_int
+  · have hX_int : ¬ NeBotUtilityEVar X P S U := fun h ↦ hX h.toIsEVar
+    simp [hX, hX_int]
+
 /-- Data processing inequality for the maximum randomized utility and a Markov kernel. -/
 lemma maxRandUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)
     [IsMarkovKernel κ] :

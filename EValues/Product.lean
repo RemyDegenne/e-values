@@ -218,14 +218,15 @@ lemma maxUtility_prod (P : Measure 𝓧) (Q : Measure 𝓨) [IsProbabilityMeasur
 
 lemma iSup_prod_le_maxUtility (P : Measure (𝓧 × 𝓨)) {T : Set (Measure 𝓨)}
     (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
-    ⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞) (_ : IsEVar X S) (_ : IsEVar Y T),
+    ⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞) (_ : NeBotUtilityEVar X (P.map Prod.fst) S logUtility)
+    (_ : NeBotUtilityEVar Y (P.map Prod.snd) T logUtility),
       ∫ᵉ x, (logUtility ∘ (fun x ↦ X x.1 * Y x.2)) x ∂P ≤
       maxUtility P (Measure.prod.uncurry '' (S ×ˢ T)) logUtility := by
   unfold maxUtility
   rw [iSup₂_eq_sSup, iSup₄_eq_sSup]
   refine sSup_le_sSup fun z ↦ ?_
   rintro ⟨X, Y, hX, hY, rfl⟩
-  exact ⟨fun x ↦ X x.1 * Y x.2, hX.prod hT hY, rfl⟩
+  exact ⟨fun x ↦ X x.1 * Y x.2, hX.prod hT hY.toIsEVar, rfl⟩
 
 lemma isNumeraire_prod_numeraire_fintype {ι : Type*} {𝓧 : ι → Type*} [hι : Fintype ι]
     {m𝓧 : ∀ i, MeasurableSpace (𝓧 i)} {P : (i : ι) → Measure (𝓧 i)}

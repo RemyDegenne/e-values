@@ -161,4 +161,8 @@ lemma IsNumeraire.ae_eq_numeraire [IsProbabilityMeasure P] {X : 𝓧 → ℝ≥0
     X =ᵐ[P] numeraire P S :=
   hX.ae_unique (isNumeraire_numeraire P hX.isProbabilityMeasure_set)
 
+lemma neBotUtilityEVar_numeraire [IsProbabilityMeasure P] (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
+    NeBotUtilityEVar (numeraire P S) P S logUtility :=
+  ⟨isEVar_numeraire P S, (isNumeraire_numeraire P hS).eintegral_ne_bot⟩
+
 end ProbabilityTheory
