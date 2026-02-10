@@ -1150,59 +1150,23 @@ lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClas
   simp only [eintegral, lintegral_dirac]
   rcases le_total (f x₀) 0 with (h | h) <;> simp [h]
 
-noncomputable section AristotleLemmas
-
-/-- If the integral of `u` or the integral of `v` is finite, then almost everywhere `u` is finite or
-`v` is finite. -/
-lemma ae_ne_top_or_ne_top_of_lintegral_ne_top {α : Type*} [MeasurableSpace α]
-    {μ : Measure α} {u v : α → ℝ≥0∞} (hu : AEMeasurable u μ) (hv : AEMeasurable v μ)
-    (h : ∫⁻ x, u x ∂μ ≠ ⊤ ∨ ∫⁻ x, v x ∂μ ≠ ⊤) : ∀ᵐ x ∂μ, u x ≠ ∞ ∨ v x ≠ ∞ := by
-  rcases h with (h | h)
-  · filter_upwards [ae_lt_top' hu h] with x hx
-    exact Or.inl hx.ne
-  · filter_upwards [ae_lt_top' hv h] with x hx
-    exact Or.inr hx.ne
+section AristotleLemmas
 
 /-- The extended integral of the difference of two ENNReal-valued functions (coerced to EReal) is
 the difference of their Lebesgue integrals, provided at least one of the integrals is finite. -/
-lemma eintegral_coe_ennreal_sub {α : Type*} [MeasurableSpace α] {μ : Measure α}
-    {u v : α → ℝ≥0∞} (hu : AEMeasurable u μ) (hv : AEMeasurable v μ)
+lemma eintegral_coe_ennreal_sub {u v : α → ℝ≥0∞} (hu : AEMeasurable u μ) (hv : AEMeasurable v μ)
     (h : ∫⁻ x, u x ∂μ ≠ ⊤ ∨ ∫⁻ x, v x ∂μ ≠ ⊤) :
-    ∫ᵉ x, ((u x : EReal) - (v x : EReal)) ∂μ = (∫⁻ x, u x ∂μ : EReal) - (∫⁻ x, v x ∂μ : EReal) := by
-  have h_identity : ∫⁻ x, u x ∂μ = ∫⁻ x, (u x - v x) ∂μ + ∫⁻ x, min (u x) (v x) ∂μ ∧ ∫⁻ x, v x ∂μ =
-      ∫⁻ x, (v x - u x) ∂μ + ∫⁻ x, min (u x) (v x) ∂μ := by
-    constructor <;> rw [ ← MeasureTheory.lintegral_add_left' ]
-    · congr with x ; cases le_total ( u x ) ( v x ) <;> simp [ * ]
-      · rw [ tsub_eq_zero_of_le ‹_›, zero_add ]
-      · rw [ tsub_add_cancel_of_le ‹_› ]
-    · exact hu.sub hv
-    · congr with x ; cases le_total ( u x ) ( v x ) <;> simp [ * ]
-      · rw [ tsub_add_cancel_of_le ‹_› ]
-      · rw [ tsub_eq_zero_of_le ‹_›, zero_add ]
-    · exact hv.sub hu
-  -- Now use the identities to rewrite the integrals.
-  have h_rewrite : (∫⁻ x, (u x - v x) ∂μ).toEReal - (∫⁻ x, (v x - u x) ∂μ).toEReal =
-      (∫⁻ x, u x ∂μ).toEReal - (∫⁻ x, v x ∂μ).toEReal := by
-    cases eq_or_ne ( ∫⁻ x, u x - v x ∂μ ) ⊤
-    <;> cases eq_or_ne ( ∫⁻ x, v x - u x ∂μ ) ⊤
-    <;> simp_all [ENNReal.sub_eq_top_iff]
-    · cases h : ∫⁻ x, v x - u x ∂μ
-      <;> cases h' : ∫⁻ x, Min.min ( u x ) ( v x ) ∂μ
-      <;> simp_all
-      rfl
-    · cases e : ∫⁻ x, u x - v x ∂μ
-      <;> cases f : ∫⁻ x, v x - u x ∂μ
-      <;> cases g : ∫⁻ x, Min.min ( u x ) ( v x ) ∂μ
-      <;> simp_all only [not_true_eq_false]
-      erw [ EReal.coe_eq_coe_iff ]
-      simp [ add_assoc, add_comm ]
-  rw [ MeasureTheory.eintegral, ]
-  convert h_rewrite using 3
-  · congr! 1
-    ext x; simp [ EReal.coe_ennreal_sub_toENNReal ]
-  · refine MeasureTheory.lintegral_congr_ae ?_
-    have := ae_ne_top_or_ne_top_of_lintegral_ne_top hu hv h
-    filter_upwards [this] with x hx using EReal.neg_coe_ennreal_sub_toENNReal hx
+    ∫ᵉ x, u x - v x ∂μ = ∫⁻ x, u x ∂μ - ∫⁻ x, v x ∂μ := by
+  rw [eintegral_sub_of_nonneg, eintegral_eq_lintegral, eintegral_eq_lintegral]
+  · exact fun _ ↦ by positivity
+  · exact fun _ ↦ by positivity
+  · fun_prop
+  · fun_prop
+  rcases h with h | h
+  · have h' : ∫ᵉ x, u x ∂μ ≠ ⊤ := by simpa [eintegral_eq_lintegral]
+    exact ne_top_of_le_ne_top h' (eintegral_mono fun _ ↦ min_le_left _ _)
+  · have h' : ∫ᵉ x, v x ∂μ ≠ ⊤ := by simpa [eintegral_eq_lintegral]
+    exact ne_top_of_le_ne_top h' (eintegral_mono fun _ ↦ min_le_right _ _)
 
 end AristotleLemmas
 
@@ -1219,35 +1183,23 @@ lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [
     cases h : f z <;> simp
     cases max_cases ( ‹_› : ℝ ) 0 <;> cases max_cases ( -‹_› : ℝ ) 0 <;> aesop
   rw [ hf_eq ]
-  have h_u_v_aemeasurable : AEMeasurable u (μ.prod ν) ∧ AEMeasurable v (μ.prod ν) := by
-    apply And.intro
-    · exact AEMeasurable.ereal_toENNReal hf
-    · fun_prop
-  have h_u_v_integrable : (∫⁻ x, u x ∂(μ.prod ν) : EReal) - (∫⁻ x, v x ∂(μ.prod ν) : EReal) =
+  have hu_aemeasurable : AEMeasurable u (μ.prod ν) := by fun_prop
+  have hv_aemeasurable : AEMeasurable v (μ.prod ν) := by fun_prop
+  have h_u_v : (∫⁻ x, u x ∂(μ.prod ν) : EReal) - (∫⁻ x, v x ∂(μ.prod ν) : EReal) =
       (∫⁻ x, (∫⁻ y, u (x, y) ∂ν) ∂μ : EReal) - (∫⁻ x, (∫⁻ y, v (x, y) ∂ν) ∂μ : EReal) := by
-    rw [ MeasureTheory.lintegral_prod, MeasureTheory.lintegral_prod ]
-    · exact h_u_v_aemeasurable.2
-    · exact h_u_v_aemeasurable.1
-  convert h_u_v_integrable using 1
+    rw [lintegral_prod _ (by fun_prop), lintegral_prod _ (by fun_prop)]
+  convert h_u_v using 1
   · exact congrArg (eintegral (μ.prod ν)) hf_eq.symm
-  · convert MeasureTheory.eintegral_coe_ennreal_sub _ _ _ using 1
-    · congr! 3
-      · grind
-      · grind
-    · convert h_u_v_aemeasurable.1.lintegral_prod_right' using 1
+  · convert eintegral_coe_ennreal_sub _ _ _ using 1
+    · congr! 3 <;> grind
+    · convert hu_aemeasurable.lintegral_prod_right' using 1
       grind
     · refine AEMeasurable.lintegral_prod_right ?_
-      convert h_u_v_aemeasurable.2 using 1
+      convert hv_aemeasurable using 1
       grind
-    · convert ‹∫⁻ x, u x ∂μ.prod ν ≠ ⊤ ∨ ∫⁻ x, v x ∂μ.prod ν ≠ ⊤› using 1
-      · rw [ MeasureTheory.lintegral_prod ]
-        · congr! 3
-          grind
-        · exact h_u_v_aemeasurable.1
-      · rw [ MeasureTheory.lintegral_prod ]
-        · congr! 3
-          grind
-        · exact h_u_v_aemeasurable.2
+    · cases hf_int with
+      | inl h => left; convert h; rw [lintegral_prod _ (by fun_prop)]; grind
+      | inr h => right; convert h; rw [lintegral_prod _ (by fun_prop)]; grind
 
 lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
     {ν : Measure β} [SFinite ν]
