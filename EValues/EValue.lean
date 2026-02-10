@@ -69,8 +69,9 @@ lemma IsEVar.isRandEVar_deterministic (hX : IsEVar X S) :
     · simpa using hX.lintegral_le_one μ hμ
     · exact measurable_id.aemeasurable
 
-lemma isEVar_of_isEmpty (hS : IsEmpty S) (hX : Measurable X) :
-   IsEVar X S where
+@[simp]
+lemma isEVar_empty (hX : Measurable X) :
+   IsEVar X (∅ : Set (Measure 𝓧)) where
   measurable := hX
   lintegral_le_one := by simp_all
 
@@ -129,6 +130,19 @@ lemma IsEVar.anti_set (hST : S ⊆ T) (hX : IsEVar X T) : IsEVar X S where
 
 lemma IsRandEVar.anti_set (hST : S ⊆ T) (hκ : IsRandEVar κ T) : IsRandEVar κ S where
   lintegral_le_one μ hμ := hκ.lintegral_le_one μ (hST hμ)
+
+lemma IsEVar.union (hXS : IsEVar X S) (hXT : IsEVar X T) : IsEVar X (S ∪ T) where
+  measurable := hXS.measurable
+  lintegral_le_one μ hμ := by
+    simp only [Set.mem_union] at hμ
+    rcases hμ with hμS | hμT
+    · exact hXS.lintegral_le_one μ hμS
+    · exact hXT.lintegral_le_one μ hμT
+
+lemma isEVar_union_iff : IsEVar X (S ∪ T) ↔ IsEVar X S ∧ IsEVar X T := by
+  refine ⟨fun h ↦ ?_, fun ⟨hXS, hXT⟩ ↦ hXS.union hXT⟩
+  exact ⟨⟨h.measurable, fun μ hμ ↦ h.lintegral_le_one _ (Set.subset_union_left hμ)⟩,
+    ⟨h.measurable, fun μ hμ ↦ h.lintegral_le_one _ (Set.subset_union_right hμ)⟩⟩
 
 lemma IsEVar.comp {Y : 𝓨 → ℝ≥0∞} {S : Set (Measure 𝓧)} {φ : 𝓧 → 𝓨}
     (hφ : Measurable φ) (h : IsEVar Y {μ.map φ | μ ∈ S}) :

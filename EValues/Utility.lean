@@ -296,6 +296,12 @@ noncomputable def logUtility : Utility where
     exact ContDiffOn.congr h_diff h_eq
 
 @[simp]
+lemma logUtility_zero : logUtility 0 = ⊥ := by simp [logUtility]
+
+@[simp]
+lemma logUtility_top : logUtility ∞ = ⊤ := by simp [logUtility]
+
+@[simp]
 lemma real_logUtility {x : ℝ} (hx : 0 < x) :
     logUtility.real x = Real.log x := by
   simp [logUtility, Utility.real, ENNReal.log_ofReal, not_le.mpr hx]
