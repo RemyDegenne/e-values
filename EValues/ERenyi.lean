@@ -41,35 +41,69 @@ lemma erenyiDiv_eq_sInf : erenyiDiv α S T =
       + (1 - α) * (maxUtility R T logUtility).toENNReal} := by
   simp [erenyiDiv, iInf₂_eq_sInf]
 
-lemma erenyiDiv_empty_eq_top : erenyiDiv α ∅ ∅ (m𝓧 := m𝓧) = ⊤ := by
+lemma erenyiDiv_empty_left {T : Set (Measure 𝓧)} (hα : α ≠ 0) : erenyiDiv α ∅ T = ⊤ := by
   simp only [erenyiDiv_eq_sInf, maxUtility_empty, logUtility_top,
     EReal.toENNReal_mul (by simp : (0 : EReal) ≤ ⊤), EReal.toENNReal_top, EReal.toENNReal_coe]
   have : (1 - α)⁻¹ * ⊤ = ⊤ := ENNReal.mul_top (by simp)
   conv_rhs => rw [← this]
   congr
+  have h_eq R [IsProbabilityMeasure R] : α * (⊤ * R Set.univ)
+      + (1 - α) * (maxUtility R T logUtility).toENNReal = ⊤ := by
+    rw [ENNReal.top_mul (by simp), ENNReal.mul_top hα, top_add]
   by_cases hR_prob : ¬ (∃ (R : Measure 𝓧), IsProbabilityMeasure R)
   · suffices {y | ∃ R, IsProbabilityMeasure R ∧
-        y = α * (⊤ * R Set.univ) + (1 - α) * (⊤ * R Set.univ)} = ∅ by
+        y = α * (⊤ * R Set.univ) + (1 - α) * (maxUtility R T logUtility).toENNReal} = ∅ by
       rw [this, sInf_empty]
     simp_all
   · push_neg at hR_prob
     suffices {y | ∃ R, IsProbabilityMeasure R ∧
-        y = α * (⊤ * R Set.univ) + (1 - α) * (⊤ * R Set.univ)} = {⊤} by
+        y = α * (⊤ * R Set.univ) + (1 - α) * (maxUtility R T logUtility).toENNReal} = {⊤} by
       rw [this]
       simp
     ext y
     simp only [Set.mem_setOf_eq, Set.mem_singleton_iff]
-    have h_eq_top : α * ∞ + (1 - α) * ∞ = ∞ := by
-      rw [← add_mul, ENNReal.mul_top]
-      simp only [ne_eq, add_eq_zero, not_and]
-      intro ha
-      simp [ha]
     refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
     · obtain ⟨R, hR, rfl⟩ := h
-      rw [ENNReal.top_mul (by simp), h_eq_top]
+      exact h_eq R
     · obtain ⟨R, hR⟩ := hR_prob
       refine ⟨R, hR, ?_⟩
-      simp only [measure_univ, mul_one, h, h_eq_top]
+      rw [h, h_eq R]
+
+lemma erenyiDiv_empty_right {S : Set (Measure 𝓧)} (hα : α < 1) : erenyiDiv α S ∅ = ⊤ := by
+  simp only [erenyiDiv_eq_sInf, maxUtility_empty, logUtility_top,
+    EReal.toENNReal_mul (by simp : (0 : EReal) ≤ ⊤), EReal.toENNReal_top, EReal.toENNReal_coe]
+  have : (1 - α)⁻¹ * ⊤ = ⊤ := ENNReal.mul_top (by simp)
+  conv_rhs => rw [← this]
+  congr
+  have h_eq R [IsProbabilityMeasure R] : α * (maxUtility R S logUtility).toENNReal
+      + (1 - α) * (⊤ * R Set.univ) = ⊤ := by
+    rw [ENNReal.top_mul (by simp), ENNReal.mul_top, add_top]
+    rw [ne_eq, tsub_eq_zero_iff_le]
+    exact not_le.mpr hα
+  by_cases hR_prob : ¬ (∃ (R : Measure 𝓧), IsProbabilityMeasure R)
+  · suffices {y | ∃ R, IsProbabilityMeasure R ∧
+        y = α * (maxUtility R S logUtility).toENNReal + (1 - α) * (⊤ * R Set.univ)} = ∅ by
+      rw [this, sInf_empty]
+    simp_all
+  · push_neg at hR_prob
+    suffices {y | ∃ R, IsProbabilityMeasure R ∧
+        y = α * (maxUtility R S logUtility).toENNReal + (1 - α) * (⊤ * R Set.univ)} = {⊤} by
+      rw [this]
+      simp
+    ext y
+    simp only [Set.mem_setOf_eq, Set.mem_singleton_iff]
+    refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
+    · obtain ⟨R, hR, rfl⟩ := h
+      exact h_eq R
+    · obtain ⟨R, hR⟩ := hR_prob
+      refine ⟨R, hR, ?_⟩
+      rw [h, h_eq R]
+
+@[simp]
+lemma erenyiDiv_empty : erenyiDiv α ∅ ∅ (m𝓧 := m𝓧) = ⊤ := by
+  by_cases hα : α = 0
+  · rw [hα, erenyiDiv_empty_right (by simp)]
+  · rw [erenyiDiv_empty_left hα]
 
 /-- The e-Chernoff divergence between two sets of measures. -/
 noncomputable
