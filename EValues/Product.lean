@@ -218,8 +218,8 @@ lemma maxUtility_prod (P : Measure 𝓧) (Q : Measure 𝓨) [IsProbabilityMeasur
 
 lemma iSup_prod_le_maxUtility (P : Measure (𝓧 × 𝓨)) {T : Set (Measure 𝓨)}
     (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
-    ⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞) (_ : IsIntegrableEVar X (P.map Prod.fst) S logUtility)
-    (_ : IsIntegrableEVar Y (P.map Prod.snd) T logUtility),
+    ⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞) (_ : NeBotUtilityEVar X (P.map Prod.fst) S logUtility)
+    (_ : NeBotUtilityEVar Y (P.map Prod.snd) T logUtility),
       ∫ᵉ x, (logUtility ∘ (fun x ↦ X x.1 * Y x.2)) x ∂P ≤
       maxUtility P (Measure.prod.uncurry '' (S ×ˢ T)) logUtility := by
   unfold maxUtility

@@ -162,13 +162,17 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
     have h' := h.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
     rwa [Measure.comp_assoc] at h'
 
-/-- An e-variable for which the composition with a utility function is eintegrable. -/
-structure IsIntegrableEVar (X : 𝓧 → ℝ≥0∞) (P : Measure 𝓧)
+/-- An e-variable for which the eintegral of the composition with a utility function is not ⊥. -/
+structure NeBotUtilityEVar (X : 𝓧 → ℝ≥0∞) (P : Measure 𝓧)
     (S : Set (Measure 𝓧)) (U : Utility) : Prop extends IsEVar X S where
   eintegral_ne_bot : ∫ᵉ x, (U ∘ X) x ∂P ≠ ⊥
 
-lemma IsEVar.isIntegrableEVar_iff (hX : IsEVar X S) {P : Measure 𝓧} {U : Utility} :
-    IsIntegrableEVar X P S U ↔ ∫ᵉ x, (U ∘ X) x ∂P ≠ ⊥ :=
+lemma NeBotUtilityEVar.eintegrable (X : 𝓧 → ℝ≥0∞) (P : Measure 𝓧) (S : Set (Measure 𝓧))
+    (U : Utility) (hX : NeBotUtilityEVar X P S U) : eintegrable (U ∘ X) P :=
+  eintegrable_of_eintegral_ne_bot hX.eintegral_ne_bot
+
+lemma IsEVar.NeBotUtilityEVar_iff (hX : IsEVar X S) {P : Measure 𝓧} {U : Utility} :
+    NeBotUtilityEVar X P S U ↔ ∫ᵉ x, (U ∘ X) x ∂P ≠ ⊥ :=
   ⟨fun h ↦ h.eintegral_ne_bot, fun h_eintegrable ↦ ⟨hX, h_eintegrable⟩⟩
 
 end ProbabilityTheory
