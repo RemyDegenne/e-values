@@ -101,8 +101,8 @@ lemma maxUtility_eq_iSup_neBotUtilityEVar : maxUtility P S U =
   · by_cases hX_int : NeBotUtilityEVar X P S U
     · simp [hX, hX_int]
     · simp only [hX, Function.comp_apply, iSup_pos, hX_int, not_false_eq_true, iSup_neg]
-      simpa [hX.NeBotUtilityEVar_iff] using hX_int
-  · have hX_int : ¬NeBotUtilityEVar X P S U := fun h ↦ hX h.toIsEVar
+      simpa [hX.neBotUtilityEVar_iff] using hX_int
+  · have hX_int : ¬ NeBotUtilityEVar X P S U := fun h ↦ hX h.toIsEVar
     simp [hX, hX_int]
 
 /-- Data processing inequality for the maximum randomized utility and a Markov kernel. -/
