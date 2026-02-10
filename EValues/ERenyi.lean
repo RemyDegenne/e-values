@@ -235,12 +235,12 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
   calc
     _ ≥ (1 - α)⁻¹ * ⨅ (R : Measure (𝓧 × 𝓨)) (_ : IsProbabilityMeasure R),
         α * (⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞)
-            (_ : IsIntegrableEVar X (R.map Prod.fst) S₁ logUtility)
-            (_ : IsIntegrableEVar Y (R.map Prod.snd) T₁ logUtility),
+            (_ : NeBotUtilityEVar X (R.map Prod.fst) S₁ logUtility)
+            (_ : NeBotUtilityEVar Y (R.map Prod.snd) T₁ logUtility),
               ∫ᵉ x, (logUtility ∘ (fun x ↦ X x.1 * Y x.2)) x ∂R).toENNReal +
           (1 - α) * (⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞)
-          (_ : IsIntegrableEVar X (R.map Prod.fst) S₂ logUtility)
-          (_ : IsIntegrableEVar Y (R.map Prod.snd) T₂ logUtility),
+          (_ : NeBotUtilityEVar X (R.map Prod.fst) S₂ logUtility)
+          (_ : NeBotUtilityEVar Y (R.map Prod.snd) T₂ logUtility),
               ∫ᵉ x, (logUtility ∘ (fun x ↦ X x.1 * Y x.2)) x ∂R).toENNReal := by
       unfold erenyiDiv
       gcongr 1
@@ -261,11 +261,11 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
       have : IsProbabilityMeasure R₁ := R.isProbabilityMeasure_map measurable_fst.aemeasurable
       have : IsProbabilityMeasure R₂ := R.isProbabilityMeasure_map measurable_snd.aemeasurable
       have sup_prod_sum (S : Set (Measure 𝓧)) (T : Set (Measure 𝓨)) :
-          ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
-            ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
+          ⨆ X, ⨆ Y, ⨆ (_ : NeBotUtilityEVar X R₁ S logUtility),
+            ⨆ (_ : NeBotUtilityEVar Y R₂ T logUtility),
             ∫ᵉ x, (logUtility ∘ fun x ↦ X x.1 * Y x.2) x ∂R =
-          ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
-            ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
+          ⨆ X, ⨆ Y, ⨆ (_ : NeBotUtilityEVar X R₁ S logUtility),
+            ⨆ (_ : NeBotUtilityEVar Y R₂ T logUtility),
             ∫ᵉ x, (logUtility ∘ X) x ∂R₁ + ∫ᵉ x, (logUtility ∘ Y) x ∂R₂ := by
         congr with X
         congr with Y
@@ -308,18 +308,18 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
       congr
       · rw [sup_prod_sum S₁ T₁, ← exists_iSup₂_EReal_add,
             ← maxUtility_eq_restrict_eintegrable, ← maxUtility_eq_restrict_eintegrable]
-        · exact isIntegrableEVar_numeraire hS₁
+        · exact NeBotUtilityEVar_numeraire hS₁
         · exact numeraire R₂ T₁
-        · exact isIntegrableEVar_numeraire hT₁
+        · exact NeBotUtilityEVar_numeraire hT₁
         · rw [← maxUtility_eq_restrict_eintegrable, maxUtility_eq_integral_numeraire R₁ hS₁]
           rfl
         · rw [← maxUtility_eq_restrict_eintegrable, maxUtility_eq_integral_numeraire R₂ hT₁]
           rfl
       · rw [sup_prod_sum S₂ T₂, ← exists_iSup₂_EReal_add,
             ← maxUtility_eq_restrict_eintegrable, ← maxUtility_eq_restrict_eintegrable]
-        · exact isIntegrableEVar_numeraire hS₂
+        · exact NeBotUtilityEVar_numeraire hS₂
         · exact numeraire R₂ T₂
-        · exact isIntegrableEVar_numeraire hT₂
+        · exact NeBotUtilityEVar_numeraire hT₂
         · rw [← maxUtility_eq_restrict_eintegrable, maxUtility_eq_integral_numeraire R₁ hS₂]
           rfl
         · rw [← maxUtility_eq_restrict_eintegrable, maxUtility_eq_integral_numeraire R₂ hT₂]
