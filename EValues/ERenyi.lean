@@ -307,22 +307,22 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
               fun_prop
       congr
       · rw [sup_prod_sum S₁ T₁, ← exists_iSup₂_EReal_add,
-            ← maxUtility_eq_restrict_eintegrable, ← maxUtility_eq_restrict_eintegrable]
+            ← maxUtility_eq_iSup_neBotUtilityEVar, ← maxUtility_eq_iSup_neBotUtilityEVar]
         · exact NeBotUtilityEVar_numeraire hS₁
         · exact numeraire R₂ T₁
         · exact NeBotUtilityEVar_numeraire hT₁
-        · rw [← maxUtility_eq_restrict_eintegrable, maxUtility_eq_integral_numeraire R₁ hS₁]
+        · rw [← maxUtility_eq_iSup_neBotUtilityEVar, maxUtility_eq_integral_numeraire R₁ hS₁]
           rfl
-        · rw [← maxUtility_eq_restrict_eintegrable, maxUtility_eq_integral_numeraire R₂ hT₁]
+        · rw [← maxUtility_eq_iSup_neBotUtilityEVar, maxUtility_eq_integral_numeraire R₂ hT₁]
           rfl
       · rw [sup_prod_sum S₂ T₂, ← exists_iSup₂_EReal_add,
-            ← maxUtility_eq_restrict_eintegrable, ← maxUtility_eq_restrict_eintegrable]
+            ← maxUtility_eq_iSup_neBotUtilityEVar, ← maxUtility_eq_iSup_neBotUtilityEVar]
         · exact NeBotUtilityEVar_numeraire hS₂
         · exact numeraire R₂ T₂
         · exact NeBotUtilityEVar_numeraire hT₂
-        · rw [← maxUtility_eq_restrict_eintegrable, maxUtility_eq_integral_numeraire R₁ hS₂]
+        · rw [← maxUtility_eq_iSup_neBotUtilityEVar, maxUtility_eq_integral_numeraire R₁ hS₂]
           rfl
-        · rw [← maxUtility_eq_restrict_eintegrable, maxUtility_eq_integral_numeraire R₂ hT₂]
+        · rw [← maxUtility_eq_iSup_neBotUtilityEVar, maxUtility_eq_integral_numeraire R₂ hT₂]
           rfl
     _ = (1 - α)⁻¹ * sInf {y | ∃ R₁ R₂,
         IsProbabilityMeasure R₁ ∧ IsProbabilityMeasure R₂ ∧
