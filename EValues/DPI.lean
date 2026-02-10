@@ -98,7 +98,7 @@ lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
 
 /-- The maximum utility over e-variables equals the supremum over e-variables that has eintegral
 of the composition with the utility function not equal to ⊥. -/
-lemma maxUtility_eq_restrict_eintegrable : maxUtility P S U =
+lemma maxUtility_eq_iSup_neBotUtilityEVar : maxUtility P S U =
     ⨆ (X : 𝓧 → ℝ≥0∞) (_hX : NeBotUtilityEVar X P S U), ∫ᵉ x, (U ∘ X) x ∂P := by
   unfold maxUtility
   congr with X
