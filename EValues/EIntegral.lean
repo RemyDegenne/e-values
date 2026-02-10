@@ -1180,13 +1180,12 @@ lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [
   have hf_eq : f = fun z => (u z : EReal) - (v z : EReal) := by
     simp only [u, v]
     ext z
-    cases h : f z <;> simp
-    cases max_cases ( ‹_› : ℝ ) 0 <;> cases max_cases ( -‹_› : ℝ ) 0 <;> aesop
+    rcases le_total (f z) 0 with h | h <;> simp [h]
   rw [ hf_eq ]
   have hu_aemeasurable : AEMeasurable u (μ.prod ν) := by fun_prop
   have hv_aemeasurable : AEMeasurable v (μ.prod ν) := by fun_prop
-  have h_u_v : (∫⁻ x, u x ∂(μ.prod ν) : EReal) - (∫⁻ x, v x ∂(μ.prod ν) : EReal) =
-      (∫⁻ x, (∫⁻ y, u (x, y) ∂ν) ∂μ : EReal) - (∫⁻ x, (∫⁻ y, v (x, y) ∂ν) ∂μ : EReal) := by
+  have h_u_v : (∫⁻ x, u x ∂(μ.prod ν) : EReal) - ∫⁻ x, v x ∂(μ.prod ν) =
+      ∫⁻ x, ∫⁻ y, u (x, y) ∂ν ∂μ - ∫⁻ x, ∫⁻ y, v (x, y) ∂ν ∂μ := by
     rw [lintegral_prod _ (by fun_prop), lintegral_prod _ (by fun_prop)]
   convert h_u_v using 1
   · exact congrArg (eintegral (μ.prod ν)) hf_eq.symm
