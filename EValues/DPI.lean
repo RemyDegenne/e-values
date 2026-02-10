@@ -106,10 +106,7 @@ lemma maxUtility_eq_restrict_eintegrable : maxUtility P S U =
   · by_cases hX_int : IsIntegrableEVar X P S U
     · simp [hX, hX_int]
     · simp only [hX, Function.comp_apply, iSup_pos, hX_int, not_false_eq_true, iSup_neg]
-      refine eintegral_of_not_eintegrable ?_
-      by_contra! h
-      have : IsIntegrableEVar X P S U := ⟨hX, h⟩
-      contradiction
+      simpa [hX.isIntegrableEVar_iff] using hX_int
   · have hX_int : ¬IsIntegrableEVar X P S U := fun h ↦ hX h.toIsEVar
     simp [hX, hX_int]
 

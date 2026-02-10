@@ -260,7 +260,6 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
       set R₂ := R.map Prod.snd
       have : IsProbabilityMeasure R₁ := R.isProbabilityMeasure_map measurable_fst.aemeasurable
       have : IsProbabilityMeasure R₂ := R.isProbabilityMeasure_map measurable_snd.aemeasurable
-
       have sup_prod_sum (S : Set (Measure 𝓧)) (T : Set (Measure 𝓨)) :
           ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
             ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
@@ -268,48 +267,20 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
           ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
             ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
             ∫ᵉ x, (logUtility ∘ X) x ∂R₁ + ∫ᵉ x, (logUtility ∘ Y) x ∂R₂ := by
-
-        have : ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
-            ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
-            ∫ᵉ x, (logUtility ∘ fun x ↦ X x.1 * Y x.2) x ∂R =
-          ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
-            ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
-            ⨆ (_ : ∫ᵉ (x : 𝓧 × 𝓨), (X x.1).log ∂R ≠ ⊥ ∧ ∫ᵉ (x : 𝓧 × 𝓨), (Y x.2).log ∂R ≠ ⊥),
-            ∫ᵉ x, (logUtility ∘ fun x ↦ X x.1 * Y x.2) x ∂R := by
-              congr with X
-              congr with Y
-              congr with hX
-              congr with hY
-              simp only [Function.comp_apply]
-              by_cases h : ∫ᵉ (x : 𝓧 × 𝓨), (X x.1).log ∂R ≠ ⊥ ∧
-                  ∫ᵉ (x : 𝓧 × 𝓨), (Y x.2).log ∂R ≠ ⊥
-              · simp [h]
-              · simp only [ne_eq, h, not_false_eq_true, iSup_neg]
-                rw [not_and_or] at h
-                cases h with
-                | inl hXh =>
-                  -- Pas sûr que ça passe...
-                  sorry
-                | inr hYh => sorry
-
-        rw [this]
-        clear this
-
-        have : ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
-            ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
-            ∫ᵉ x, (logUtility ∘ X) x ∂R₁ + ∫ᵉ x, (logUtility ∘ Y) x ∂R₂ =
-          ⨆ X, ⨆ Y, ⨆ (_ : IsIntegrableEVar X R₁ S logUtility),
-            ⨆ (_ : IsIntegrableEVar Y R₂ T logUtility),
-            ⨆ (_ : ∫ᵉ (x : 𝓧 × 𝓨), (X x.1).log ∂R ≠ ⊥ ∧ ∫ᵉ (x : 𝓧 × 𝓨), (Y x.2).log ∂R ≠ ⊥),
-            ∫ᵉ x, (logUtility ∘ X) x ∂R₁ + ∫ᵉ x, (logUtility ∘ Y) x ∂R₂ := by sorry
-        rw [this]
-        clear this
-
         congr with X
         congr with Y
         congr with hX
         congr with hY
-        congr with hXY
+        have := hX.measurable
+        have := hY.measurable
+        have hXY1 : ∫ᵉ (x : 𝓧 × 𝓨), (X x.1).log ∂R ≠ ⊥ := by
+          have hXe := hX.eintegral_ne_bot
+          simp only [logUtility, Function.comp_apply] at hXe
+          rwa [eintegral_map (by fun_prop) measurable_fst] at hXe
+        have hXY2 : ∫ᵉ (x : 𝓧 × 𝓨), (Y x.2).log ∂R ≠ ⊥ := by
+          have hXe := hY.eintegral_ne_bot
+          simp only [logUtility, Function.comp_apply] at hXe
+          rwa [eintegral_map (by fun_prop) measurable_snd] at hXe
         calc
         _ = ∫ᵉ x, logUtility (X x.1) ∂R + ∫ᵉ x, logUtility (Y x.2) ∂R := by
           simp_rw [logUtility, Function.comp, ENNReal.log_mul_add]
@@ -318,18 +289,14 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
           rw [eintegral_add]
           · fun_prop
           · fun_prop
-          · rcases hX.eintegrable with hXe | hXe
-            · left
-              rwa [lintegral_map (by fun_prop) measurable_fst] at hXe
-            · right
-              rwa [lintegral_map (by fun_prop) measurable_fst] at hXe
-          · rcases hY.eintegrable with hYe | hYe
-            · left
-              rwa [lintegral_map (by fun_prop) measurable_snd] at hYe
-            · right
-              rwa [lintegral_map (by fun_prop) measurable_snd] at hYe
-          · exact Or.inl hXY.1
-          · exact Or.inr hXY.2
+          · have hXe := hX.eintegral_ne_bot
+            refine eintegrable_of_eintegral_ne_bot ?_
+            rwa [eintegral_map (by fun_prop) measurable_fst] at hXe
+          · have hYe := hY.eintegral_ne_bot
+            refine eintegrable_of_eintegral_ne_bot ?_
+            rwa [eintegral_map (by fun_prop) measurable_snd] at hYe
+          · exact Or.inl hXY1
+          · exact Or.inr hXY2
         _ = ∫ᵉ x, logUtility (X x) ∂R₁ + ∫ᵉ x, logUtility (Y x) ∂R₂ := by
             congr
             · rw [eintegral_map ?_ measurable_fst]

@@ -165,6 +165,10 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
 /-- An e-variable for which the composition with a utility function is eintegrable. -/
 structure IsIntegrableEVar (X : 𝓧 → ℝ≥0∞) (P : Measure 𝓧)
     (S : Set (Measure 𝓧)) (U : Utility) : Prop extends IsEVar X S where
-  eintegrable : eintegrable (U ∘ X) P
+  eintegral_ne_bot : ∫ᵉ x, (U ∘ X) x ∂P ≠ ⊥
+
+lemma IsEVar.isIntegrableEVar_iff (hX : IsEVar X S) {P : Measure 𝓧} {U : Utility} :
+    IsIntegrableEVar X P S U ↔ ∫ᵉ x, (U ∘ X) x ∂P ≠ ⊥ :=
+  ⟨fun h ↦ h.eintegral_ne_bot, fun h_eintegrable ↦ ⟨hX, h_eintegrable⟩⟩
 
 end ProbabilityTheory

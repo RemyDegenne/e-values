@@ -163,6 +163,6 @@ lemma IsNumeraire.ae_eq_numeraire [IsProbabilityMeasure P] {X : 𝓧 → ℝ≥0
 
 lemma isIntegrableEVar_numeraire [IsProbabilityMeasure P] (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
     IsIntegrableEVar (numeraire P S) P S logUtility :=
-  ⟨isEVar_numeraire P S, (isNumeraire_numeraire P hS).eintegrable_log⟩
+  ⟨isEVar_numeraire P S, (isNumeraire_numeraire P hS).eintegral_ne_bot⟩
 
 end ProbabilityTheory
