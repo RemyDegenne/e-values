@@ -47,6 +47,11 @@ lemma maxUtility_empty : maxUtility P ∅ U = U ∞ * P .univ := by
     _ = U ∞ * P .univ := by simp
   · exact le_iSup_of_le (fun _ ↦ ∞) (le_of_eq (by simp))
 
+-- todo: remove?
+lemma maxUtility_empty_eq_top {P : Measure 𝓧} (hP : P ≠ 0) (hU : U ∞ = ⊤) :
+    maxUtility P ∅ U = ⊤ := by
+  simp [maxUtility_empty, hU, EReal.top_mul_of_pos, hP]
+
 lemma maxUtility_anti (hS : S ⊆ T) : maxUtility P T U ≤ maxUtility P S U := by
   rw [maxUtility_eq_sSup, maxUtility_eq_sSup]
   refine sSup_le_sSup ?_
@@ -227,17 +232,5 @@ lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : �
       grind
     _ = maxUtility (P.map φ) {μ.map φ | μ ∈ {ν.map φ | ν ∈ S}} U := by congr with μ; simp
     _ ≤ maxUtility P {μ.map φ | μ ∈ S} U := maxUtility_map_le _ hφ
-
-lemma maxUtility_empty_eq_top {P : Measure 𝓧} (hP : P ≠ 0) {S : Set (Measure 𝓧)}
-    (hS : IsEmpty S) (hU : ∃ c, U c = ⊤) : maxUtility P S U = ⊤ := by
-  obtain ⟨c, hUc⟩ := hU
-  let X := fun (_ : 𝓧) => c
-  rw [eq_top_iff]
-  suffices ∫ᵉ x, (U ∘ X) x ∂P ≤ maxUtility P S U by
-    simp only [Function.comp_apply, eintegral_const, X, hUc] at this
-    have mul_P_eq_top : (⊤ : EReal) * P Set.univ = ⊤ := EReal.top_mul_coe_ennreal (by simp [hP])
-    rwa [← mul_P_eq_top]
-  unfold maxUtility
-  exact le_iSup₂_of_le X (isEVar_of_isEmpty hS measurable_const) le_rfl
 
 end ProbabilityTheory
