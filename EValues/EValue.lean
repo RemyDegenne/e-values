@@ -36,27 +36,6 @@ open MeasureTheory ProbabilityTheory
 variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableSpace 𝓨}
   {μ : Measure 𝓧} {S : Set (Measure 𝓧)}
 
-namespace MeasureTheory
-
--- was added to Mathlib. Remove in a future bump.
-lemma Measure.integrable_comp_iff
-    {α β E : Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β}
-    [NormedAddCommGroup E] {κ : Kernel α β} {μ : Measure α} {f : β → E}
-    (h_meas : AEStronglyMeasurable f (κ ∘ₘ μ)) :
-    Integrable f (κ ∘ₘ μ)
-      ↔ (∀ᵐ x ∂μ, Integrable f (κ x)) ∧ Integrable (fun x ↦ ∫ y, ‖f y‖ ∂κ x) μ := by
-  rw [Measure.comp_eq_comp_const_apply, ProbabilityTheory.integrable_comp_iff]
-  · simp
-  · simpa [Kernel.comp_apply]
-
-/-- The almost everywhere filter with respect to a set of measures, defined as the supremum of the
-almost everywhere filters of the measures in the set. -/
-def aeSet (S : Set (Measure 𝓧)) : Filter 𝓧 := ⨆ m ∈ S, ae m
-
-lemma mem_aeSet_iff {t : Set 𝓧} : t ∈ aeSet S ↔ ∀ m ∈ S, m tᶜ = 0 := by simp [aeSet, mem_ae_iff]
-
-end MeasureTheory
-
 namespace ProbabilityTheory
 
 /-- A random variable `X` is an e-variable for a set of measures `S` if it is measurable and
@@ -91,8 +70,9 @@ lemma IsEVar.isRandEVar_deterministic (hX : IsEVar X S) :
     · simpa using hX.lintegral_le_one μ hμ
     · exact measurable_id.aemeasurable
 
-lemma isEVar_of_isEmpty (hS : IsEmpty S) (hX : Measurable X) :
-   IsEVar X S where
+@[simp]
+lemma isEVar_empty (hX : Measurable X) :
+   IsEVar X (∅ : Set (Measure 𝓧)) where
   measurable := hX
   lintegral_le_one := by simp_all
 
@@ -125,22 +105,13 @@ lemma IsEVar.ae_lt_top (hX : IsEVar X S) {μ : Measure 𝓧} (hμ : μ ∈ S) : 
 lemma IsEVar.ae_ne_top (hX : IsEVar X S) {μ : Measure 𝓧} (hμ : μ ∈ S) : ∀ᵐ ω ∂μ, X ω ≠ ⊤ := by
   filter_upwards [hX.ae_lt_top hμ] with ω hω using hω.ne
 
-lemma IsEVar.measurable_fsupport (hX : IsEVar X S) :
+lemma _root_.Measurable.measurable_fsupport (hX : Measurable X) :
     MeasurableSet X.fsupport := by
   suffices MeasurableSet {ω | X ω ≠ ⊤} ∧ MeasurableSet {ω | X ω ≠ 0} from this.1.inter this.2
-  constructor
-  · rw [← MeasurableSet.compl_iff]
-    suffices {ω | X ω ≠ ⊤}ᶜ = {ω | X ω = ⊤} by
-      rw [this]
-      exact hX.measurable <| measurableSet_singleton ⊤
-    ext ω
-    simp
-  · rw [← MeasurableSet.compl_iff]
-    suffices {ω | X ω ≠ 0}ᶜ = {ω | X ω = 0} by
-      rw [this]
-      exact hX.measurable <| measurableSet_singleton 0
-    ext ω
-    simp
+  constructor <;> exact ((measurableSet_singleton _).preimage hX).compl
+
+lemma IsEVar.measurable_fsupport (hX : IsEVar X S) :
+    MeasurableSet X.fsupport := hX.measurable.measurable_fsupport
 
 lemma IsEVar.mono (hY : IsEVar Y S) (hX : Measurable X) (hXY : X ≤ Y) : IsEVar X S where
   measurable := hX
@@ -160,6 +131,19 @@ lemma IsEVar.anti_set (hST : S ⊆ T) (hX : IsEVar X T) : IsEVar X S where
 
 lemma IsRandEVar.anti_set (hST : S ⊆ T) (hκ : IsRandEVar κ T) : IsRandEVar κ S where
   lintegral_le_one μ hμ := hκ.lintegral_le_one μ (hST hμ)
+
+lemma IsEVar.union (hXS : IsEVar X S) (hXT : IsEVar X T) : IsEVar X (S ∪ T) where
+  measurable := hXS.measurable
+  lintegral_le_one μ hμ := by
+    simp only [Set.mem_union] at hμ
+    rcases hμ with hμS | hμT
+    · exact hXS.lintegral_le_one μ hμS
+    · exact hXT.lintegral_le_one μ hμT
+
+lemma isEVar_union_iff : IsEVar X (S ∪ T) ↔ IsEVar X S ∧ IsEVar X T := by
+  refine ⟨fun h ↦ ?_, fun ⟨hXS, hXT⟩ ↦ hXS.union hXT⟩
+  exact ⟨⟨h.measurable, fun μ hμ ↦ h.lintegral_le_one _ (Set.subset_union_left hμ)⟩,
+    ⟨h.measurable, fun μ hμ ↦ h.lintegral_le_one _ (Set.subset_union_right hμ)⟩⟩
 
 lemma IsEVar.comp {Y : 𝓨 → ℝ≥0∞} {S : Set (Measure 𝓧)} {φ : 𝓧 → 𝓨}
     (hφ : Measurable φ) (h : IsEVar Y {μ.map φ | μ ∈ S}) :

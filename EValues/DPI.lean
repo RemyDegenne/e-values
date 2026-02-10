@@ -35,8 +35,17 @@ lemma maxUtility_eq_sSup : maxUtility P S U =
     sSup {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, (U ∘ X) x ∂P} := iSup₂_eq_sSup
 
 lemma maxRandUtility_eq_sSup : maxRandUtility P S U =
-      sSup {y | ∃ η, IsMarkovKernel η ∧ IsRandEVar η S ∧ y = ∫ᵉ x, U x ∂(η ∘ₘ P)} :=
-  iSup₃_eq_sSup
+    sSup {y | ∃ η, IsMarkovKernel η ∧ IsRandEVar η S ∧ y = ∫ᵉ x, U x ∂(η ∘ₘ P)} := iSup₃_eq_sSup
+
+@[simp]
+lemma maxUtility_empty : maxUtility P ∅ U = U ∞ * P .univ := by
+  simp only [maxUtility, Function.comp_apply]
+  refine le_antisymm ?_ ?_
+  · refine iSup₂_le_iff.mpr fun Y hY ↦ ?_
+    calc ∫ᵉ x, U (Y x) ∂P
+    _ ≤ ∫ᵉ x, U ∞ ∂P := eintegral_mono fun _ ↦ U.monotone le_top
+    _ = U ∞ * P .univ := by simp
+  · exact le_iSup_of_le (fun _ ↦ ∞) (le_of_eq (by simp))
 
 lemma maxUtility_anti (hS : S ⊆ T) : maxUtility P T U ≤ maxUtility P S U := by
   rw [maxUtility_eq_sSup, maxUtility_eq_sSup]
@@ -103,29 +112,13 @@ lemma maxUtility_eq_restrict_eintegrable : maxUtility P S U =
 lemma maxRandUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)
     [IsMarkovKernel κ] :
     maxRandUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxRandUtility P S U := by
-  calc maxRandUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U
-  _ = sSup {y | ∃ η, IsMarkovKernel η ∧ IsRandEVar η {κ ∘ₘ μ | μ ∈ S} ∧
-      y = ∫ᵉ x, U x ∂(η ∘ₘ κ ∘ₘ P)} := maxRandUtility_eq_sSup
-  _ = sSup {y | ∃ ξ, ∃ η, IsMarkovKernel η ∧ IsRandEVar η {κ ∘ₘ μ | μ ∈ S} ∧
-      ξ = η ∘ₖ κ ∧ y = ∫ᵉ x, U x ∂(ξ ∘ₘ P)} := by
-    congr with y
-    constructor
-    · rintro ⟨η, hη₁, hη₂, hη_int⟩
-      refine ⟨η ∘ₖ κ, η, hη₁, hη₂, rfl, ?_⟩
-      rw [hη_int, P.comp_assoc]
-    · rintro ⟨ξ, η, hη₁, hη₂, hξ, hξ_int⟩
-      refine ⟨η, hη₁, hη₂, ?_⟩
-      rw [hξ_int, hξ, P.comp_assoc]
-  _ ≤ maxRandUtility P S U := by
-    rw [maxRandUtility_eq_sSup]
-    refine sSup_le_sSup fun y ↦ ?_
-    rintro ⟨ξ, η, hη₁, hη₂, hξ, hξ_int⟩
-    haveI : IsMarkovKernel ξ := by
-      rw [hξ]
-      infer_instance
-    refine ⟨ξ, this, ⟨fun μ hμ ↦ ?_⟩, hξ_int⟩
-    rw [hξ, ← μ.comp_assoc]
-    exact hη₂.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
+  simp_rw [maxRandUtility_eq_sSup]
+  refine sSup_le_sSup fun y ↦ ?_
+  rintro ⟨η, hη₁, hη₂, hξ_int⟩
+  rw [P.comp_assoc] at hξ_int
+  refine ⟨η ∘ₖ κ, inferInstance, ⟨fun μ hμ ↦ ?_⟩, hξ_int⟩
+  rw [← μ.comp_assoc]
+  exact hη₂.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
 
 /-- Data processing inequality for the maximum utility and a Markov kernel. -/
 lemma maxUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)
@@ -167,8 +160,7 @@ lemma IsNumeraire.maxUtility_eq_integral [IsProbabilityMeasure P]
     {X : 𝓧 → ℝ≥0∞} (hX : IsNumeraire X S P) :
     maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (X x) ∂P := by
   refine le_antisymm ?_ ?_
-  · simp only [maxUtility]
-    refine iSup₂_le_iff.mpr fun Y hY ↦ ?_
+  · refine iSup₂_le_iff.mpr fun Y hY ↦ ?_
     simp [logUtility, hX.eintegral_log_le hY]
   · rw [maxUtility_eq_sSup]
     refine le_sSup ?_
@@ -183,22 +175,20 @@ lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure 
 lemma maxUtility_nonneg (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsProbabilityMeasure μ) :
     0 ≤ maxUtility P S logUtility := by
   calc 0
-  _ ≤ ∫ᵉ (x : 𝓧), (logUtility.toFun ∘ (fun _ ↦ 1)) x ∂P := by simp [logUtility]
+  _ ≤ ∫ᵉ x, (logUtility.toFun ∘ (fun _ ↦ 1)) x ∂P := by simp [logUtility]
   _ ≤ maxUtility P S logUtility := by
-    rw [maxUtility]
-    refine le_iSup₂ (f := fun X _ ↦ ∫ᵉ (x : 𝓧), (logUtility.toFun ∘ X) x ∂P) (fun _ ↦ 1) ?_
+    refine le_iSup₂ (f := fun X _ ↦ ∫ᵉ x, (logUtility.toFun ∘ X) x ∂P) (fun _ ↦ 1) ?_
     exact isEVar_fun_one S hS
 
 /-- The maximum utility is a convex function of the measure. -/
 lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :
     ConvexOn ℝ≥0∞ Set.univ (fun P ↦ maxUtility P S U) := by
   refine ⟨convex_univ, fun P _ Q _ a b ha hb hab ↦ ?_⟩
-  simp only
-  rw [maxUtility]
+  simp only [maxUtility]
   have ha : a ≠ ∞ := ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
   have hb : b ≠ ∞ := ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
   simp_rw [eintegral_add_measure, eintegral_smul_measure ha, eintegral_smul_measure hb]
-  calc ⨆ X, ⨆ (_ : IsEVar X S), a * ∫ᵉ x, (U.toFun ∘ X) x ∂P + b * ∫ᵉ x, (U.toFun ∘ X) x ∂Q
+  calc ⨆ (X) (_ : IsEVar X S), a * ∫ᵉ x, (U.toFun ∘ X) x ∂P + b * ∫ᵉ x, (U.toFun ∘ X) x ∂Q
   _ = ⨆ X, (a * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂P)
       + b * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂Q := by
     congr with X
@@ -219,11 +209,8 @@ lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :
   _ ≤ (⨆ X, a * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂P)
       + ⨆ X, b * ⨆ (_ : IsEVar X S), ∫ᵉ x, (U.toFun ∘ X) x ∂Q := EReal.iSup_add_le_add_iSup
   _ = a • maxUtility P S U + b • maxUtility Q S U := by
-    simp_rw [maxUtility]
-    simp only [EReal.smul_ennreal_eq_mul]
-    rw [EReal.iSup_ennreal_mul, EReal.iSup_ennreal_mul]
-    · exact ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
-    · exact ne_top_of_le_ne_top (by simp : 1 ≠ ∞) (by simp [← hab])
+    simp only [maxUtility, EReal.smul_ennreal_eq_mul]
+    rw [EReal.iSup_ennreal_mul hb, EReal.iSup_ennreal_mul ha]
 
 lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : 𝓧 → 𝓧} (hφ : Measurable φ)
     (hφ_inv : φ ∘ φ = id) :
@@ -239,8 +226,7 @@ lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : �
       simp_rw [Measure.map_map hφ hφ, hφ_inv, Measure.map_id]
       grind
     _ = maxUtility (P.map φ) {μ.map φ | μ ∈ {ν.map φ | ν ∈ S}} U := by congr with μ; simp
-    _ ≤ maxUtility P {μ | μ ∈ {ν.map φ | ν ∈ S}} U := maxUtility_map_le _ hφ
-    _ = maxUtility P {μ.map φ | μ ∈ S} U := rfl
+    _ ≤ maxUtility P {μ.map φ | μ ∈ S} U := maxUtility_map_le _ hφ
 
 lemma maxUtility_empty_eq_top {P : Measure 𝓧} (hP : P ≠ 0) {S : Set (Measure 𝓧)}
     (hS : IsEmpty S) (hU : ∃ c, U c = ⊤) : maxUtility P S U = ⊤ := by

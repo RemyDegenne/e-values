@@ -225,10 +225,6 @@ instance : MeasurableInv EReal where
     change Measurable (Real.toEReal ∘ _)
     exact Measurable.comp measurable_coe_real_ereal (by fun_prop)
 
-lemma EReal.toReal_pos {x : EReal} (hx : 0 < x) (h'x : x ≠ ⊤) : 0 < x.toReal := by
-  lift x to ℝ using by aesop
-  simpa using hx
-
 lemma EReal.sub_lt_sub_of_le_of_lt {x y z t : EReal} (h : x ≤ y) (h' : z < t)
   (hy_top : y ≠ ⊤) (hy_bot : y ≠ ⊥) : x - t < y - z := by
   refine sub_lt_of_lt_add' ?_
