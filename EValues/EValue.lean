@@ -171,7 +171,7 @@ lemma NeBotUtilityEVar.eintegrable (X : 𝓧 → ℝ≥0∞) (P : Measure 𝓧) 
     (U : Utility) (hX : NeBotUtilityEVar X P S U) : eintegrable (U ∘ X) P :=
   eintegrable_of_eintegral_ne_bot hX.eintegral_ne_bot
 
-lemma IsEVar.NeBotUtilityEVar_iff (hX : IsEVar X S) {P : Measure 𝓧} {U : Utility} :
+lemma IsEVar.neBotUtilityEVar_iff (hX : IsEVar X S) {P : Measure 𝓧} {U : Utility} :
     NeBotUtilityEVar X P S U ↔ ∫ᵉ x, (U ∘ X) x ∂P ≠ ⊥ :=
   ⟨fun h ↦ h.eintegral_ne_bot, fun h_eintegrable ↦ ⟨hX, h_eintegrable⟩⟩
 
