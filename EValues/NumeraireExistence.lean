@@ -57,19 +57,12 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
   have hYliminf_meas : Measurable Yliminf := Measurable.liminf fun n ↦ (hY_evar n).measurable
   refine ⟨Yliminf, ?_, ?_⟩
   · -- todo: extract lemma IsEVar.liminf
-    refine ⟨hYliminf_meas, fun μ hμ ↦ ?_, fun μ hμ ↦ ?_⟩
-    · exact eintegral_sub_one_ne_bot_of_isFiniteMeasure hS hμ
-    · calc ∫ᵉ ω, Yliminf ω - 1 ∂μ
-      _ = ∫ᵉ ω, liminf (fun n ↦ Y n ω - 1) atTop ∂μ := by
-        congr with ω
-        simp only [Yliminf]
-        sorry
-      _ ≤ liminf (fun n ↦ ∫ᵉ ω, Y n ω - 1 ∂μ) atTop := by
-        sorry  -- Fatou's lemma, like `lintegral_liminf_le`.
-        -- Needs lower bound on the integrals. ok since μ is finite.
-      _ ≤ 0 := by
-        refine liminf_le_of_frequently_le ?_
-        exact .of_forall fun n ↦ (hY_evar n).eintegral_nonpos μ hμ
+    refine IsEVar.of_lintegral_le_measure_univ hS hYliminf_meas fun μ hμ ↦ ?_
+    calc ∫⁻ ω, Yliminf ω ∂μ
+    _ ≤ liminf (fun n ↦ ∫⁻ ω, Y n ω ∂μ) atTop := lintegral_liminf_le fun n ↦ (hY_evar n).measurable
+    _ ≤ μ .univ := by
+      refine liminf_le_of_frequently_le ?_
+      exact .of_forall fun n ↦ (hY_evar n).lintegral_le_measure_univ μ hμ
   · suffices ⨆ n, ∫ᵉ x, U (X n x) ∂P ≤ ∫ᵉ x, U (Ylim x) ∂P by
       intro Z hZ_evar
       refine le_trans ?_ (this.trans_eq ?_)

@@ -223,11 +223,7 @@ theorem logUtility_numeraire_prod' [IsFiniteMeasure P] [IsFiniteMeasure Q]
   _ = ∫ᵉ p, ENNReal.log (numeraire P S p.1) ∂P.prod Q +
       ∫ᵉ p, ENNReal.log (numeraire Q T p.2) ∂P.prod Q := by
     simp_rw [ENNReal.log_mul_add]
-    rw [eintegral_add]
-    · fun_prop
-    · fun_prop
-    · exact h_int1
-    · exact h_int2
+    rw [eintegral_add (by fun_prop) (by fun_prop) h_int1 h_int2]
     · refine .inl (EReal.ne_bot_of_nonneg ?_)
       have : ∫ᵉ (x : 𝓧 × 𝓨), (numeraire P S x.1).log ∂P.prod Q
           = Q .univ * ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P := by
@@ -250,18 +246,12 @@ theorem logUtility_numeraire_prod' [IsFiniteMeasure P] [IsFiniteMeasure Q]
       positivity
   _ = Q .univ * ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P +
       P .univ * ∫ᵉ y, ENNReal.log (numeraire Q T y) ∂Q := by
-    rw [eintegral_prod _ (by fun_prop), eintegral_prod_symm _ (by fun_prop)]
-    · simp only [eintegral_const]
-      rw [← eintegral_mul_const, ← eintegral_mul_const]
-      · simp [mul_comm]
-      · simp
-      · simp
-      · exact eintegrable_log_numeraire hT
-      · simp
-      · simp
-      · exact eintegrable_log_numeraire hS
-    · exact h_int2
-    · exact h_int1
+    rw [eintegral_prod _ (by fun_prop) h_int1, eintegral_prod_symm _ (by fun_prop) h_int2]
+    simp only [eintegral_const]
+    rw [← eintegral_mul_const (by simp) (by simp), ← eintegral_mul_const (by simp) (by simp)]
+    · simp [mul_comm]
+    · exact eintegrable_log_numeraire hT
+    · exact eintegrable_log_numeraire hS
 
 /-- The logarithmic utility of the numeraire on a product is the sum of the two logarithmic
 utilities. -/

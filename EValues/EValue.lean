@@ -40,72 +40,12 @@ variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableS
 
 namespace ProbabilityTheory
 
--- section NegFun
-
--- variable {X Y : 𝓧 → EReal} {S : Set (Measure 𝓧)}
-
--- structure IsNegFun (X : 𝓧 → EReal) (S : Set (Measure 𝓧)) : Prop where
---   measurable : Measurable X := by fun_prop
---   eintegral_ne_bot : ∀ μ ∈ S, ∫ᵉ ω, X ω ∂μ ≠ ⊥
---   eintegral_nonpos : ∀ μ ∈ S, ∫ᵉ ω, X ω ∂μ ≤ 0
-
--- lemma isNegFun_of_isEmpty (hS : IsEmpty S) (hX : Measurable X) :
---     IsNegFun X S where
---   eintegral_ne_bot := by simp_all
---   eintegral_nonpos := by simp_all
-
--- lemma isNegFun_zero : IsNegFun 0 S where
---   eintegral_ne_bot μ hμ := by simp
---   eintegral_nonpos μ hμ := by simp
-
--- lemma IsNegFun.congr (hX : IsNegFun X S) (hY : Measurable Y) (hXY : ∀ μ ∈ S, X =ᵐ[μ] Y) :
---     IsNegFun Y S where
---   measurable := hY
---   eintegral_ne_bot μ hμ := by
---     rw [eintegral_congr_ae (hXY μ hμ).symm]
---     exact hX.eintegral_ne_bot μ hμ
---   eintegral_nonpos μ hμ := by
---     rw [eintegral_congr_ae (hXY μ hμ).symm]
---     exact hX.eintegral_nonpos μ hμ
-
--- lemma IsNegFun.ae_lt_top (hX : IsNegFun X S) {μ : Measure 𝓧} (hμ : μ ∈ S) :
---     ∀ᵐ ω ∂μ, X ω < ⊤ := by
---   simp_rw [lt_top_iff_ne_top]
---   refine ae_ne_top_of_eintegral_ne_top hX.measurable.aemeasurable (hX.eintegral_ne_bot μ hμ) ?_
---   intro h_contra
---   have h_le := hX.eintegral_nonpos μ hμ
---   simp [h_contra] at h_le
-
--- lemma IsNegFun.ae_ne_top (hX : IsNegFun X S) {μ : Measure 𝓧} (hμ : μ ∈ S) :
---     ∀ᵐ ω ∂μ, X ω ≠ ⊤ := by
---   filter_upwards [hX.ae_lt_top hμ] with ω hω using hω.ne
-
--- end NegFun
-
 /-- A random variable `X` is an e-variable for a set of measures `S` if it is measurable and
 its expectation is at most one for all measures in `S`. -/
 structure IsEVar (X : 𝓧 → ℝ≥0∞) (S : Set (Measure 𝓧)) : Prop where
   measurable : Measurable X := by fun_prop
   eintegral_ne_bot : ∀ μ ∈ S, ∫ᵉ ω, X ω - 1 ∂μ ≠ ⊥
   eintegral_nonpos : ∀ μ ∈ S, ∫ᵉ ω, X ω - 1 ∂μ ≤ 0
-
--- lemma isEVar_iff_isNegFun {X : 𝓧 → ℝ≥0∞} {S : Set (Measure 𝓧)} :
---     IsEVar X S ↔ IsNegFun (fun ω ↦ (X ω : EReal) - 1) S := by
---   refine ⟨fun h ↦ ⟨by have := h.measurable; fun_prop, h.eintegral_ne_bot, h.eintegral_nonpos⟩,
---     fun h ↦ ⟨?_, h.eintegral_ne_bot, h.eintegral_nonpos⟩⟩
---   have : X = fun ω ↦ ((X ω : EReal) - 1 + 1 : EReal).toENNReal := by
---     ext ω
---     have : (1 : EReal) = (1 : ℝ) := by norm_cast
---     simp_rw [this]
---     rw [EReal.sub_add_cancel]
---     simp
---   rw [this]
---   have h_meas := h.measurable
---   fun_prop
-
--- lemma IsEVar.isNegFun_sub_one {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S) :
---     IsNegFun (fun ω ↦ (X ω : EReal) - 1) S :=
---   isEVar_iff_isNegFun.1 hX
 
 lemma eintegral_sub_one_ne_bot_of_isFiniteMeasure {X : 𝓧 → ℝ≥0∞} {S : Set (Measure 𝓧)}
     (hS : ∀ μ ∈ S, IsFiniteMeasure μ) {μ : Measure 𝓧} (hμ : μ ∈ S) :
@@ -148,7 +88,7 @@ lemma IsEVar.lintegral_le_measure_univ {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X 
   simpa only [eintegral_const, one_mul, EReal.sub_nonpos, EReal.coe_ennreal_le_coe_ennreal_iff]
     using h_nonpos
 
-lemma isEvar_of_lintegral_le_measure_univ (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+lemma IsEVar.of_lintegral_le_measure_univ (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX_meas : Measurable X) (hX : ∀ μ ∈ S, ∫⁻ ω, X ω ∂μ ≤ μ .univ) :
     IsEVar X S where
   eintegral_ne_bot μ hμ := eintegral_sub_one_ne_bot_of_isFiniteMeasure hS hμ
@@ -170,6 +110,15 @@ lemma isEvar_of_lintegral_le_measure_univ (hS : ∀ μ ∈ S, IsFiniteMeasure μ
     rw [eintegral_eq_lintegral]
     simpa only [eintegral_const, one_mul, EReal.sub_nonpos, EReal.coe_ennreal_le_coe_ennreal_iff]
       using h_le
+
+lemma IsEVar.of_lintegral_le_one (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
+    {X : 𝓧 → ℝ≥0∞} (hX_meas : Measurable X) (hX : ∀ μ ∈ S, ∫⁻ ω, X ω ∂μ ≤ 1) :
+    IsEVar X S := by
+  refine IsEVar.of_lintegral_le_measure_univ (fun μ hμ ↦ have := hS μ hμ; inferInstance) hX_meas
+    fun μ hμ ↦ ?_
+  convert hX μ hμ
+  specialize hS μ hμ
+  simp
 
 /-- A random variables `X` is an e-variable for a set of measures `S` if it is measurable and
 its expectation is at most one for all measures in `S`. -/
