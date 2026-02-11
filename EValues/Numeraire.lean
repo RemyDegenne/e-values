@@ -542,12 +542,19 @@ theorem eintegral_log_ge_neg_one [IsProbabilityMeasure μ] (hX : IsNumeraire X S
     -1 ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by
   simpa using eintegral_log_ge_neg_measure_univ hX
 
+lemma eintegral_ne_bot [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) :
+    ∫ᵉ ω, ENNReal.log (X ω) ∂μ ≠ ⊥ := by
+  have h_le := eintegral_log_ge_neg_one hX
+  by_contra h
+  simp only [h, le_bot_iff, EReal.neg_eq_bot_iff] at h_le
+  norm_cast at h_le
+
 /-- The logarithm of the numeraire is integrable. -/
 protected lemma eintegrable_log [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) :
     eintegrable (fun ω ↦ ENNReal.log (X ω)) μ := by
-  have h_le := eintegral_log_ge_neg_measure_univ hX
   by_contra h_false
-  simp [eintegral_of_not_eintegrable h_false] at h_le
+  refine hX.eintegral_ne_bot ?_
+  exact eintegral_of_not_eintegrable h_false
 
 /-- A Numeraire maximizes the integral of the logarithm. -/
 theorem eintegral_log_le [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :

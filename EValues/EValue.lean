@@ -14,6 +14,7 @@ import EValues.EIntegral
 import EValues.Mathlib.Convex
 import EValues.Mathlib.ENNReal
 import EValues.Mathlib.unitInterval
+import EValues.Utility
 
 /-!
 # E-variables
@@ -218,10 +219,11 @@ lemma IsEVar.isRandEVar_deterministic (hX : IsEVar X S) :
     simp only [Kernel.lintegral_deterministic]
     exact hX.eintegral_nonpos μ hμ
 
-lemma isEVar_of_isEmpty (hS : IsEmpty S) (hX : Measurable X) :
-    IsEVar X S where
-  eintegral_ne_bot := by simp_all
-  eintegral_nonpos := by simp_all
+@[simp]
+lemma isEVar_empty (hX : Measurable X) :
+   IsEVar X (∅ : Set (Measure 𝓧)) where
+  measurable := hX
+  lintegral_le_one := by simp_all
 
 lemma isEVar_zero (hS : ∀ μ ∈ S, IsFiniteMeasure μ) : IsEVar 0 S where
   eintegral_ne_bot μ hμ := by specialize hS μ hμ; simp
@@ -324,6 +326,19 @@ lemma IsEVar.anti_set (hST : S ⊆ T) (hX : IsEVar X T) : IsEVar X S where
 lemma IsRandEVar.anti_set (hST : S ⊆ T) (hκ : IsRandEVar κ T) : IsRandEVar κ S where
   eintegral_ne_bot μ hμ := hκ.eintegral_ne_bot μ (hST hμ)
   eintegral_nonpos μ hμ := hκ.eintegral_nonpos μ (hST hμ)
+
+lemma IsEVar.union (hXS : IsEVar X S) (hXT : IsEVar X T) : IsEVar X (S ∪ T) where
+  measurable := hXS.measurable
+  lintegral_le_one μ hμ := by
+    simp only [Set.mem_union] at hμ
+    rcases hμ with hμS | hμT
+    · exact hXS.lintegral_le_one μ hμS
+    · exact hXT.lintegral_le_one μ hμT
+
+lemma isEVar_union_iff : IsEVar X (S ∪ T) ↔ IsEVar X S ∧ IsEVar X T := by
+  refine ⟨fun h ↦ ?_, fun ⟨hXS, hXT⟩ ↦ hXS.union hXT⟩
+  exact ⟨⟨h.measurable, fun μ hμ ↦ h.lintegral_le_one _ (Set.subset_union_left hμ)⟩,
+    ⟨h.measurable, fun μ hμ ↦ h.lintegral_le_one _ (Set.subset_union_right hμ)⟩⟩
 
 lemma IsEVar.comp {Y : 𝓨 → ℝ≥0∞} {S : Set (Measure 𝓧)} {φ : 𝓧 → 𝓨}
     (hφ : Measurable φ) (h : IsEVar Y {μ.map φ | μ ∈ S}) :
@@ -457,5 +472,18 @@ lemma convex_isEVar (S : Set (Measure 𝓧)) : Convex ℝ≥0∞ {Z | IsEVar Z S
     · refine EReal.mul_nonpos_iff.mpr ?_
       norm_cast
       exact .inl ⟨hb, hY.eintegral_nonpos μ hμ⟩
+
+/-- An e-variable for which the eintegral of the composition with a utility function is not ⊥. -/
+structure NeBotUtilityEVar (X : 𝓧 → ℝ≥0∞) (P : Measure 𝓧)
+    (S : Set (Measure 𝓧)) (U : Utility) : Prop extends IsEVar X S where
+  eintegral_ne_bot : ∫ᵉ x, (U ∘ X) x ∂P ≠ ⊥
+
+lemma NeBotUtilityEVar.eintegrable (X : 𝓧 → ℝ≥0∞) (P : Measure 𝓧) (S : Set (Measure 𝓧))
+    (U : Utility) (hX : NeBotUtilityEVar X P S U) : eintegrable (U ∘ X) P :=
+  eintegrable_of_eintegral_ne_bot hX.eintegral_ne_bot
+
+lemma IsEVar.neBotUtilityEVar_iff (hX : IsEVar X S) {P : Measure 𝓧} {U : Utility} :
+    NeBotUtilityEVar X P S U ↔ ∫ᵉ x, (U ∘ X) x ∂P ≠ ⊥ :=
+  ⟨fun h ↦ h.eintegral_ne_bot, fun h_eintegrable ↦ ⟨hX, h_eintegrable⟩⟩
 
 end ProbabilityTheory

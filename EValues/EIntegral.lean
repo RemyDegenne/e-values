@@ -8,7 +8,9 @@ import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Probability.Kernel.Composition.MeasureComp
 import EValues.Mathlib.EReal
 
+
 open ProbabilityTheory
+
 open scoped ENNReal
 
 namespace MeasureTheory
@@ -144,6 +146,7 @@ noncomputable
 def negPartFun (f : α → EReal) : α → EReal := fun x ↦ - min (f x) 0
 
 @[inherit_doc] postfix:max "⁺" => posPartFun
+
 @[inherit_doc] postfix:max "⁻" => negPartFun
 
 lemma posPartFun_def (f : α → EReal) : f⁺ = fun x ↦ max (f x) 0 := rfl
@@ -1147,33 +1150,55 @@ lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClas
   simp only [eintegral, lintegral_dirac]
   rcases le_total (f x₀) 0 with (h | h) <;> simp [h]
 
+section AristotleLemmas
+
+/-- The extended integral of the difference of two ENNReal-valued functions (coerced to EReal) is
+the difference of their Lebesgue integrals, provided at least one of the integrals is finite. -/
+lemma eintegral_coe_ennreal_sub {u v : α → ℝ≥0∞} (hu : AEMeasurable u μ) (hv : AEMeasurable v μ)
+    (h : ∫⁻ x, u x ∂μ ≠ ⊤ ∨ ∫⁻ x, v x ∂μ ≠ ⊤) :
+    ∫ᵉ x, u x - v x ∂μ = ∫⁻ x, u x ∂μ - ∫⁻ x, v x ∂μ := by
+  rw [eintegral_sub_of_nonneg, eintegral_eq_lintegral, eintegral_eq_lintegral]
+  · exact fun _ ↦ by positivity
+  · exact fun _ ↦ by positivity
+  · fun_prop
+  · fun_prop
+  rcases h with h | h
+  · have h' : ∫ᵉ x, u x ∂μ ≠ ⊤ := by simpa [eintegral_eq_lintegral]
+    exact ne_top_of_le_ne_top h' (eintegral_mono fun _ ↦ min_le_left _ _)
+  · have h' : ∫ᵉ x, v x ∂μ ≠ ⊤ := by simpa [eintegral_eq_lintegral]
+    exact ne_top_of_le_ne_top h' (eintegral_mono fun _ ↦ min_le_right _ _)
+
+end AristotleLemmas
+
 lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [SFinite ν]
     (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) (hf_int : eintegrable f (μ.prod ν)) :
     ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ x, ∫ᵉ y, f (x, y) ∂ν ∂μ := by
-  simp_rw [← posPartFun_sub_negPartFun f]
-  rw [eintegral_sub_of_nonneg_of_eq_zero (by simp) (by simp)
-    (posPartFun_eq_zero_or_negPartFun_eq_zero f)]
-  rw [eintegral_prod_of_nonneg, eintegral_prod_of_nonneg]
-  rotate_left
-  · fun_prop
-  · simp
-  · fun_prop
-  · simp
-  rw [← eintegral_sub]
-  · congr with x
-    rw [eintegral_sub]
-    · exact eintegrable_of_nonneg (by simp)
-    · sorry
-    · exact eintegrable_of_nonneg (by simp)
-    · sorry
-    · sorry -- will only be true a.e. Need a filter_upwards above
-    · exact .inl <| EReal.ne_bot_of_nonneg <| eintegral_nonneg (by simp)
-  · exact eintegrable_of_nonneg (fun _ ↦ eintegral_nonneg (by simp))
-  · sorry
-  · sorry
-  · sorry
-  · sorry
-  · exact .inl (EReal.ne_bot_of_nonneg <| eintegral_nonneg fun _ ↦ eintegral_nonneg (by simp))
+  -- Let $u(z) = (f(z)^+).toENNReal$ and $v(z) = (f(z)^-).toENNReal$.
+  set u : α × β → ℝ≥0∞ := fun z => (f z).toENNReal
+  set v : α × β → ℝ≥0∞ := fun z => (-f z).toENNReal
+  -- By definition of $u$ and $v$, we have $f = u - v$.
+  have hf_eq : f = fun z => (u z : EReal) - (v z : EReal) := by
+    simp only [u, v]
+    ext z
+    rcases le_total (f z) 0 with h | h <;> simp [h]
+  rw [ hf_eq ]
+  have hu_aemeasurable : AEMeasurable u (μ.prod ν) := by fun_prop
+  have hv_aemeasurable : AEMeasurable v (μ.prod ν) := by fun_prop
+  have h_u_v : (∫⁻ x, u x ∂(μ.prod ν) : EReal) - ∫⁻ x, v x ∂(μ.prod ν) =
+      ∫⁻ x, ∫⁻ y, u (x, y) ∂ν ∂μ - ∫⁻ x, ∫⁻ y, v (x, y) ∂ν ∂μ := by
+    rw [lintegral_prod _ (by fun_prop), lintegral_prod _ (by fun_prop)]
+  convert h_u_v using 1
+  · exact congrArg (eintegral (μ.prod ν)) hf_eq.symm
+  · convert eintegral_coe_ennreal_sub _ _ _ using 1
+    · congr! 3 <;> grind
+    · convert hu_aemeasurable.lintegral_prod_right' using 1
+      grind
+    · refine AEMeasurable.lintegral_prod_right ?_
+      convert hv_aemeasurable using 1
+      grind
+    · cases hf_int with
+      | inl h => left; convert h; rw [lintegral_prod _ (by fun_prop)]; grind
+      | inr h => right; convert h; rw [lintegral_prod _ (by fun_prop)]; grind
 
 lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
     {ν : Measure β} [SFinite ν]
