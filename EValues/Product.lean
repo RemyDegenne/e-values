@@ -16,8 +16,7 @@ open scoped ENNReal NNReal Topology
 namespace ProbabilityTheory
 
 variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableSpace 𝓨}
-  {P : Measure 𝓧} [IsProbabilityMeasure P] {Q : Measure 𝓨} [IsProbabilityMeasure Q]
-  {S : Set (Measure 𝓧)} {T : Set (Measure 𝓨)}
+  {P : Measure 𝓧} {Q : Measure 𝓨} {S : Set (Measure 𝓧)} {T : Set (Measure 𝓨)}
 
 /-- The product of the two e-variables is an e-variable for the product measure
   with respect to the product of the two sets. -/
@@ -82,7 +81,10 @@ theorem isNumeraire_mul
   have hX_meas := hX.measurable
   have hY_meas := hY.measurable
   refine ⟨isEvar_of_lintegral_le_measure_univ ?_ (by fun_prop) ?_, fun Z hZ_evar ↦ ?_⟩
-  · sorry
+  · rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
+    specialize hS μ hμS
+    specialize hT ν hνT
+    infer_instance
   · rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
     specialize hT ν hνT
     rw [lintegral_prod_mul (by fun_prop) (by fun_prop)]
@@ -143,8 +145,7 @@ theorem isNumeraire_mul
       rw [lintegral_const_mul _ (by fun_prop), ENNReal.inv_mul_le_iff _ (by simp), mul_comm] at h_le
       swap; · simpa [hY_top] using hY.measure_fsupport_ne_zero_or_ae_top
       exact h_le
-    refine isEvar_of_lintegral_le_measure_univ ?_ (by fun_prop) ?_
-    · sorry
+    refine isEvar_of_lintegral_le_measure_univ hS (by fun_prop) ?_
     · intro μ hμS
       have := hS μ hμS
       by_cases hμ : μ = 0
@@ -211,8 +212,8 @@ theorem isNumeraire_mul_numeraire
 
 /-- The logarithmic utility of the numeraire on a product is the sum of the two logarithmic
 utilities. -/
-theorem logUtility_numeraire_prod (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
-    (hT : ∀ μ ∈ T, IsFiniteMeasure μ) :
+theorem logUtility_numeraire_prod [IsProbabilityMeasure P] [IsProbabilityMeasure Q]
+    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) (hT : ∀ μ ∈ T, IsFiniteMeasure μ) :
     ∫ᵉ x, ENNReal.log (numeraire (P.prod Q) (Measure.prod.uncurry '' (S ×ˢ T)) x) ∂(P.prod Q)
       = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P + ∫ᵉ x, ENNReal.log (numeraire Q T x) ∂Q := by
   have h_int1 : eintegrable (fun p ↦ (numeraire P S p.1).log) (P.prod Q) := by
@@ -286,7 +287,7 @@ lemma maxUtility_prod (P : Measure 𝓧) (Q : Measure 𝓨) [IsProbabilityMeasur
     infer_instance
 
 lemma iSup_prod_le_maxUtility (P : Measure (𝓧 × 𝓨)) {T : Set (Measure 𝓨)}
-    (hT : ∀ μ ∈ T, IsProbabilityMeasure μ) :
+    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) (hT : ∀ μ ∈ T, IsFiniteMeasure μ) :
     ⨆ (X : 𝓧 → ℝ≥0∞) (Y : 𝓨 → ℝ≥0∞) (_ : NeBotUtilityEVar X (P.map Prod.fst) S logUtility)
     (_ : NeBotUtilityEVar Y (P.map Prod.snd) T logUtility),
       ∫ᵉ x, (logUtility ∘ (fun x ↦ X x.1 * Y x.2)) x ∂P ≤
@@ -295,7 +296,7 @@ lemma iSup_prod_le_maxUtility (P : Measure (𝓧 × 𝓨)) {T : Set (Measure �
   rw [iSup₂_eq_sSup, iSup₄_eq_sSup]
   refine sSup_le_sSup fun z ↦ ?_
   rintro ⟨X, Y, hX, hY, rfl⟩
-  exact ⟨fun x ↦ X x.1 * Y x.2, hX.prod hT hY.toIsEVar, rfl⟩
+  exact ⟨fun x ↦ X x.1 * Y x.2, hX.prod hS hT hY.toIsEVar, rfl⟩
 
 lemma isNumeraire_prod_numeraire_fintype {ι : Type*} {𝓧 : ι → Type*} [hι : Fintype ι]
     {m𝓧 : ∀ i, MeasurableSpace (𝓧 i)} {P : (i : ι) → Measure (𝓧 i)}

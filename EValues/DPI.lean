@@ -116,9 +116,7 @@ lemma maxRandUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : K
   refine sSup_le_sSup fun y ↦ ?_
   rintro ⟨η, hη₁, hη₂, hξ_int⟩
   rw [P.comp_assoc] at hξ_int
-  refine ⟨η ∘ₖ κ, inferInstance, ⟨fun μ hμ ↦ ?_⟩, hξ_int⟩
-  rw [← μ.comp_assoc]
-  exact hη₂.lintegral_le_one (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
+  exact ⟨η ∘ₖ κ, inferInstance, hη₂.comp, hξ_int⟩
 
 /-- Data processing inequality for the maximum utility and a Markov kernel. -/
 lemma maxUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)
@@ -156,7 +154,7 @@ lemma _root_.MeasurableEmbedding.maxUtility_map_eq [Nonempty 𝓧] (φ : 𝓧 �
   exact maxUtility_map_le (P.map φ) hφ.measurable_invFun
 
 /-- If `X` is a numeraire e-variable, then the maximum utility is attained at `X`. -/
-lemma IsNumeraire.maxUtility_eq_integral [IsProbabilityMeasure P]
+lemma IsNumeraire.maxUtility_eq_integral [IsFiniteMeasure P]
     {X : 𝓧 → ℝ≥0∞} (hX : IsNumeraire X S P) :
     maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (X x) ∂P := by
   refine le_antisymm ?_ ?_
@@ -166,7 +164,7 @@ lemma IsNumeraire.maxUtility_eq_integral [IsProbabilityMeasure P]
     refine le_sSup ?_
     exact ⟨X, hX.toIsEVar, rfl⟩
 
-lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsProbabilityMeasure P]
+lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsFiniteMeasure P]
     (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P :=
   (isNumeraire_numeraire P hS).maxUtility_eq_integral
@@ -177,14 +175,8 @@ lemma maxUtility_nonneg (P : Measure 𝓧) :
   calc 0
   _ ≤ ∫ᵉ x, (logUtility.toFun ∘ (fun _ ↦ 1)) x ∂P := by simp [logUtility]
   _ ≤ maxUtility P S logUtility := by
-<<<<<<< HEAD
-    rw [maxUtility]
-    refine le_iSup₂ (f := fun X _ ↦ ∫ᵉ (x : 𝓧), (logUtility.toFun ∘ X) x ∂P) (fun _ ↦ 1) ?_
-    exact isEVar_fun_one S
-=======
     refine le_iSup₂ (f := fun X _ ↦ ∫ᵉ x, (logUtility.toFun ∘ X) x ∂P) (fun _ ↦ 1) ?_
-    exact isEVar_fun_one S hS
->>>>>>> origin/main
+    exact isEVar_fun_one S
 
 /-- The maximum utility is a convex function of the measure. -/
 lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :

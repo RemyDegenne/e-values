@@ -308,21 +308,21 @@ lemma erenyiDiv_prod {S₁ S₂ : Set (Measure 𝓧)} {T₁ T₂ : Set (Measure 
         have := hX.measurable
         have := hY.measurable
         have hXY1 : ∫ᵉ (x : 𝓧 × 𝓨), (X x.1).log ∂R ≠ ⊥ := by
-          have hXe := hX.eintegral_ne_bot
+          have hXe := hX.utility_ne_bot
           simp only [logUtility, Function.comp_apply] at hXe
           rwa [eintegral_map (by fun_prop) measurable_fst] at hXe
         have hXY2 : ∫ᵉ (x : 𝓧 × 𝓨), (Y x.2).log ∂R ≠ ⊥ := by
-          have hXe := hY.eintegral_ne_bot
+          have hXe := hY.utility_ne_bot
           simp only [logUtility, Function.comp_apply] at hXe
           rwa [eintegral_map (by fun_prop) measurable_snd] at hXe
         calc
         _ = ∫ᵉ x, logUtility (X x.1) ∂R + ∫ᵉ x, logUtility (Y x.2) ∂R := by
           simp_rw [logUtility, Function.comp, ENNReal.log_mul_add]
           rw [eintegral_add (by fun_prop) (by fun_prop)]
-          · have hXe := hX.eintegral_ne_bot
+          · have hXe := hX.utility_ne_bot
             refine eintegrable_of_eintegral_ne_bot ?_
             rwa [eintegral_map (by fun_prop) measurable_fst] at hXe
-          · have hYe := hY.eintegral_ne_bot
+          · have hYe := hY.utility_ne_bot
             refine eintegrable_of_eintegral_ne_bot ?_
             rwa [eintegral_map (by fun_prop) measurable_snd] at hYe
           · exact Or.inl hXY1
