@@ -125,6 +125,12 @@ lemma eintegrable.sub_const [IsFiniteMeasure μ] {c : EReal} {f : α → EReal}
   simp_rw [sub_eq_add_neg]
   exact hf.add_const (by simp [hc_top]) (by simp [hc_bot])
 
+lemma eintegrable.smul_measure {X : α → EReal} (hX : eintegrable X μ) {c : ℝ≥0∞} (hc : c ≠ ∞) :
+    eintegrable X (c • μ) := by
+  cases hX with
+  | inl hX => left; simp [hc, hX, ENNReal.mul_eq_top]
+  | inr hX => right; simp [hc, hX, ENNReal.mul_eq_top]
+
 lemma eintegrable_map {β : Type*} {mβ : MeasurableSpace β} {f : α → β} {g : β → EReal}
     (hf : AEMeasurable f μ) (hg : AEMeasurable g (Measure.map f μ)) :
      eintegrable g (μ.map f) ↔ eintegrable (g ∘ f) μ := by
