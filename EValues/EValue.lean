@@ -127,7 +127,7 @@ structure IsRandEVar (κ : Kernel 𝓧 ℝ≥0∞) (S : Set (Measure 𝓧)) : Pr
   eintegral_ne_bot : ∀ μ ∈ S, ∫ᵉ ω, ∫⁻ x, x ∂(κ ω) - 1 ∂μ ≠ ⊥
   eintegral_nonpos : ∀ μ ∈ S, ∫ᵉ ω, ∫⁻ x, x ∂(κ ω) - 1 ∂μ ≤ 0
 
-lemma IsRandEVar.lintegral_le_one {κ : Kernel 𝓧 ℝ≥0∞} (hκ : IsRandEVar κ S)
+lemma IsRandEVar.lintegral_le_measure_univ {κ : Kernel 𝓧 ℝ≥0∞} (hκ : IsRandEVar κ S)
     (μ : Measure 𝓧) (hμ : μ ∈ S) :
     ∫⁻ ω, ∫⁻ x, x ∂(κ ω) ∂μ ≤ μ .univ := by
   have h_nonpos := hκ.eintegral_nonpos μ hμ
@@ -150,6 +150,11 @@ lemma IsRandEVar.lintegral_le_one {κ : Kernel 𝓧 ℝ≥0∞} (hκ : IsRandEVa
   rw [eintegral_eq_lintegral] at h_nonpos
   simpa only [eintegral_const, one_mul, EReal.sub_nonpos, EReal.coe_ennreal_le_coe_ennreal_iff]
     using h_nonpos
+
+lemma IsRandEVar.lintegral_le_one {κ : Kernel 𝓧 ℝ≥0∞} (hκ : IsRandEVar κ S)
+    (μ : Measure 𝓧) (hμ : μ ∈ S) [IsProbabilityMeasure μ] :
+    ∫⁻ ω, ∫⁻ x, x ∂(κ ω) ∂μ ≤ 1 := by
+  simpa using hκ.lintegral_le_measure_univ μ hμ
 
 variable {X Y : 𝓧 → ℝ≥0∞} {κ η : Kernel 𝓧 ℝ≥0∞} [IsMarkovKernel κ] {S T : Set (Measure 𝓧)}
 

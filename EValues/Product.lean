@@ -25,7 +25,7 @@ lemma IsEVar.prod (hS : ∀ μ ∈ S, IsFiniteMeasure μ) (hT : ∀ μ ∈ T, Is
     IsEVar (fun (x : 𝓧 × 𝓨) ↦ X x.1 * Y x.2) (Measure.prod.uncurry '' (S ×ˢ T)) := by
   have hX_meas := hX.measurable
   have hY_meas := hY.measurable
-  refine isEvar_of_lintegral_le_measure_univ ?_ (by fun_prop) ?_
+  refine .of_lintegral_le_measure_univ ?_ (by fun_prop) ?_
   · rintro _ ⟨⟨μ, ν⟩, hμS, _, rfl⟩
     obtain ⟨hμS, hνT⟩ := Set.mem_prod.mp hμS
     specialize hT ν hνT
@@ -54,7 +54,7 @@ theorem isNumeraire_mul
       {ρ | ∃ μ ∈ S, ∃ ν ∈ T, μ.prod ν = ρ} (P.prod Q) := by
   have hX_meas := hX.measurable
   have hY_meas := hY.measurable
-  refine ⟨isEvar_of_lintegral_le_measure_univ ?_ (by fun_prop) ?_, fun Z hZ_evar ↦ ?_⟩
+  refine ⟨.of_lintegral_le_measure_univ ?_ (by fun_prop) ?_, fun Z hZ_evar ↦ ?_⟩
   · rintro _ ⟨μ, hμS, ν, hνT, rfl⟩
     specialize hS μ hμS
     specialize hT ν hνT
@@ -119,7 +119,7 @@ theorem isNumeraire_mul
       rw [lintegral_const_mul _ (by fun_prop), ENNReal.inv_mul_le_iff _ (by simp), mul_comm] at h_le
       swap; · simpa [hY_top] using hY.measure_fsupport_ne_zero_or_ae_top
       exact h_le
-    refine isEvar_of_lintegral_le_measure_univ hS (by fun_prop) ?_
+    refine .of_lintegral_le_measure_univ hS (by fun_prop) ?_
     · intro μ hμS
       have := hS μ hμS
       by_cases hμ : μ = 0
@@ -138,7 +138,7 @@ theorem isNumeraire_mul
         congr with y
         simp_rw [div_eq_mul_inv]
         rw [lintegral_mul_const _ (by fun_prop)]
-      refine isEvar_of_lintegral_le_measure_univ hT (by fun_prop) ?_
+      refine .of_lintegral_le_measure_univ hT (by fun_prop) ?_
       intro ν hνT
       have := hT ν hνT
       rw [lintegral_const_mul _ (by fun_prop), ENNReal.inv_mul_le_iff _ h_top]

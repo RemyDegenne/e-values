@@ -165,10 +165,8 @@ lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
         gcongr
         simp [hδ_pos.le]
   · rintro ⟨u, hu_nonneg, hu, hX_le⟩
-    refine isEvar_of_lintegral_le_measure_univ ?_ (by fun_prop) ?_
-    · intro μ hμ
-      have := hμ.1
-      infer_instance
+    refine .of_lintegral_le_measure_univ (fun μ hμ ↦ by have := hμ.1; infer_instance)
+      (by fun_prop) ?_
     rintro μ ⟨h_prob, h_int⟩
     simp only [measure_univ]
     calc ∫⁻ ω, X ω ∂μ
