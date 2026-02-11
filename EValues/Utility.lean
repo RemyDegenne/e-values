@@ -88,7 +88,7 @@ lemma Utility.coe_real_toReal (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx
 lemma Utility.contDiffOn (U : Utility) : ContDiffOn ℝ 1 U.real (Set.Ioi 0) := U.differentiable'
 
 lemma Utility.differentiableOn (U : Utility) : DifferentiableOn ℝ U.real (Set.Ioi 0) :=
-  U.contDiffOn.differentiableOn le_rfl
+  U.contDiffOn.differentiableOn (by simp)
 
 lemma Utility.monotoneOn_Ioi_real (U : Utility) : MonotoneOn U.real (Set.Ioi 0) := by
   intro x hx y hy hxy
@@ -142,7 +142,7 @@ lemma Utility.concaveOn_Ici_real (U : Utility) (h0 : U 0 ≠ ⊥) : ConcaveOn �
   intro x hx y hy a b ha hb hab
   have hx_nonneg : 0 ≤ x := Set.mem_Ici.mp hx
   have hy_nonneg : 0 ≤ y := Set.mem_Ici.mp hy
-  have hU_ne_bot x : U x ≠ ⊥ := ne_bot_of_le_ne_bot (b := U 0) h0 (U.monotone zero_le')
+  have hU_ne_bot x : U x ≠ ⊥ := ne_bot_of_le_ne_bot (b := U 0) h0 (U.monotone (zero_le _))
   simp only [smul_eq_mul]
   have h_ccv := U.concave.2 (Set.mem_univ (ENNReal.ofReal x)) (Set.mem_univ (ENNReal.ofReal y))
     (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by ext; simp [hab])
@@ -296,32 +296,91 @@ noncomputable def logUtility : Utility where
     exact ContDiffOn.congr h_diff h_eq
 
 @[simp]
+lemma logUtility_zero : logUtility 0 = ⊥ := by simp [logUtility]
+
+@[simp]
+lemma logUtility_top : logUtility ∞ = ⊤ := by simp [logUtility]
+
+@[simp]
 lemma real_logUtility {x : ℝ} (hx : 0 < x) :
     logUtility.real x = Real.log x := by
   simp [logUtility, Utility.real, ENNReal.log_ofReal, not_le.mpr hx]
+
+lemma deriv_real_logUtility {x : ℝ} (hx : 0 < x) :
+    deriv logUtility.real x = x⁻¹ := by
+  rw [← Real.deriv_log]
+  refine EventuallyEq.deriv_eq ?_
+  have h_ev_pos : ∀ᶠ y in 𝓝 x, 0 < y := eventually_gt_nhds hx
+  filter_upwards [h_ev_pos] with y hy using real_logUtility hy
+
+instance : (𝓝[<] ∞).NeBot := by
+  have : NeZero ∞ := by constructor; simp
+  exact ENNReal.nhdsLT_neBot
+
+lemma ENNReal.tendsto_toReal_atTop : Tendsto (fun x : ℝ≥0∞ ↦ x.toReal) (𝓝[<] ∞) atTop := by
+  rw [tendsto_atTop]
+  intro y
+  rw [eventually_nhdsWithin_iff]
+  simp only [Set.mem_Iio]
+  have h_ge : ∀ᶠ (x : ℝ≥0∞) in 𝓝 ⊤, ENNReal.ofReal y ≤ x := eventually_ge_nhds (by simp)
+  filter_upwards [h_ge] with x hx hx_lt_top
+  rwa [← ENNReal.ofReal_le_iff_le_toReal hx_lt_top.ne]
 
 lemma deriv_logUtility (x : ℝ≥0∞) :
     logUtility.deriv x = if x = 0 then ⊤ else 1 / x := by
   by_cases hx0 : x = 0
   · simp only [hx0, ↓reduceIte, EReal.coe_ennreal_top]
-    sorry
+    simp only [Utility.deriv, ↓reduceIte]
+    refine Tendsto.limsup_eq ?_
+    simp only [EReal.tendsto_coe_nhds_top_iff]
+    have h_toReal_pos : ∀ᶠ (x : ℝ≥0∞) in 𝓝[>] 0, 0 < x.toReal := by
+      have h_ne_top : ∀ᶠ x in 𝓝[>] 0, x ≠ ∞ := eventually_ne_nhdsWithin (by simp)
+      have h_pos : ∀ᶠ x in 𝓝[>] (0 : ℝ≥0∞), 0 < x := eventually_nhdsWithin_of_forall fun x hx ↦ hx
+      filter_upwards [h_ne_top, h_pos] with x hx_ne_top hx_pos
+      simp [ENNReal.toReal_pos_iff, hx_pos, hx_ne_top.lt_top]
+    suffices Tendsto (fun x : ℝ≥0∞ ↦ x.toReal⁻¹) (𝓝[>] 0) atTop by
+      refine this.congr' ?_
+      filter_upwards [h_toReal_pos] with x hx_pos
+      simp [deriv_real_logUtility hx_pos]
+    refine tendsto_inv_nhdsGT_zero.comp ?_
+    rw [tendsto_nhdsWithin_iff]
+    constructor
+    · refine tendsto_nhdsWithin_of_tendsto_nhds ?_
+      refine ContinuousAt.tendsto ?_
+      exact ENNReal.continuousAt_toReal (by simp)
+    · simpa
   by_cases hx_top : x = ∞
   · simp only [hx_top, ENNReal.top_ne_zero, ↓reduceIte, one_div, ENNReal.inv_top,
       EReal.coe_ennreal_zero]
-    sorry
+    simp only [Utility.deriv, ENNReal.top_ne_zero, ↓reduceIte]
+    refine Tendsto.limsup_eq ?_
+    have : (0 : EReal) = (0 : ℝ) := rfl
+    rw [this]
+    rw [EReal.tendsto_coe]
+    have h_toReal_pos : ∀ᶠ (x : ℝ≥0∞) in 𝓝[<] ∞, 0 < x.toReal := by
+      have h_ne_top : ∀ᶠ x in 𝓝[<] ∞, x ≠ ∞ := eventually_nhdsWithin_of_forall fun x hx ↦ by
+        simp only [Set.mem_Iio] at hx; exact hx.ne
+      have h_pos : ∀ᶠ x in 𝓝[<] ∞, 0 < x := by
+        simp only [pos_iff_ne_zero, ne_eq]
+        exact eventually_ne_nhdsWithin (by simp)
+      filter_upwards [h_ne_top, h_pos] with x hx_ne_top hx_pos
+      simp [ENNReal.toReal_pos_iff, hx_pos, hx_ne_top.lt_top]
+    suffices Tendsto (fun x : ℝ≥0∞ ↦ x.toReal⁻¹) (𝓝[<] ∞) (𝓝 0) by
+      refine this.congr' ?_
+      filter_upwards [h_toReal_pos] with x hx_pos
+      simp [deriv_real_logUtility hx_pos]
+    suffices h_tendsto_toReal : Tendsto (fun x : ℝ≥0∞ ↦ x.toReal) (𝓝[<] ∞) atTop from
+      tendsto_inv_atTop_zero.comp h_tendsto_toReal
+    exact ENNReal.tendsto_toReal_atTop
   simp only [Utility.deriv, hx0, ↓reduceIte, hx_top, one_div]
   have hx_pos : 0 < x.toReal := by
-    sorry
+    rw [ENNReal.toReal_pos_iff]
+    exact ⟨Ne.bot_lt hx0, Ne.lt_top hx_top⟩
   suffices deriv logUtility.real x.toReal = 1 / x.toReal by
     simp only [this, one_div]
-    sorry
-  have h_deriv_log : deriv Real.log x.toReal = 1 / x.toReal := by
-    sorry
-  rw [← h_deriv_log]
-  refine EventuallyEq.deriv_eq ?_
-  have h_ev_pos : ∀ᶠ y in 𝓝 x.toReal, 0 < y := by
-    sorry
-  filter_upwards [h_ev_pos] with y hy using real_logUtility hy
+    rw [← ENNReal.toReal_inv, EReal.coe_ennreal_toReal]
+    simpa
+  simp [deriv_real_logUtility hx_pos]
 
 lemma deriv_logUtility_eq_ennreal (x : ℝ≥0∞) :
     logUtility.deriv x = (1 / x : ℝ≥0∞) := by

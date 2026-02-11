@@ -44,7 +44,7 @@ lemma erenyiDiv_bounded_eq_erenyiDiv_bernoulli {a b : ℝ} :
         exact μ.isProbabilityMeasure_map measurable_doubleton.aemeasurable
       · have := hμ.2
         rw [integral_map (by fun_prop) (by fun_prop)]
-        simpa [doubleton]
+        simp_all [doubleton]
   · let BerI (p : I) : Measure ({0, 1} : Set ℝ) := Ber (ENNReal.ofReal p)
     have BerI_is_prob p : IsProbabilityMeasure (BerI p) := by unfold BerI; infer_instance
     let κ : Kernel I ({0, 1} : Set ℝ) := ⟨BerI, by unfold BerI Ber; fun_prop⟩
@@ -150,7 +150,7 @@ lemma echernoffDiv_bounded {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
   let φ : I → I := fun x ↦ ⟨1 - x.1, by grind⟩
   have hφ_inv : φ ∘ φ = id := by ext; simp [φ]
   rw [← erenyiDiv_bounded hδ_pos hδ,
-    erenyiDiv_eq_two_mul_echernoffDiv_of_involutive (by fun_prop) hφ_inv (by grind) (by grind),
+    erenyiDiv_eq_two_mul_echernoffDiv_of_involutive (by fun_prop) hφ_inv,
     ← mul_assoc, ENNReal.inv_mul_cancel (by simp) (by simp), one_mul]
   ext μ
   simp only [Set.mem_setOf_eq]
@@ -164,14 +164,14 @@ lemma echernoffDiv_bounded {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
     rw [integral_map (by fun_prop) (by fun_prop)]
     simp only [φ]
     rw [integral_sub (by fun_prop) (by fun_prop)]
-    simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+    simp only [integral_const, probReal_univ, smul_eq_mul, mul_one]
     linarith
   · rintro ⟨hμ, h_int⟩
     refine ⟨μ.map φ, ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩, ?_⟩
     · rw [integral_map (by fun_prop) (by fun_prop)]
       simp only [φ]
       rw [integral_sub (by fun_prop) (by fun_prop)]
-      simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+      simp only [integral_const, probReal_univ, smul_eq_mul, mul_one]
       linarith
     · rw [Measure.map_map (by fun_prop) (by fun_prop), hφ_inv, Measure.map_id]
 

@@ -8,7 +8,9 @@ import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Probability.Kernel.Composition.MeasureComp
 import EValues.Mathlib.EReal
 
+
 open ProbabilityTheory
+
 open scoped ENNReal
 
 namespace MeasureTheory
@@ -123,6 +125,12 @@ lemma eintegrable.sub_const [IsFiniteMeasure μ] {c : EReal} {f : α → EReal}
   simp_rw [sub_eq_add_neg]
   exact hf.add_const (by simp [hc_top]) (by simp [hc_bot])
 
+lemma eintegrable.smul_measure {X : α → EReal} (hX : eintegrable X μ) {c : ℝ≥0∞} (hc : c ≠ ∞) :
+    eintegrable X (c • μ) := by
+  cases hX with
+  | inl hX => left; simp [hc, hX, ENNReal.mul_eq_top]
+  | inr hX => right; simp [hc, hX, ENNReal.mul_eq_top]
+
 lemma eintegrable_map {β : Type*} {mβ : MeasurableSpace β} {f : α → β} {g : β → EReal}
     (hf : AEMeasurable f μ) (hg : AEMeasurable g (Measure.map f μ)) :
      eintegrable g (μ.map f) ↔ eintegrable (g ∘ f) μ := by
@@ -144,6 +152,7 @@ noncomputable
 def negPartFun (f : α → EReal) : α → EReal := fun x ↦ - min (f x) 0
 
 @[inherit_doc] postfix:max "⁺" => posPartFun
+
 @[inherit_doc] postfix:max "⁻" => negPartFun
 
 lemma posPartFun_def (f : α → EReal) : f⁺ = fun x ↦ max (f x) 0 := rfl
@@ -198,6 +207,10 @@ lemma eintegrable_of_eintegral_ne_bot (hf : ∫ᵉ x, f x ∂μ ≠ ⊥) : einte
 @[simp]
 lemma eintegral_zero (μ : Measure α) : ∫ᵉ _, (0 : EReal) ∂μ = 0 := by simp [eintegral]
 
+@[simp]
+lemma eintegral_zero_measure (f : α → EReal) : ∫ᵉ x, f x ∂(0 : Measure α) = 0 := by
+  simp [eintegral]
+
 lemma eintegral_congr (h : ∀ x, f x = g x) : ∫ᵉ x, f x ∂μ = ∫ᵉ x, g x ∂μ := by
   simp_rw [h]
 
@@ -249,6 +262,10 @@ lemma eintegral_nonpos' (hf_meas : AEMeasurable f μ) (hf : ∀ᵐ x ∂μ, f x 
   simp only [EReal.neg_le_zero]
   positivity
 
+lemma setEIntegral_measure_zero {μ : Measure α} (s : Set α) (f : α → EReal) (hs' : μ s = 0) :
+    ∫ᵉ x in s, f x ∂μ = 0 := by
+  simp [eintegral, setLIntegral_measure_zero s _ hs']
+
 @[simp]
 lemma eintegral_const (c : EReal) (μ : Measure α) : ∫ᵉ _, c ∂μ = c * (μ Set.univ : EReal) := by
   rcases le_total 0 c with hc | hc
@@ -273,16 +290,17 @@ lemma eintegral_mono_ae (hfg : f ≤ᵐ[μ] g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ 
     rw [← EReal.neg_le_neg_iff] at hfgx
     exact EReal.toENNReal_le_toENNReal hfgx
 
-lemma eintegral_strict_mono_ae (hfg : ∀ᵐ x ∂μ, f x < g x) (hfi : ∫ᵉ x, f x ∂μ < ⊤) :
-    ∫ᵉ x, f x ∂μ < ∫ᵉ x, g x ∂μ := by
-  sorry
+lemma eintegral_neg_eq_top_eq_bot (hf_neg_top : ∫⁻ x, (-f x).toENNReal ∂μ = ⊤) :
+    ∫ᵉ x, f x ∂μ = ⊥ := by
+  simp [eintegral, hf_neg_top]
 
 lemma eintegral_add_compl {A : Set α} (hA : MeasurableSet A) :
     ∫ᵉ x, f x ∂μ = ∫ᵉ x in A, f x ∂μ + ∫ᵉ x in Aᶜ, f x ∂μ := by
   simp only [eintegral]
-  rw [← lintegral_add_compl (f := fun x ↦ (f x).toENNReal) hA]
-  rw [← lintegral_add_compl (f := fun x ↦ (-f x).toENNReal) hA]
-  sorry
+  rw [← lintegral_add_compl (f := fun x ↦ (f x).toENNReal) hA,
+    ← lintegral_add_compl (f := fun x ↦ (-f x).toENNReal) hA]
+  push_cast
+  rw [EReal.add_sub_add_comm (by simp) (by simp)]
 
 @[gcongr]
 lemma eintegral_mono (hfg : f ≤ g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ :=
@@ -297,6 +315,129 @@ lemma ae_ne_bot_of_eintegral_ne_bot (hf_meas : AEMeasurable f μ) (hf : ∫ᵉ x
   filter_upwards [h] with x hx
   rw [lt_top_iff_ne_top, ne_eq, EReal.toENNReal_eq_top_iff] at hx
   simpa using hx
+
+lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : AEMeasurable f μ)
+    (hfg : ∀ᵐ x ∂μ, f x < g x) (hfi : ∫ᵉ x, f x ∂μ < ⊤) (hgi : ∫ᵉ x, g x ∂μ ≠ ⊥) :
+    ∫ᵉ x, f x ∂μ < ∫ᵉ x, g x ∂μ := by
+  by_cases hg_top : ∫ᵉ x, g x ∂μ = ⊤
+  · simp_all
+  by_cases hf_neg_top : ∫⁻ x, (-f x).toENNReal ∂μ = ⊤
+  · have := eintegral_neg_eq_top_eq_bot hf_neg_top
+    simp_all only [bot_lt_top, gt_iff_lt]
+    exact Ne.bot_lt' hgi.symm
+  obtain ⟨s, hμs, h_cases⟩ : ∃ s, μ s ≠ 0 ∧ (
+      (∀ ⦃x⦄, x ∈ s → 0 ≤ f x ∧ f x < g x)
+      ∨ (∀ ⦃x⦄, x ∈ s → g x ≤ 0 ∧ f x < g x)
+      ∨ (∀ ⦃x⦄, x ∈ s → f x < 0 ∧ 0 < g x ∧ f x < g x)
+    ) := by
+    let S := {x | f x < g x}
+    let S₁ := S ∩ {x | 0 ≤ f x}
+    let S₂ := S ∩ {x | g x ≤ 0}
+    let S₃ := S ∩ {x | f x < 0 ∧ 0 < g x}
+    have : μ S₁ ≠ 0 ∨ μ S₂ ≠ 0 ∨ μ S₃ ≠ 0 := by
+      by_contra! h_zero
+      suffices S = S₁ ∪ S₂ ∪ S₃ by
+        have : 0 < μ (S₁ ∪ S₂ ∪ S₃) := by
+          rw [← this]
+          refine pos_of_ne_zero ?_
+          rw [measure_of_measure_compl_eq_zero hfg]
+          exact μ.measure_univ_ne_zero.mpr hμ
+        have : μ (S₁ ∪ S₂ ∪ S₃) ≤ 0 := by
+          calc
+          _ ≤ μ (S₁ ∪ S₂) + μ S₃ := measure_union_le _ _
+          _ ≤ μ S₁ + μ S₂ + μ S₃ := by
+            gcongr
+            exact measure_union_le _ _
+          _ = 0 := by
+            simp [h_zero]
+        grind
+      ext x
+      constructor
+      · intro hx
+        simp only [Set.mem_union]
+        by_cases hfx : 0 ≤ f x
+        · exact .inl <| .inl ⟨hx, hfx⟩
+        by_cases hgx : g x ≤ 0
+        · exact .inl <| .inr ⟨hx, hgx⟩
+        push_neg at hfx hgx
+        exact .inr ⟨hx, hfx, hgx⟩
+      · intro hx
+        simp only [Set.mem_union] at hx
+        rcases hx with (h | h) | h <;> exact h.1
+    rcases this with hμ1 | hμ2 | hμ3
+    · refine ⟨S₁, hμ1, ?_⟩
+      left
+      grind
+    · refine ⟨S₂, hμ2, ?_⟩
+      right; left
+      grind
+    · refine ⟨S₃, hμ3, ?_⟩
+      right; right
+      grind
+  simp only [eintegral]
+  rcases h_cases with h_pos | h_neg | h_mixed
+  · refine EReal.sub_lt_sub_of_lt_of_le ?_ ?_ ?_ ?_
+    · norm_cast
+      refine lintegral_strict_mono_of_ae_le_of_ae_lt_on ?_ ?_ ?_ hμs ?_
+      · fun_prop
+      · by_contra!
+        simp_all [eintegral]
+      · filter_upwards [hfg] with x hx
+        exact EReal.toENNReal_le_toENNReal hx.le
+      · filter_upwards with x hxs
+        exact EReal.toENNReal_lt_toENNReal (h_pos hxs).1 (h_pos hxs).2
+    · norm_cast
+      refine lintegral_mono_ae ?_
+      filter_upwards [hfg] with x hx
+      refine EReal.toENNReal_le_toENNReal ?_
+      exact EReal.neg_le_neg_iff.mpr hx.le
+    · simp
+    · simp_all
+  · refine EReal.sub_lt_sub_of_le_of_lt ?_ ?_ ?_ ?_
+    · norm_cast
+      refine lintegral_mono_ae ?_
+      filter_upwards [hfg] with x hx
+      exact EReal.toENNReal_le_toENNReal hx.le
+    · norm_cast
+      refine lintegral_strict_mono_of_ae_le_of_ae_lt_on ?_ ?_ ?_ hμs ?_
+      · fun_prop
+      · by_contra!
+        simp_all [eintegral]
+      · filter_upwards [hfg] with x hx
+        refine EReal.toENNReal_le_toENNReal ?_
+        exact EReal.neg_le_neg_iff.mpr hx.le
+      · filter_upwards with x hxs
+        refine EReal.toENNReal_lt_toENNReal ?_ ?_
+        · exact EReal.neg_nonneg.mpr (h_neg hxs).1
+        · exact EReal.neg_lt_neg_iff.mpr (h_neg hxs).2
+    · by_contra! h
+      simp_all only [ne_eq, eintegral, EReal.coe_ennreal_eq_top_iff]
+      cases EReal.top_sub_eq_top_or_bot (a := ∫⁻ (x : α), (-g x).toENNReal ∂μ) <;> simp_all
+    · simp_all
+  · refine EReal.sub_lt_sub_of_lt_of_le ?_ ?_ ?_ ?_
+    · norm_cast
+      refine lintegral_strict_mono_of_ae_le_of_ae_lt_on ?_ ?_ ?_ hμs ?_
+      · fun_prop
+      · by_contra!
+        simp_all [eintegral]
+      · filter_upwards [hfg] with x hx
+        exact EReal.toENNReal_le_toENNReal hx.le
+      · filter_upwards with x hxs
+        specialize h_mixed hxs
+        have : f x ≤ 0 := h_mixed.1.le
+        simp_all
+    · norm_cast
+      refine lintegral_mono_ae ?_
+      filter_upwards [hfg] with x hx
+      refine EReal.toENNReal_le_toENNReal ?_
+      exact EReal.neg_le_neg_iff.mpr hx.le
+    · simp
+    · simp_all
+
+lemma eintegral_strict_mono (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : AEMeasurable f μ)
+    (hfg : ∀ x, f x < g x) (hfi : ∫ᵉ x, f x ∂μ < ⊤) (hgi : ∫ᵉ x, g x ∂μ ≠ ⊥) :
+    ∫ᵉ x, f x ∂μ < ∫ᵉ x, g x ∂μ :=
+  eintegral_strict_mono_ae hμ hg hf (ae_of_all μ hfg) hfi hgi
 
 lemma eintegral_sub_of_nonneg_of_eq_zero (hf : ∀ x, 0 ≤ f x) (hg : ∀ x, 0 ≤ g x)
     (h_or : ∀ x, f x = 0 ∨ g x = 0) :
@@ -402,7 +543,7 @@ lemma eintegral_eq_integral {f : α → ℝ} (hf : Integrable f μ) :
     eintegral_of_nonneg (by simp)]
   simp only [posPartFun, ne_eq, max_eq_top, EReal.coe_ne_top, EReal.zero_ne_top, or_self,
     not_false_eq_true, EReal.toENNReal_of_ne_top, negPartFun, EReal.neg_eq_top_iff, min_eq_bot,
-    EReal.coe_ne_bot, EReal.zero_ne_bot, EReal.toReal_neg]
+    EReal.coe_ne_bot, EReal.zero_ne_bot]
   have h_int_max : Integrable (fun x ↦ (max (f x : EReal) 0).toReal) μ := by
     refine hf.mono ?_ ?_
     · exact AEMeasurable.aestronglyMeasurable (by fun_prop)
@@ -417,7 +558,7 @@ lemma eintegral_eq_integral {f : α → ℝ} (hf : Integrable f μ) :
   rotate_left
   · exact h_int_min
   · filter_upwards with x
-    simp only [Pi.zero_apply, Left.nonneg_neg_iff]
+    simp only [Pi.zero_apply]
     rw [← EReal.toReal_zero]
     exact EReal.toReal_le_toReal (by simp) (by simp) (by simp)
   · exact h_int_max
@@ -470,7 +611,7 @@ lemma integrable_toReal (hf_meas : AEMeasurable f μ) (h_int_bot : ∫ᵉ x, f x
     -- todo: extract a lemma?
     simp only [enorm, nnnorm, EReal.toReal_coe, Real.norm_eq_abs, abs, ne_eq, max_eq_top,
       EReal.coe_ne_top, EReal.zero_ne_top, or_self, not_false_eq_true, EReal.toENNReal_of_ne_top,
-      EReal.neg_eq_top_iff, min_eq_bot, EReal.coe_ne_bot, EReal.zero_ne_bot, EReal.toReal_neg]
+      EReal.neg_eq_top_iff, min_eq_bot, EReal.coe_ne_bot, EReal.zero_ne_bot]
     rcases le_total 0 r with h | h <;> simp [ENNReal.ofReal, Real.toNNReal, h]
   rw [h_eq, lintegral_enorm_eq_posPartFun_add_negPartFun hf_meas]
   refine EReal.add_lt_top ?_ ?_
@@ -520,7 +661,7 @@ lemma eintegral_mul_const_of_nonneg {c : EReal} (hc_bot : c ≠ ⊥) (hc_top : c
     have : 0 ≤ - (c : EReal) := by simp [hc']
     simp_rw [← EReal.neg_mul, EReal.toENNReal_mul this]
     simp only [ne_eq, EReal.neg_eq_top_iff, EReal.coe_ne_bot, not_false_eq_true,
-      EReal.toENNReal_of_ne_top, EReal.toReal_neg, EReal.toReal_coe]
+      EReal.toENNReal_of_ne_top]
     rw [lintegral_const_mul' _ _ (by simp)]
     simp [hc]
 
@@ -1006,7 +1147,7 @@ lemma eintegral_smul_measure {c : ℝ≥0∞} (hc : c ≠ ∞) (f : α → EReal
   simp only [eintegral, lintegral_smul_measure, smul_eq_mul, EReal.coe_ennreal_mul]
   rw [EReal.mul_sub_of_nonneg_of_ne_top _ (by simp [hc])]
   norm_cast
-  exact zero_le'
+  exact zero_le _
 
 @[simp]
 lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClass α]
@@ -1015,33 +1156,55 @@ lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClas
   simp only [eintegral, lintegral_dirac]
   rcases le_total (f x₀) 0 with (h | h) <;> simp [h]
 
+section AristotleLemmas
+
+/-- The extended integral of the difference of two ENNReal-valued functions (coerced to EReal) is
+the difference of their Lebesgue integrals, provided at least one of the integrals is finite. -/
+lemma eintegral_coe_ennreal_sub {u v : α → ℝ≥0∞} (hu : AEMeasurable u μ) (hv : AEMeasurable v μ)
+    (h : ∫⁻ x, u x ∂μ ≠ ⊤ ∨ ∫⁻ x, v x ∂μ ≠ ⊤) :
+    ∫ᵉ x, u x - v x ∂μ = ∫⁻ x, u x ∂μ - ∫⁻ x, v x ∂μ := by
+  rw [eintegral_sub_of_nonneg, eintegral_eq_lintegral, eintegral_eq_lintegral]
+  · exact fun _ ↦ by positivity
+  · exact fun _ ↦ by positivity
+  · fun_prop
+  · fun_prop
+  rcases h with h | h
+  · have h' : ∫ᵉ x, u x ∂μ ≠ ⊤ := by simpa [eintegral_eq_lintegral]
+    exact ne_top_of_le_ne_top h' (eintegral_mono fun _ ↦ min_le_left _ _)
+  · have h' : ∫ᵉ x, v x ∂μ ≠ ⊤ := by simpa [eintegral_eq_lintegral]
+    exact ne_top_of_le_ne_top h' (eintegral_mono fun _ ↦ min_le_right _ _)
+
+end AristotleLemmas
+
 lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [SFinite ν]
     (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) (hf_int : eintegrable f (μ.prod ν)) :
     ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ x, ∫ᵉ y, f (x, y) ∂ν ∂μ := by
-  simp_rw [← posPartFun_sub_negPartFun f]
-  rw [eintegral_sub_of_nonneg_of_eq_zero (by simp) (by simp)
-    (posPartFun_eq_zero_or_negPartFun_eq_zero f)]
-  rw [eintegral_prod_of_nonneg, eintegral_prod_of_nonneg]
-  rotate_left
-  · fun_prop
-  · simp
-  · fun_prop
-  · simp
-  rw [← eintegral_sub]
-  · congr with x
-    rw [eintegral_sub]
-    · exact eintegrable_of_nonneg (by simp)
-    · sorry
-    · exact eintegrable_of_nonneg (by simp)
-    · sorry
-    · sorry -- will only be true a.e. Need a filter_upwards above
-    · exact .inl <| EReal.ne_bot_of_nonneg <| eintegral_nonneg (by simp)
-  · exact eintegrable_of_nonneg (fun _ ↦ eintegral_nonneg (by simp))
-  · sorry
-  · sorry
-  · sorry
-  · sorry
-  · exact .inl (EReal.ne_bot_of_nonneg <| eintegral_nonneg fun _ ↦ eintegral_nonneg (by simp))
+  -- Let $u(z) = (f(z)^+).toENNReal$ and $v(z) = (f(z)^-).toENNReal$.
+  set u : α × β → ℝ≥0∞ := fun z => (f z).toENNReal
+  set v : α × β → ℝ≥0∞ := fun z => (-f z).toENNReal
+  -- By definition of $u$ and $v$, we have $f = u - v$.
+  have hf_eq : f = fun z => (u z : EReal) - (v z : EReal) := by
+    simp only [u, v]
+    ext z
+    rcases le_total (f z) 0 with h | h <;> simp [h]
+  rw [ hf_eq ]
+  have hu_aemeasurable : AEMeasurable u (μ.prod ν) := by fun_prop
+  have hv_aemeasurable : AEMeasurable v (μ.prod ν) := by fun_prop
+  have h_u_v : (∫⁻ x, u x ∂(μ.prod ν) : EReal) - ∫⁻ x, v x ∂(μ.prod ν) =
+      ∫⁻ x, ∫⁻ y, u (x, y) ∂ν ∂μ - ∫⁻ x, ∫⁻ y, v (x, y) ∂ν ∂μ := by
+    rw [lintegral_prod _ (by fun_prop), lintegral_prod _ (by fun_prop)]
+  convert h_u_v using 1
+  · exact congrArg (eintegral (μ.prod ν)) hf_eq.symm
+  · convert eintegral_coe_ennreal_sub _ _ _ using 1
+    · congr! 3 <;> grind
+    · convert hu_aemeasurable.lintegral_prod_right' using 1
+      grind
+    · refine AEMeasurable.lintegral_prod_right ?_
+      convert hv_aemeasurable using 1
+      grind
+    · cases hf_int with
+      | inl h => left; convert h; rw [lintegral_prod _ (by fun_prop)]; grind
+      | inr h => right; convert h; rw [lintegral_prod _ (by fun_prop)]; grind
 
 lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
     {ν : Measure β} [SFinite ν]
@@ -1056,7 +1219,11 @@ lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
     rw [eintegral_prod]
     · refine AEMeasurable.comp_aemeasurable ?_ (by fun_prop)
       rwa [Measure.prod_swap]
-    · sorry
+    · convert hf_int using 1
+      unfold MeasureTheory.eintegrable
+      simp only [Function.comp_apply, ne_eq]
+      rw [lintegral_prod_swap (ν := ν) (fun p ↦ (f p).toENNReal),
+        lintegral_prod_swap (ν := ν) (fun p ↦ (-f p).toENNReal)]
   _ = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by simp
 
 end MeasureTheory

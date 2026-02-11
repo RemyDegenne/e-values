@@ -82,7 +82,7 @@ lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
       ∃ (u : ℝ) (_ : 0 ≤ u) (_ : u ≤ δ⁻¹),
         ∀ x, X x ≤ ENNReal.ofReal (1 + u * ((x : ℝ) - δ)) := by
   refine ⟨fun h_evar ↦ ?_, ?_⟩
-  · have h_le := h_evar.lintegral_le_one
+  · have h_le := h_evar.lintegral_le_measure_univ
     simp only [Set.mem_setOf_eq, lintegral_fintype, and_imp] at h_le
     classical
     have h_le_zero := h_le (Measure.dirac ⟨0, by simp⟩) inferInstance
@@ -112,6 +112,7 @@ lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
     simp_rw [mul_add] at h_le_delta
     simp only [mul_ite, mul_zero, Finset.sum_add_distrib, Finset.sum_ite_eq, Finset.mem_univ,
       ↓reduceIte] at h_le_delta
+    simp only [measure_univ] at h_le_zero
     refine ⟨δ⁻¹ * (1 - (X ⟨0, by simp⟩).toReal), ?_, ?_, fun ω ↦ ?_⟩
     · refine mul_nonneg (by positivity) (sub_nonneg.mpr ?_)
       refine ENNReal.toReal_le_of_le_ofReal (by simp) ?_
@@ -143,7 +144,7 @@ lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
           ≤ ENNReal.ofReal δ
             * (1 + (ENNReal.ofReal δ)⁻¹ * (1 - ENNReal.ofReal (X ⟨0, by simp⟩).toReal)
               * ENNReal.ofReal (1 - δ)) by
-        rwa [ENNReal.mul_le_mul_left (by simp [hδ_pos]) (by simp)] at this
+        rwa [ENNReal.mul_le_mul_iff_right (by simp [hδ_pos]) (by simp)] at this
       ring_nf
       rw [ENNReal.mul_inv_cancel (by simp [hδ_pos]) (by simp), one_mul, mul_comm (1 - _),
         ENNReal.mul_sub (by simp), mul_one, add_comm, ENNReal.sub_add_eq_add_sub _ (by finiteness),
@@ -154,13 +155,20 @@ lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
         rwa [ENNReal.ofReal_toReal hX_ne_top]
       rw [← ENNReal.ofReal_add (by positivity) (by positivity)]
       simp only [sub_add_cancel, ENNReal.ofReal_one]
-      rwa [ENNReal.le_sub_iff_add_le_left, mul_comm (ENNReal.ofReal δ), mul_comm (ENNReal.ofReal _)]
+      rw [ENNReal.le_sub_iff_add_le_left, mul_comm (ENNReal.ofReal δ), mul_comm (ENNReal.ofReal _)]
+      · convert h_le_delta
+        simp only [measure_univ, mul_one]
+        rw [← ENNReal.ofReal_add (by grind) (by grind)]
+        simp
       · finiteness
       · conv_rhs => rw [← mul_one 1]
         gcongr
         simp [hδ_pos.le]
   · rintro ⟨u, hu_nonneg, hu, hX_le⟩
-    refine ⟨by fun_prop, fun μ ⟨hμ, hμ'⟩ ↦ ?_⟩
+    refine .of_lintegral_le_measure_univ (fun μ hμ ↦ by have := hμ.1; infer_instance)
+      (by fun_prop) ?_
+    rintro μ ⟨h_prob, h_int⟩
+    simp only [measure_univ]
     calc ∫⁻ ω, X ω ∂μ
     _ ≤ ∫⁻ ω, ENNReal.ofReal (1 + u * (ω - δ)) ∂μ := lintegral_mono hX_le
     _ = ENNReal.ofReal (1 + u * (∫ ω, (ω : ℝ) ∂μ - δ)) := by
@@ -177,7 +185,7 @@ lemma isEVar_bernoulli_le_iff {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 1)
         exact add_nonneg (by simp) (mul_nonneg hu_nonneg (sub_nonneg.mpr hδ))
       congr
       rw [integral_add (by fun_prop) (by fun_prop), integral_const_mul]
-      simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one, add_right_inj,
+      simp only [integral_const, probReal_univ, smul_eq_mul, mul_one, add_right_inj,
         mul_eq_mul_left_iff]
       rw [integral_sub (by fun_prop) (by fun_prop)]
       simp
@@ -360,14 +368,14 @@ lemma map_bernoulli_le_eq_bernoulli_ge (δ : ℝ) :
   · rintro ⟨ν, ⟨⟨hν, h_int⟩, rfl⟩⟩
     refine ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩
     rw [integral_map (by fun_prop) (by fun_prop), integral_sub (by fun_prop) (by fun_prop)]
-    simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+    simp only [integral_const, probReal_univ, smul_eq_mul, mul_one]
     linarith
   · rintro ⟨hμ, h_int⟩
     refine ⟨μ.map φ, ⟨Measure.isProbabilityMeasure_map (by fun_prop), ?_⟩, ?_⟩
     · rw [integral_map (by fun_prop) (by fun_prop)]
       simp only [φ]
       rw [integral_sub (by fun_prop) (by fun_prop)]
-      simp only [integral_const, measureReal_univ_eq_one, smul_eq_mul, mul_one]
+      simp only [integral_const, probReal_univ, smul_eq_mul, mul_one]
       linarith
     · rw [Measure.map_map (by fun_prop) (by fun_prop), hφ_inv, Measure.map_id]
 
@@ -377,7 +385,7 @@ lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
       = ENNReal.ofReal (Real.log (1 / (4 * δ * (1 - δ)))) := by
   let φ : ({0, 1} : Set ℝ) → ({0, 1} : Set ℝ) := fun x ↦ ⟨1 - x.1, by grind⟩
   have hφ_inv : φ ∘ φ = id := by ext; simp [φ]
-  rw [erenyiDiv_of_involutive (by fun_prop) hφ_inv (by grind) (by grind)]
+  rw [erenyiDiv_of_involutive (by fun_prop) hφ_inv]
   swap
   · exact map_bernoulli_le_eq_bernoulli_ge δ
   have h_iff R (hR : IsProbabilityMeasure R) :
@@ -428,7 +436,7 @@ lemma echernoffDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹)
   let φ : ({0, 1} : Set ℝ) → ({0, 1} : Set ℝ) := fun x ↦ ⟨1 - x.1, by grind⟩
   have hφ_inv : φ ∘ φ = id := by ext; simp [φ]
   rw [← erenyiDiv_bernoulli hδ_pos hδ,
-    erenyiDiv_eq_two_mul_echernoffDiv_of_involutive (by fun_prop) hφ_inv (by grind) (by grind),
+    erenyiDiv_eq_two_mul_echernoffDiv_of_involutive (by fun_prop) hφ_inv,
     ← mul_assoc, ENNReal.inv_mul_cancel (by simp) (by simp), one_mul]
   exact map_bernoulli_le_eq_bernoulli_ge δ
 

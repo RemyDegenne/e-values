@@ -123,5 +123,5 @@ lemma exists_iSup₂_EReal_add {α β : Type*} {P₁ : α → Prop} {P₂ : β �
     exact le_iSup₂_of_le x y <| le_iSup₂_of_le hx hy <| le_refl _
   · refine iSup₂_le fun i j ↦ iSup₂_le fun hi hj ↦ ?_
     calc
-    _ ≤ (⨆ (x) (_ : P₁ x), f x) + g j := add_le_add_right (le_biSup f hi) _
-    _ ≤ (⨆ (x) (_ : P₁ x), f x) + ⨆ (y) (_ : P₂ y), g y := add_le_add_left (le_biSup g hj) _
+    _ ≤ (⨆ (x) (_ : P₁ x), f x) + g j := add_le_add_left (le_biSup f hi) _
+    _ ≤ (⨆ (x) (_ : P₁ x), f x) + ⨆ (y) (_ : P₂ y), g y := add_le_add_right (le_biSup g hj) _
