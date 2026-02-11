@@ -1,5 +1,4 @@
 import EValues.Bernoulli
-import EValues.ConditionalEVar
 import EValues.DPI
 import EValues.EIntegral
 import EValues.ERenyi
