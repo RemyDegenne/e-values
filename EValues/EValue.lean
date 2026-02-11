@@ -88,28 +88,33 @@ lemma IsEVar.lintegral_le_measure_univ {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X 
   simpa only [eintegral_const, one_mul, EReal.sub_nonpos, EReal.coe_ennreal_le_coe_ennreal_iff]
     using h_nonpos
 
+lemma eintegral_sub_one_eq_lintegral_sub {X : 𝓧 → ℝ≥0∞} (hX : Measurable X) [IsFiniteMeasure μ] :
+    ∫ᵉ ω, X ω - 1 ∂μ = ∫⁻ ω, X ω ∂μ - μ .univ := by
+  rw [eintegral_sub_of_nonneg]
+  · simp [eintegral_eq_lintegral]
+  · exact fun _ ↦ by positivity
+  · simp
+  · fun_prop
+  · fun_prop
+  · refine ne_top_of_le_ne_top (b := ∫⁻ ω, 1 ∂μ) (by simp) ?_
+    rw [← eintegral_eq_lintegral]
+    gcongr
+    intro x
+    simp
+
+lemma eintegral_sub_one_nonpos_iff {X : 𝓧 → ℝ≥0∞} (hX : Measurable X) [IsFiniteMeasure μ] :
+    ∫ᵉ ω, X ω - 1 ∂μ ≤ 0 ↔ ∫⁻ ω, X ω ∂μ ≤ μ .univ := by
+  simp [eintegral_sub_one_eq_lintegral_sub hX, EReal.sub_nonpos,
+    EReal.coe_ennreal_le_coe_ennreal_iff]
+
 lemma IsEVar.of_lintegral_le_measure_univ (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX_meas : Measurable X) (hX : ∀ μ ∈ S, ∫⁻ ω, X ω ∂μ ≤ μ .univ) :
     IsEVar X S where
   eintegral_ne_bot μ hμ := eintegral_sub_one_ne_bot_of_isFiniteMeasure hS hμ
   eintegral_nonpos μ hμ := by
-    have h_le := hX μ hμ
-    rw [eintegral_sub_of_nonneg]
-    rotate_left
-    · exact fun _ ↦ by positivity
-    · simp
-    · fun_prop
-    · fun_prop
-    · specialize hS μ hμ
-      refine ne_top_of_le_ne_top (b := ∫⁻ ω, 1 ∂μ) ?_ ?_
-      · simp
-      rw [← eintegral_eq_lintegral]
-      gcongr
-      intro x
-      simp
-    rw [eintegral_eq_lintegral]
-    simpa only [eintegral_const, one_mul, EReal.sub_nonpos, EReal.coe_ennreal_le_coe_ennreal_iff]
-      using h_le
+    specialize hS μ hμ
+    rw [eintegral_sub_one_nonpos_iff hX_meas]
+    exact hX μ hμ
 
 lemma IsEVar.of_lintegral_le_one (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX_meas : Measurable X) (hX : ∀ μ ∈ S, ∫⁻ ω, X ω ∂μ ≤ 1) :
@@ -135,21 +140,7 @@ lemma IsRandEVar.lintegral_le_measure_univ {κ : Kernel 𝓧 ℝ≥0∞} (hκ : 
   swap
   · simp only [not_isFiniteMeasure_iff] at hμ
     simp [hμ]
-  rw [eintegral_sub_of_nonneg] at h_nonpos
-  rotate_left
-  · exact fun _ ↦ by positivity
-  · simp
-  · fun_prop
-  · fun_prop
-  · refine ne_top_of_le_ne_top (b := ∫⁻ ω, 1 ∂μ) ?_ ?_
-    · simp
-    rw [← eintegral_eq_lintegral]
-    gcongr
-    intro x
-    simp
-  rw [eintegral_eq_lintegral] at h_nonpos
-  simpa only [eintegral_const, one_mul, EReal.sub_nonpos, EReal.coe_ennreal_le_coe_ennreal_iff]
-    using h_nonpos
+  rwa [eintegral_sub_one_nonpos_iff (by fun_prop)] at h_nonpos
 
 lemma IsRandEVar.lintegral_le_one {κ : Kernel 𝓧 ℝ≥0∞} (hκ : IsRandEVar κ S)
     (μ : Measure 𝓧) (hμ : μ ∈ S) [IsProbabilityMeasure μ] :
@@ -321,52 +312,23 @@ lemma IsRandEVar.comp {ξ : Kernel 𝓨 ℝ≥0∞} {S : Set (Measure 𝓧)}
   markov := have := h.markov; inferInstance
   eintegral_ne_bot μ hμ := by
     have h' := h.eintegral_ne_bot (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
-    rw [eintegral_comp_measure] at h'
-    rotate_left
-    · fun_prop
-    · exact eintegrable_of_eintegral_ne_bot h'
+    rw [eintegral_comp_measure (by fun_prop)] at h'
+    swap; · exact eintegrable_of_eintegral_ne_bot (h.eintegral_ne_bot _ ⟨μ, hμ, rfl⟩)
     convert h' with ω
-    rw [eintegral_sub_of_nonneg]
-    rotate_left
-    · exact fun _ ↦ by positivity
-    · simp
-    · fun_prop
-    · fun_prop
-    · refine ne_top_of_le_ne_top (b := ∫ᵉ x, 1 ∂(κ ω)) ?_ ?_
-      · simp
-        norm_cast
-      · gcongr
-        intro x
-        exact min_le_right _ _
-    simp only [eintegral_const, measure_univ, EReal.coe_ennreal_one, mul_one]
-    rw [eintegral_eq_lintegral, Kernel.comp_apply,
-      Measure.lintegral_bind (by fun_prop) (by fun_prop)]
+    rw [eintegral_sub_one_eq_lintegral_sub (by fun_prop)]
+    simp only [measure_univ, EReal.coe_ennreal_one, Kernel.comp_apply]
+    rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
   eintegral_nonpos μ hμ := by
     have h' := h.eintegral_nonpos (κ ∘ₘ μ) ⟨μ, hμ, rfl⟩
-    rw [eintegral_comp_measure] at h'
-    rotate_left
-    · fun_prop
-    · exact eintegrable_of_eintegral_ne_bot (h.eintegral_ne_bot _ ⟨μ, hμ, rfl⟩)
+    rw [eintegral_comp_measure (by fun_prop)] at h'
+    swap; · exact eintegrable_of_eintegral_ne_bot (h.eintegral_ne_bot _ ⟨μ, hμ, rfl⟩)
     refine le_trans ?_ h'
     gcongr
     intro ω
     simp only
-    rw [eintegral_sub_of_nonneg]
-    rotate_left
-    · exact fun _ ↦ by positivity
-    · simp
-    · fun_prop
-    · fun_prop
-    · refine ne_top_of_le_ne_top (b := ∫ᵉ x, 1 ∂(κ ω)) ?_ ?_
-      · simp
-        norm_cast
-      · gcongr
-        intro x
-        exact min_le_right _ _
-    simp only [eintegral_const, measure_univ, EReal.coe_ennreal_one, mul_one]
-    refine EReal.sub_le_sub ?_ le_rfl
-    rw [eintegral_eq_lintegral, Kernel.comp_apply,
-      Measure.lintegral_bind (by fun_prop) (by fun_prop)]
+    rw [eintegral_sub_one_eq_lintegral_sub (by fun_prop)]
+    simp only [measure_univ, EReal.coe_ennreal_one, Kernel.comp_apply]
+    rw [Measure.lintegral_bind (by fun_prop) (by fun_prop)]
 
 /-- The set of e-variables is convex. -/
 lemma convex_isEVar (S : Set (Measure 𝓧)) : Convex ℝ≥0∞ {Z | IsEVar Z S} := by
