@@ -33,32 +33,6 @@ lemma IsEVar.prod (hS : ∀ μ ∈ S, IsFiniteMeasure μ) (hT : ∀ μ ∈ T, Is
     rw [this]
     specialize hS μ hμS
     infer_instance
-  -- measurable := by
-  --   have hX_meas := hX.measurable
-  --   have hY_meas := hY.measurable
-  --   fun_prop
-  -- eintegral_ne_bot := by
-  --   have hX_meas := hX.measurable
-  --   have hY_meas := hY.measurable
-  --   rintro _ ⟨⟨μ, ν⟩, hμS, _, rfl⟩
-  --   obtain ⟨hμS, hνT⟩ := Set.mem_prod.mp hμS
-  --   specialize hT ν hνT
-  --   have : Measure.prod.uncurry (μ, ν) = μ.prod ν := by rfl
-  --   rw [this]
-  --   have h_eq : ∫ᵉ ω, (X ω.1 * Y ω.2 : ℝ≥0∞) - 1 ∂μ.prod ν =
-  --       ∫ᵉ ω, X ω.1 * (Y ω.2 - 1) + (X ω.1 - 1) ∂μ.prod ν := by
-  --     sorry
-  --   rw [h_eq, eintegral_add]
-  --   rotate_left
-  --   · fun_prop
-  --   · fun_prop
-  --   · sorry
-  --   · sorry
-  --   · sorry
-  --   · sorry
-  --   rw [lintegral_prod_mul (by fun_prop) (by fun_prop)]
-  --   grw [hX.eintegral_ne_bot μ hμS, hY.eintegral_ne_bot ν hνT]
-  -- eintegral_nonpos := by
   · have hX_meas := hX.measurable
     have hY_meas := hY.measurable
     rintro _ ⟨⟨μ, ν⟩, hμS, _, rfl⟩
