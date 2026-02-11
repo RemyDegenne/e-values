@@ -299,4 +299,8 @@ lemma neBotUtilityEVar_numeraire [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFinit
     NeBotUtilityEVar (numeraire P S) P S logUtility :=
   (isNumeraire_numeraire P hS).neBotUtilityEVar
 
+lemma eintegrable_log_numeraire [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    eintegrable (fun x ↦ ENNReal.log (numeraire P S x)) P :=
+  (isNumeraire_numeraire P hS).eintegrable_log
+
 end ProbabilityTheory
