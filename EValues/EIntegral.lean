@@ -3,11 +3,38 @@ Copyright (c) 2025 Gaëtan Serré. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré, Rémy Degenne
 -/
-import Mathlib.MeasureTheory.Measure.Prod
-import Mathlib.MeasureTheory.Integral.Prod
-import Mathlib.Probability.Kernel.Composition.MeasureComp
 import EValues.Mathlib.EReal
+import Mathlib.Analysis.InnerProductSpace.Basic
+import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.Probability.Kernel.Composition.MeasureComp
 
+/-!
+# Extended Real Integral
+
+This file defines integration for functions taking values in `EReal` (the extended reals).
+
+## Main definitions
+
+* `MeasureTheory.eintegral`: The integral of an `EReal`-valued function, defined as the difference
+  between the lower Lebesgue integrals of the positive and negative parts.
+* `MeasureTheory.eintegrable`: A condition ensuring the integral is well-defined (avoiding `⊤ - ⊤`).
+* `posPartFun` and `negPartFun`: The positive and negative parts of an `EReal`-valued function.
+
+## Main results
+
+* `eintegral_add`: The integral of a sum is the sum of integrals (under suitable integrability
+  conditions to avoid indeterminate forms).
+* `eintegral_sub`: The integral of a difference is the difference of integrals (under suitable
+  integrability conditions).
+* `eintegral_prod`: Fubini's theorem for extended real-valued functions on product measures,
+  allowing interchange of integration order.
+
+## Notation
+
+* `∫ᵉ x, f x ∂μ`: The extended integral of `f` with respect to measure `μ`.
+* `f⁺` and `f⁻`: Positive and negative parts of a function.
+
+-/
 
 open ProbabilityTheory
 
@@ -214,6 +241,7 @@ lemma eintegral_zero_measure (f : α → EReal) : ∫ᵉ x, f x ∂(0 : Measure 
 lemma eintegral_congr (h : ∀ x, f x = g x) : ∫ᵉ x, f x ∂μ = ∫ᵉ x, g x ∂μ := by
   simp_rw [h]
 
+/-- The extended integral is compatible with almost-everywhere equality. -/
 lemma eintegral_congr_ae (h : ∀ᵐ x ∂μ, f x = g x) : ∫ᵉ x, f x ∂μ = ∫ᵉ x, g x ∂μ := by
   simp_rw [eintegral]
   congr 2 <;> exact lintegral_congr_ae <| by filter_upwards [h] with x hx using by rw [hx]
@@ -278,6 +306,7 @@ lemma eintegral_const (c : EReal) (μ : Measure α) : ∫ᵉ _, c ∂μ = c * (�
     · simp
     · exact EReal.neg_nonneg.mpr hc
 
+/-- The extended integral is monotone with respect to almost-everywhere inequality. -/
 lemma eintegral_mono_ae (hfg : f ≤ᵐ[μ] g) : ∫ᵉ x, f x ∂μ ≤ ∫ᵉ x, g x ∂μ := by
   refine EReal.sub_le_sub ?_ ?_
   · rw [EReal.coe_ennreal_le_coe_ennreal_iff]
@@ -316,6 +345,8 @@ lemma ae_ne_bot_of_eintegral_ne_bot (hf_meas : AEMeasurable f μ) (hf : ∫ᵉ x
   rw [lt_top_iff_ne_top, ne_eq, EReal.toENNReal_eq_top_iff] at hx
   simpa using hx
 
+/-- The extended integral is strictly monotone with respect to almost-everywhere strict
+inequality. -/
 lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : AEMeasurable f μ)
     (hfg : ∀ᵐ x ∂μ, f x < g x) (hfi : ∫ᵉ x, f x ∂μ < ⊤) (hgi : ∫ᵉ x, g x ∂μ ≠ ⊥) :
     ∫ᵉ x, f x ∂μ < ∫ᵉ x, g x ∂μ := by
@@ -467,6 +498,8 @@ lemma eintegral_sub_of_nonneg_of_eq_zero (hf : ∀ x, 0 ≤ f x) (hg : ∀ x, 0 
       simp [h_false] at hf
     · exact .inr hg_top
 
+/-- The extended integral decomposes as the difference between the integrals of the positive
+and negative parts of the function. -/
 lemma eintegral_eq_posPartFun_sub_negPartFun (f : α → EReal) :
     ∫ᵉ x, f x ∂μ = ∫ᵉ x, f⁺ x ∂μ - ∫ᵉ x, f⁻ x ∂μ := by
   rw [← eintegral_sub_of_nonneg_of_eq_zero]
@@ -537,6 +570,8 @@ lemma ae_ne_top_of_eintegral_ne_top (hf_meas : AEMeasurable f μ) (hf_bot : ∫�
   filter_upwards [h_lt_top] with x hx
   rwa [lt_top_iff_ne_top, ne_eq, EReal.toENNReal_eq_top_iff, ← ne_eq, ← lt_top_iff_ne_top] at hx
 
+/-- For `Integrable` real-valued functions, the extended integral coincides with the
+standard Bochner integral. -/
 lemma eintegral_eq_integral {f : α → ℝ} (hf : Integrable f μ) :
     ∫ᵉ x, f x ∂μ = ∫ x, f x ∂μ := by
   rw [eintegral_eq_posPartFun_sub_negPartFun, eintegral_of_nonneg (by simp),
@@ -618,6 +653,7 @@ lemma integrable_toReal (hf_meas : AEMeasurable f μ) (h_int_bot : ∫ᵉ x, f x
   · exact eintegral_posPartFun_ne_top h_int_bot h_int_top
   · exact eintegral_negPartFun_ne_top h_int_bot
 
+/-- If the extended integral is finite, then it equals the integral of the real part. -/
 lemma eintegral_eq_integral_toReal (hf_meas : AEMeasurable f μ) (h_int_bot : ∫ᵉ x, f x ∂μ ≠ ⊥)
     (h_int_top : ∫ᵉ x, f x ∂μ ≠ ⊤) :
     ∫ᵉ x, f x ∂μ = ∫ x, (f x).toReal ∂μ := by
@@ -884,9 +920,8 @@ lemma eintegral_sub_of_nonneg (hf : ∀ x, 0 ≤ f x) (hg : ∀ x, 0 ≤ g x)
   · simp
   · exact EReal.ne_bot_of_nonneg <| eintegral_nonneg (by simp [hf, hg])
 
--- Will need to add assumptions because if `g = -f` the lhs is `0` but the rhs can be `⊥`.
--- It does not suffice to assume `f` and `g` are both eintegrable, because that same `g = -f`
--- example shows that if one of the sign integrals is infinite the equality can fail.
+/-- The integral of a sum is the sum of integrals (requires compatibility conditions to
+avoid `⊤ - ⊤`). -/
 lemma eintegral_add (hf : AEMeasurable f μ) (hg : AEMeasurable g μ)
     (hf_int : eintegrable f μ) (hg_int : eintegrable g μ)
     (h_ne_bot_1 : ∫ᵉ x, f x ∂μ ≠ ⊥ ∨ ∫ᵉ x, g x ∂μ ≠ ⊤)
@@ -1017,6 +1052,8 @@ lemma eintegral_add' (hf : AEMeasurable f μ) (hg : AEMeasurable g μ)
       gcongr
       simp
 
+/-- The integral of a difference is the difference of integrals (requires compatibility
+conditions to avoid `⊤ - ⊤`). -/
 lemma eintegral_sub (hf : eintegrable f μ)
     (hf_meas : AEMeasurable f μ) (hg : eintegrable g μ) (hg_meas : AEMeasurable g μ)
     (h_ne_top : ∫ᵉ x, f x ∂μ ≠ ⊤ ∨ ∫ᵉ x, g x ∂μ ≠ ⊤)
@@ -1176,13 +1213,13 @@ lemma eintegral_coe_ennreal_sub {u v : α → ℝ≥0∞} (hu : AEMeasurable u �
 
 end AristotleLemmas
 
+/-- Fubini's theorem for extended reals: the integral over the product equals the iterated
+integral. -/
 lemma eintegral_prod {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [SFinite ν]
     (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) (hf_int : eintegrable f (μ.prod ν)) :
     ∫ᵉ z, f z ∂(μ.prod ν) = ∫ᵉ x, ∫ᵉ y, f (x, y) ∂ν ∂μ := by
-  -- Let $u(z) = (f(z)^+).toENNReal$ and $v(z) = (f(z)^-).toENNReal$.
   set u : α × β → ℝ≥0∞ := fun z => (f z).toENNReal
   set v : α × β → ℝ≥0∞ := fun z => (-f z).toENNReal
-  -- By definition of $u$ and $v$, we have $f = u - v$.
   have hf_eq : f = fun z => (u z : EReal) - (v z : EReal) := by
     simp only [u, v]
     ext z

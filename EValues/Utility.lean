@@ -8,10 +8,25 @@ import EValues.Mathlib.Convex
 import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
 import Mathlib.Data.Real.StarOrdered
-import Mathlib.Order.CompletePartialOrder
 
 /-!
-# Utility functions
+# Utility Functions
+
+This file defines utility functions for use in probability theory and e-value theory.
+
+## Main definitions
+
+* `Utility`: A structure representing a concave, monotone, and differentiable function from
+  `ℝ≥0∞` to `EReal`, which is finite on `(0, ∞)`.
+* `Utility.deriv`: The derivative of a utility function.
+* `logUtility`: The logarithmic utility function.
+
+## Main results
+
+* `Utility.eintegral_le_map`: Jensen's inequality for utility functions.
+* `Utility.le_add_deriv_mul`: The utility function is upper-bounded by its first-order
+  Taylor approximation (a consequence of concavity).
+* `deriv_logUtility`: The derivative of the logarithmic utility function.
 
 -/
 
@@ -23,7 +38,8 @@ namespace ProbabilityTheory
 variable {U : ℝ≥0∞ → EReal}
 
 /-- A utility function is a concave, monotone and differentiable function from `ℝ≥0∞` to `EReal`,
-which is finite on `(0, ∞)`. -/
+which is finite on `(0, ∞)`. These functions are used in e-value theory and capture
+the notion of risk-aversion in decision-theoretic contexts. -/
 structure Utility where
   /-- The function itself. -/
   toFun : ℝ≥0∞ → EReal
@@ -33,7 +49,6 @@ structure Utility where
   concave' : ConcaveOn ℝ≥0 Set.univ toFun
   differentiable' : ContDiffOn ℝ 1 (fun x ↦ (toFun (ENNReal.ofReal x)).toReal) (Set.Ioi 0)
 
--- instance : Coe (Utility) (ℝ≥0∞ → EReal) := ⟨Utility.toFun⟩
 instance : CoeFun (Utility) (fun _ ↦ ℝ≥0∞ → EReal) := ⟨Utility.toFun⟩
 
 lemma Utility.eq_coe (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx_top : x ≠ ∞) :
@@ -107,6 +122,7 @@ lemma Utility.monotoneOn_Ici_real (U : Utility) (hU0 : U 0 ≠ ⊥) :
     · exact U.ne_bot (by simp [lt_of_le_of_ne (Set.mem_Ici.mp hx) (Ne.symm hx0)])
   · exact U.ne_top (by simp)
 
+/-- The utility function is concave on `(0, ∞)` when viewed as a real-valued function. -/
 lemma Utility.concaveOn_Ioi_real (U : Utility) : ConcaveOn ℝ (Set.Ioi 0) U.real := by
   refine ⟨convex_Ioi 0, ?_⟩
   intro x hx y hy a b ha hb hab
@@ -137,6 +153,8 @@ lemma Utility.concaveOn_Ioi_real (U : Utility) : ConcaveOn ℝ (Set.Ioi 0) U.rea
   rwa [ENNReal.toReal_ofReal (by positivity), ENNReal.toReal_ofReal (by positivity),
     ENNReal.toReal_ofReal (by positivity)] at h_ccv
 
+/-- The utility function is concave on `[0, ∞)` when viewed as a real-valued function,
+provided `U 0 ≠ ⊥`. -/
 lemma Utility.concaveOn_Ici_real (U : Utility) (h0 : U 0 ≠ ⊥) : ConcaveOn ℝ (Set.Ici 0) U.real := by
   refine ⟨convex_Ici 0, ?_⟩
   intro x hx y hy a b ha hb hab
@@ -160,9 +178,9 @@ lemma Utility.concaveOn_Ici_real (U : Utility) (h0 : U 0 ≠ ⊥) : ConcaveOn �
   rwa [ENNReal.toReal_ofReal (by positivity), ENNReal.toReal_ofReal (by positivity),
     ENNReal.toReal_ofReal (by positivity)] at h_ccv
 
-/-- The derivative of a utility function.
-At `x ∈ (0, ∞)`, this is the derivative of the real-valued representation.
-At `0` or `∞`, this is defined as a limit. -/
+/-- The derivative of a utility function. For `x ∈ (0, ∞)`, this equals the derivative of
+the real-valued representation. At the boundary points `0` and `∞`, it is defined as the
+appropriate one-sided limit. -/
 protected noncomputable
 def Utility.deriv (U : Utility) (x : ℝ≥0∞) : EReal :=
   if x = 0 then
@@ -172,7 +190,7 @@ def Utility.deriv (U : Utility) (x : ℝ≥0∞) : EReal :=
   else
     ((deriv U.real x.toReal : ℝ) : EReal)
 
--- should also be true at 0 and ∞, but we don't need it now
+/-- The derivative of a utility function is nonnegative (a consequence of monotonicity). -/
 lemma Utility.deriv_nonneg (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx_top : x ≠ ∞) :
     0 ≤ U.deriv x := by
   simp only [Utility.deriv, hx0, ↓reduceIte, hx_top, EReal.coe_nonneg]
@@ -183,6 +201,8 @@ lemma Utility.deriv_nonneg (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx_to
   simp only [Set.mem_Ioi, ENNReal.toReal_pos_iff]
   exact ⟨hx0.bot_lt, hx_top.lt_top⟩
 
+/-- First-order Taylor approximation: the utility function is upper-bounded by its tangent line
+at any point (a consequence of concavity). -/
 lemma Utility.le_add_deriv_mul (U : Utility) {x y : ℝ≥0∞} (hx_top : x ≠ ∞)
     (hy_zero : y ≠ 0) (hy_top : y ≠ ∞) :
     U x ≤ U y + U.deriv y * (x - y) := by
@@ -217,7 +237,9 @@ lemma Utility.le_add_deriv_mul (U : Utility) {x y : ℝ≥0∞} (hx_top : x ≠ 
     simp only [EReal.coe_ennreal_ofReal, ENNReal.toReal_nonneg, sup_of_le_left]
     norm_cast
 
-/-- Jensen's inequality. -/
+/-- **Jensen's inequality**: For a random variable `X` and utility function `U`, the expected
+utility is at most the utility of the expectation. This fundamental inequality follows from
+the concavity of `U`. -/
 theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
     {μ : Measure α} [IsProbabilityMeasure μ]
     (U : Utility) {X : α → ℝ≥0∞} (hX_meas : AEMeasurable X μ) :
@@ -279,7 +301,8 @@ theorem Utility.eintegral_le_map {α : Type*} {mα : MeasurableSpace α}
 
 section Log
 
-/-- The logarithmic utility function. -/
+/-- The logarithmic utility function, defined as `U(x) = log(x)`. This is a canonical example
+of a utility function with important applications in information theory and e-value theory. -/
 noncomputable def logUtility : Utility where
   toFun := ENNReal.log
   eq_coe' := by
@@ -326,6 +349,7 @@ lemma ENNReal.tendsto_toReal_atTop : Tendsto (fun x : ℝ≥0∞ ↦ x.toReal) (
   filter_upwards [h_ge] with x hx hx_lt_top
   rwa [← ENNReal.ofReal_le_iff_le_toReal hx_lt_top.ne]
 
+/-- The derivative of the logarithmic utility function is `1/x` for `x ≠ 0`, and `⊤` at `0`. -/
 lemma deriv_logUtility (x : ℝ≥0∞) :
     logUtility.deriv x = if x = 0 then ⊤ else 1 / x := by
   by_cases hx0 : x = 0

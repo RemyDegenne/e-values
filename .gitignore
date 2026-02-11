@@ -36,3 +36,6 @@
 *.synctex.gz
 *.synctex.gz(busy)
 *.pdfsync
+/docbuild/.lake
+/docbuild/lean-toolchain
+/docbuild/lake-manifest.json
