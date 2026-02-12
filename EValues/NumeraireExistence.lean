@@ -5,8 +5,6 @@ Authors: Rémy Degenne, Gaëtan Serré
 -/
 import EValues.LebesgueDecomposition
 import EValues.Numeraire
-import Mathlib.MeasureTheory.Measure.WithDensityFinite
-import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
 
 /-!
 # Existence of the Numeraire
