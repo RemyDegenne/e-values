@@ -6,7 +6,6 @@ Authors: Gaëtan Serré, Rémy Degenne
 
 import EValues.EValue
 import EValues.Mathlib.Jensen
-import EValues.Utility
 
 /-!
 # Numeraire E-variables
