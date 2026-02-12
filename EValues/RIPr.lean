@@ -47,7 +47,7 @@ lemma ripr_univ_le_measure_fsupport (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsFin
   rw [ripr_univ]
   simpa using (isNumeraire_numeraire P hS).lintegral_div_le_measure_fsupport (isEVar_fun_one S)
 
-lemma ripr_univ_le_measure_univ (P : Measure 𝓧) [IsFiniteMeasure P] :
+lemma ripr_univ_le_measure_univ (P : Measure 𝓧) :
     ripr P S .univ ≤ P .univ := by
   by_cases hS : ∀ μ ∈ S, IsFiniteMeasure μ
   · exact (ripr_univ_le_measure_fsupport P hS).trans (measure_mono (Set.subset_univ _))
