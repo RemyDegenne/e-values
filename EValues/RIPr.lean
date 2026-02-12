@@ -92,9 +92,10 @@ lemma llr_div_ripr' [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
   simp [hx1, hx2]
 
 open Classical in
-/-- A version of the Kullback-Leibler divergence between two measures. -/
-noncomputable def KL (μ ν : Measure 𝓧) : ℝ≥0∞ :=
-  if μ ≪ ν ∧ Integrable (llr μ ν) μ then ENNReal.ofReal (∫ x, llr μ ν x ∂μ) else ∞
+/-- A version of the Kullback-Leibler divergence between two measures.
+It takes value in `EReal` because it might be negative for non-probability measures. -/
+noncomputable def KL (μ ν : Measure 𝓧) : EReal :=
+  if μ ≪ ν ∧ Integrable (llr μ ν) μ then (∫ x, llr μ ν x ∂μ : ℝ) else ⊤
 
 lemma eintegral_log_numeraire_eq_integral [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     (h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤)
@@ -136,25 +137,18 @@ lemma maxUtility_eq_KL_ripr [IsFiniteMeasure P]
       exact (isNumeraire_numeraire P hS).ae_ne_zero
     · simpa
     rw [eintegral_log_numeraire_eq_integral hS h_top h_int'.2]
-    congr
-    simp only [NNReal.val_eq_coe, Real.coe_toNNReal', left_eq_sup]
-    suffices 0 ≤ ((∫ x, Real.log (numeraire P S x).toReal ∂P : ℝ) : EReal) by simpa
-    rw [← eintegral_log_numeraire_eq_integral hS h_top h_int'.2]
-    exact (isNumeraire_numeraire P hS).eintegral_log_nonneg
-  · simp only [h_int, and_false, ↓reduceIte, EReal.coe_ennreal_top]
+  · simp only [h_int, and_false, ↓reduceIte]
     rw [integrable_llr_div_ripr_iff hS h_top] at h_int
     simpa using h_int
 
 def MemEffectiveSet (S : Set (Measure 𝓧)) (μ : Measure 𝓧) : Prop :=
   ∀ X, IsEVar X S → ∫⁻ ω, X ω ∂μ ≤ 1
 
-lemma measure_univ_le_one_of_memEffectiveSet {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ) :
+lemma MemEffectiveSet.measure_univ_le_one {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ) :
     μ .univ ≤ 1 := by simpa using hμ (fun _ => 1) (isEVar_fun_one S)
 
 lemma MemEffectiveSet.isFiniteMeasure {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ) :
-    IsFiniteMeasure μ := by
-  constructor
-  exact (measure_univ_le_one_of_memEffectiveSet hμ).trans_lt (by simp)
+    IsFiniteMeasure μ := ⟨hμ.measure_univ_le_one.trans_lt (by simp)⟩
 
 lemma memEffectiveSet_ripr (P : Measure 𝓧) [IsProbabilityMeasure P]
     (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
@@ -186,28 +180,95 @@ lemma eintegral_log_mul_nonpos_of_memEffectiveSet [IsProbabilityMeasure P]
     {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ)
     {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S) :
     ∫ᵉ ω, ENNReal.log (X ω * (μ.rnDeriv P) ω) ∂P ≤ 0 := by
+  calc ∫ᵉ ω, ENNReal.log (X ω * (μ.rnDeriv P) ω) ∂P
+  _ ≤ ENNReal.log (∫⁻ ω, X ω * (μ.rnDeriv P) ω ∂P) := by
+    refine Utility.eintegral_le_map logUtility ?_
+    have := hX.measurable
+    fun_prop
+  _ ≤ 0 := by
+    simp only [ENNReal.log_le_zero_iff]
+    exact lintegral_mul_le_of_memEffectiveSet hμ hX
+
+lemma llr_ae_eq_log_inv_rnDeriv [IsFiniteMeasure P] {μ : Measure 𝓧} [IsFiniteMeasure μ]
+    (h_ac : P ≪ μ) :
+    llr P μ =ᵐ[P] fun x ↦ Real.log ((μ.rnDeriv P)⁻¹ x).toReal := by
+  filter_upwards [Measure.inv_rnDeriv' h_ac] with a ha using by rw [llr, ha]
+
+lemma eintegrable_congr {f g : 𝓧 → EReal} (h_ae : f =ᵐ[P] g) :
+    eintegrable f P ↔ eintegrable g P := by
+  suffices ∀ {f g : 𝓧 → EReal} (h_ae : f =ᵐ[P] g) (hf : eintegrable f P), eintegrable g P from
+    ⟨fun h ↦ this h_ae h, fun h ↦ this h_ae.symm h⟩
+  intro f g h_ae hf
+  cases hf with
+  | inl hf =>
+    left
+    convert hf using 1
+    refine lintegral_congr_ae ?_
+    filter_upwards [h_ae] with x hx using by simp [hx]
+  | inr hf =>
+    right
+    convert hf using 1
+    refine lintegral_congr_ae ?_
+    filter_upwards [h_ae] with x hx using by simp [hx]
+
+lemma Integrable.eintegrable {f : 𝓧 → ℝ} (hf : Integrable f P) : eintegrable (fun x ↦ f x) P := by
+  sorry
+
+lemma eintegrable_ennreal_log_rnDeriv [IsFiniteMeasure P] {μ : Measure 𝓧} [IsFiniteMeasure μ]
+    (h_ac : P ≪ μ) :
+    eintegrable (fun ω ↦ ENNReal.log (μ.rnDeriv P ω)) P := by
+  have h_ae : (fun ω ↦ ENNReal.log (μ.rnDeriv P ω)) =ᵐ[P]
+      (fun ω ↦ (Real.log (μ.rnDeriv P ω).toReal)) := by
+    filter_upwards [Measure.rnDeriv_ne_top μ P, Measure.rnDeriv_pos' h_ac] with x hx1 hx2
+    simp [ENNReal.log, hx1, hx2.ne']
+  rw [eintegrable_congr h_ae]
+  -- klFun(rnDeriv) is nonneg, hence eintegrable. llr is the same up to a 1 - rnDeriv, which is
+  -- integrable.
   sorry
 
 lemma eintegral_log_isEVar_le_eintegral_rnDeriv [IsProbabilityMeasure P]
-    {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ)
+    {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ) [IsFiniteMeasure μ] (h_ac : P ≪ μ)
     {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S) :
     ∫ᵉ ω, ENNReal.log (X ω) ∂P ≤ ∫ᵉ ω, ENNReal.log ((μ.rnDeriv P)⁻¹ ω) ∂P := by
-  sorry
-
-lemma KL_eq_integral_log_inv_rnDeriv {μ : Measure 𝓧} [IsFiniteMeasure P] [IsFiniteMeasure μ]
-    (h_ac : P ≪ μ) (h_int : Integrable (llr P μ) P) :
-    KL P μ = ENNReal.ofReal (∫ x, Real.log ((μ.rnDeriv P)⁻¹ x).toReal ∂P) := by
-  unfold KL
-  simp only [h_ac, h_int, and_self, ↓reduceIte]
-  simp only [llr]
-  congr 1
-  refine integral_congr_ae ?_
-  filter_upwards [Measure.inv_rnDeriv' h_ac] with a ha using by rw [ha]
+  have hX_meas := hX.measurable
+  by_cases hX_bot : ∫ᵉ ω, ENNReal.log (X ω) ∂P = ⊥
+  · simp [hX_bot]
+  by_cases h_top : ∫ᵉ ω, ENNReal.log ((μ.rnDeriv P)⁻¹ ω) ∂P = ⊤
+  · simp only [Pi.inv_apply] at h_top
+    simp [h_top]
+  have hX_int : eintegrable (fun ω ↦ ENNReal.log (X ω)) P := by
+    by_contra h_false
+    simp [eintegral_of_not_eintegrable h_false] at hX_bot
+  have h_int' : eintegrable (fun ω ↦ ENNReal.log ((μ.rnDeriv P)⁻¹ ω)) P := by
+    simp only [Pi.inv_apply, ENNReal.log_inv]
+    refine eintegrable.neg ?_
+    simp only [ENNReal.log]
+    exact eintegrable_ennreal_log_rnDeriv h_ac
+  have h_nonpos := eintegral_log_mul_nonpos_of_memEffectiveSet hμ hX (P := P)
+  simp_rw [ENNReal.log_mul_add] at h_nonpos
+  have h_eq_sub : ∫ᵉ ω, ENNReal.log (X ω) + ENNReal.log ((∂μ/∂P) ω) ∂P =
+      ∫ᵉ ω, ENNReal.log (X ω) - ENNReal.log ((∂μ/∂P)⁻¹ ω) ∂P := by
+    congr with ω
+    simp only [Pi.inv_apply, ENNReal.log_inv]
+    rw [sub_eq_add_neg, neg_neg]
+  rw [h_eq_sub, eintegral_sub hX_int (by fun_prop) h_int'] at h_nonpos
+  rotate_left
+  · simp only [Pi.inv_apply, ENNReal.log_inv]
+    fun_prop
+  · exact .inr h_top
+  · exact .inl hX_bot
+  rwa [EReal.sub_nonpos] at h_nonpos
 
 lemma KL_eq_eintegral_log_inv_rnDeriv {μ : Measure 𝓧} [IsFiniteMeasure P] [IsFiniteMeasure μ]
     (h_ac : P ≪ μ) (h_int : Integrable (llr P μ) P) :
     KL P μ = ∫ᵉ x, ENNReal.log ((μ.rnDeriv P)⁻¹ x) ∂P := by
-  sorry
+  simp only [KL, h_ac, h_int, and_self, ↓reduceIte]
+  rw [integral_congr_ae (llr_ae_eq_log_inv_rnDeriv h_ac)]
+  rw [← eintegral_eq_integral]
+  swap; · rw [integrable_congr (llr_ae_eq_log_inv_rnDeriv h_ac)] at h_int; simpa using h_int
+  refine eintegral_congr_ae ?_
+  filter_upwards [Measure.rnDeriv_ne_top μ P, Measure.rnDeriv_pos' h_ac] with x hx1 hx2
+  simp [ENNReal.log, hx1, hx2.ne']
 
 lemma maxUtility_le_KL_of_memEffectiveSet [IsProbabilityMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ) :
@@ -219,6 +280,20 @@ lemma maxUtility_le_KL_of_memEffectiveSet [IsProbabilityMeasure P] (hS : ∀ μ 
   have : IsFiniteMeasure μ := hμ.isFiniteMeasure
   rw [KL_eq_eintegral_log_inv_rnDeriv h_ac h_int]
   rw [maxUtility_eq_integral_numeraire _ hS]
-  exact eintegral_log_isEVar_le_eintegral_rnDeriv hμ (isEVar_numeraire P S)
+  exact eintegral_log_isEVar_le_eintegral_rnDeriv hμ h_ac (isEVar_numeraire P S)
+
+lemma maxUtility_le_iInf_KL_memEffectiveSet [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    maxUtility P S logUtility ≤ ⨅ (μ) (_hμ : MemEffectiveSet S μ), KL P μ := by
+  simp only [le_iInf_iff]
+  exact fun _ ↦ maxUtility_le_KL_of_memEffectiveSet hS
+
+/-- Duality between maximal logarithmic utility and minimal Kullback-Leibler divergence. -/
+lemma maxUtility_eq_iInf_KL_memEffectiveSet [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) (h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤) :
+    maxUtility P S logUtility = ⨅ (μ) (_hμ : MemEffectiveSet S μ), KL P μ := by
+  refine le_antisymm (maxUtility_le_iInf_KL_memEffectiveSet hS) ?_
+  refine (iInf₂_le (ripr P S) (memEffectiveSet_ripr P hS)).trans_eq ?_
+  rw [maxUtility_eq_KL_ripr hS h_top]
 
 end ProbabilityTheory
