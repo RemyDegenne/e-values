@@ -145,4 +145,69 @@ lemma maxUtility_eq_KL_ripr [IsFiniteMeasure P]
     rw [integrable_llr_div_ripr_iff hS h_top] at h_int
     simpa using h_int
 
+def MemEffectiveSet (S : Set (Measure 𝓧)) (μ : Measure 𝓧) : Prop :=
+  ∀ X, IsEVar X S → ∫⁻ ω, X ω ∂μ ≤ 1
+
+lemma measure_univ_le_one_of_memEffectiveSet {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ) :
+    μ .univ ≤ 1 := by simpa using hμ (fun _ => 1) (isEVar_fun_one S)
+
+lemma isFiniteMeasure_of_memEffectiveSet {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ) :
+    IsFiniteMeasure μ := by
+  constructor
+  exact (measure_univ_le_one_of_memEffectiveSet hμ).trans_lt (by simp)
+
+lemma memEffectiveSet_ripr (P : Measure 𝓧) [IsProbabilityMeasure P]
+    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    MemEffectiveSet S (ripr P S) := by
+  intro X hX
+  unfold ripr
+  rw [lintegral_withDensity_eq_lintegral_mul _ (by fun_prop) hX.measurable]
+  have h_le := (isNumeraire_numeraire P hS).lintegral_div_le_one hX
+  convert h_le with ω
+  simp [ENNReal.div_eq_inv_mul]
+
+lemma lintegral_rnDeriv_mul_le {μ : Measure 𝓧} {X : 𝓧 → ℝ≥0∞} (hX : Measurable X) :
+    ∫⁻ ω, (∂μ/∂P) ω * X ω ∂P ≤ ∫⁻ ω, X ω ∂μ := by
+  calc ∫⁻ ω, (∂μ/∂P) ω * X ω ∂P
+  _ = ∫⁻ ω, X ω ∂(P.withDensity (∂μ/∂P)) := by
+    rw [lintegral_withDensity_eq_lintegral_mul _ (by fun_prop) hX]; simp
+  _ ≤ ∫⁻ ω, X ω ∂μ := lintegral_mono' (μ.withDensity_rnDeriv_le P) le_rfl
+
+lemma lintegral_mul_le_of_memEffectiveSet [IsProbabilityMeasure P]
+    {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ)
+    {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S) :
+    ∫⁻ ω, X ω * (μ.rnDeriv P) ω ∂P ≤ 1 := by
+  have : IsFiniteMeasure μ := isFiniteMeasure_of_memEffectiveSet hμ
+  simp_rw [mul_comm (X _)]
+  calc ∫⁻ ω, (∂μ/∂P) ω * X ω ∂P
+  _ ≤ ∫⁻ ω, X ω ∂μ := lintegral_rnDeriv_mul_le hX.measurable
+  _ ≤ 1 := hμ X hX
+
+lemma eintegral_log_mul_nonpos_of_memEffectiveSet [IsProbabilityMeasure P]
+    {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ)
+    {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S) :
+    ∫ᵉ ω, ENNReal.log (X ω * (μ.rnDeriv P) ω) ∂P ≤ 0 := by
+  sorry
+
+lemma eintegral_log_isEVar_le_eintegral_rnDeriv [IsProbabilityMeasure P]
+    {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ)
+    {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S) :
+    ∫ᵉ ω, ENNReal.log (X ω) ∂P ≤ ∫ᵉ ω, ENNReal.log ((μ.rnDeriv P)⁻¹ ω) ∂P := by
+  sorry
+
+lemma KL_eq_integral_log_inv_rnDeriv {μ : Measure 𝓧} [IsFiniteMeasure P] [IsFiniteMeasure μ]
+   (h_int : Integrable (llr P μ) P) :
+    KL P μ = ENNReal.ofReal (∫ x, Real.log ((μ.rnDeriv P)⁻¹ x).toReal ∂P) := by
+  sorry
+
+lemma KL_eq_eintegral_log_inv_rnDeriv {μ : Measure 𝓧} [IsFiniteMeasure P] [IsFiniteMeasure μ]
+   (h_int : Integrable (llr P μ) P) :
+    KL P μ = ∫ᵉ x, ENNReal.log ((μ.rnDeriv P)⁻¹ x) ∂P := by
+  sorry
+
+lemma maxUtility_le_KL_of_memEffectiveSet [IsProbabilityMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+    {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ) :
+    maxUtility P S logUtility ≤ KL P μ := by
+  sorry
+
 end ProbabilityTheory
