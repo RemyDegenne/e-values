@@ -34,20 +34,28 @@ noncomputable
 def ripr (P : Measure 𝓧) (S : Set (Measure 𝓧)) : Measure 𝓧 :=
   P.withDensity fun ω ↦ (numeraire P S ω)⁻¹
 
-lemma ripr_univ_le_measure_univ (P : Measure 𝓧) [IsFiniteMeasure P]
-    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
-    ripr P S .univ ≤ P .univ := by
+lemma ripr_univ (P : Measure 𝓧) : ripr P S .univ = ∫⁻ x, (numeraire P S x)⁻¹ ∂P := by
   rw [ripr, withDensity_apply _ .univ, setLIntegral_univ]
-  simpa using (isNumeraire_numeraire P hS).lintegral_div_le_measure_univ (isEVar_fun_one S)
 
-lemma ripr_univ_le_one (P : Measure 𝓧) [IsProbabilityMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
-    ripr P S .univ ≤ 1 := by simpa using ripr_univ_le_measure_univ P hS
+lemma ripr_univ_le_measure_fsupport (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    ripr P S .univ ≤ P (numeraire P S).fsupport := by
+  rw [ripr_univ]
+  simpa using (isNumeraire_numeraire P hS).lintegral_div_le_measure_fsupport (isEVar_fun_one S)
 
-lemma isFiniteMeasure_ripr (P : Measure 𝓧) [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
-    IsFiniteMeasure (ripr P S) where
+lemma ripr_univ_le_measure_univ (P : Measure 𝓧) [IsFiniteMeasure P] :
+    ripr P S .univ ≤ P .univ := by
+  by_cases hS : ∀ μ ∈ S, IsFiniteMeasure μ
+  · exact (ripr_univ_le_measure_fsupport P hS).trans (measure_mono (Set.subset_univ _))
+  · unfold ripr numeraire
+    simp [hS]
+
+lemma ripr_univ_le_one (P : Measure 𝓧) [IsProbabilityMeasure P] :
+    ripr P S .univ ≤ 1 := by simpa using ripr_univ_le_measure_univ P
+
+instance isFiniteMeasure_ripr (P : Measure 𝓧) [IsFiniteMeasure P] : IsFiniteMeasure (ripr P S) where
   measure_univ_lt_top := by
     rw [lt_top_iff_ne_top]
-    exact ne_top_of_le_ne_top (by simp) (ripr_univ_le_measure_univ P hS)
+    exact ne_top_of_le_ne_top (by simp) (ripr_univ_le_measure_univ P)
 
 lemma absolutelyContinuous_ripr_of_ae_ne_top (h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤) :
     P ≪ ripr P S := by
@@ -70,23 +78,66 @@ lemma llr_div_ripr [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
   unfold llr
   filter_upwards [rnDeriv_div_ripr hS h_top] with x hx using by simp [hx]
 
--- not true because our definition of klDiv compensates for non-probability measures
-lemma maxUtility_eq_klDiv (P : Measure 𝓧) [IsFiniteMeasure P]
-    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
-    maxUtility P S logUtility = klDiv P (ripr P S) := by
-  have := isFiniteMeasure_ripr P hS
-  rw [maxUtility_eq_integral_numeraire _ hS]
-  rw [klDiv]
-  -- rw [klDiv_eq_lintegral_klFun]
-  have h_int : Integrable (llr P (ripr P S)) P := by sorry
-  have h_ac : P ≪ ripr P S := sorry -- may not be true. for simplicity
-  have h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤ := by sorry -- same
-  simp only [h_ac, h_int, and_self, ↓reduceIte, measureReal_def, EReal.coe_ennreal_ofReal]
-  rw [integral_congr_ae (llr_div_ripr hS h_top)]
-  sorry
+lemma llr_div_ripr' [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+    (h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤) :
+    llr P (ripr P S) =ᵐ[P] fun x ↦ (ENNReal.log (numeraire P S x)).toReal := by
+  have h_ne_zero := (isNumeraire_numeraire P hS).ae_ne_zero
+  filter_upwards [h_ne_zero, h_top, llr_div_ripr hS h_top] with x hx1 hx2
+  unfold ENNReal.log
+  simp [hx1, hx2]
 
-structure IsNullMeasure (μ : Measure 𝓧) (E : Set (𝓧 → ℝ≥0∞)) : Prop where
-  isFiniteMeasure : IsFiniteMeasure μ
-  eintegral_nonpos : ∀ f ∈ E, ∫ᵉ x, f x - 1 ∂μ ≤ 0
+open Classical in
+/-- A version of the Kullback-Leibler divergence between two measures. -/
+noncomputable irreducible_def KL (μ ν : Measure 𝓧) : ℝ≥0∞ :=
+  if μ ≪ ν ∧ Integrable (llr μ ν) μ then ENNReal.ofReal (∫ x, llr μ ν x ∂μ) else ∞
+
+lemma eintegral_log_numeraire_eq_integral [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+    (h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤)
+    (h_int : ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P ≠ ⊤) :
+    ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P = ∫ x, Real.log (numeraire P S x).toReal ∂P := by
+  rw [eintegral_eq_integral_toReal (by fun_prop) _ h_int]
+  · congr 1
+    refine integral_congr_ae ?_
+    have h_ne_zero := (isNumeraire_numeraire P hS).ae_ne_zero
+    filter_upwards [h_ne_zero, h_top] with x hx1 hx2
+    unfold ENNReal.log
+    simp [hx1, hx2]
+  · exact (neBotUtilityEVar_numeraire hS).utility_ne_bot
+
+lemma integrable_llr_div_ripr_iff [IsFiniteMeasure P]
+    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) (h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤) :
+    Integrable (llr P (ripr P S)) P ↔ ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P ≠ ⊤ := by
+  rw [integrable_congr (llr_div_ripr' hS h_top)]
+  rw [integrable_ereal_toReal_iff (by fun_prop)]
+  · have h_bot := (neBotUtilityEVar_numeraire (P := P) hS).utility_ne_bot
+    simp only [Function.comp_apply, ne_eq, logUtility] at h_bot
+    simp [h_bot]
+  · simp only [ne_eq, ENNReal.log_eq_bot_iff]
+    exact (isNumeraire_numeraire P hS).ae_ne_zero
+  · simpa
+
+lemma maxUtility_eq_KL_ripr [IsFiniteMeasure P]
+    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) (h_top : ∀ᵐ x ∂P, numeraire P S x ≠ ⊤) :
+    maxUtility P S logUtility = KL P (ripr P S) := by
+  have h_ac : P ≪ ripr P S := absolutelyContinuous_ripr_of_ae_ne_top h_top
+  rw [maxUtility_eq_integral_numeraire _ hS, KL]
+  by_cases h_int : Integrable (llr P (ripr P S)) P
+  · simp only [h_ac, h_int, and_self, ↓reduceIte]
+    rw [integral_congr_ae (llr_div_ripr hS h_top)]
+    rw [integrable_congr (llr_div_ripr' hS h_top)] at h_int
+    have h_int' := (integrable_ereal_toReal_iff (by fun_prop) ?_ ?_).mp h_int
+    rotate_left
+    · simp only [ne_eq, ENNReal.log_eq_bot_iff]
+      exact (isNumeraire_numeraire P hS).ae_ne_zero
+    · simpa
+    rw [eintegral_log_numeraire_eq_integral hS h_top h_int'.2]
+    congr
+    simp only [NNReal.val_eq_coe, Real.coe_toNNReal', left_eq_sup]
+    suffices 0 ≤ ((∫ x, Real.log (numeraire P S x).toReal ∂P : ℝ) : EReal) by simpa
+    rw [← eintegral_log_numeraire_eq_integral hS h_top h_int'.2]
+    exact (isNumeraire_numeraire P hS).eintegral_log_nonneg
+  · simp only [h_int, and_false, ↓reduceIte, EReal.coe_ennreal_top]
+    rw [integrable_llr_div_ripr_iff hS h_top] at h_int
+    simpa using h_int
 
 end ProbabilityTheory
