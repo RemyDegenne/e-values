@@ -11,6 +11,28 @@ import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
 /-!
 # Existence of the Numeraire
 
+This file establishes the existence of numeraire e-variables through a utility maximization
+approach. The key insight is that the numeraire can be characterized as the e-variable that
+maximizes expected utility for suitable utility functions, particularly the logarithmic utility.
+
+## Main definitions
+
+* `numeraireOfBounded U hU_le P S hS`: The utility-maximizing e-variable for a bounded utility
+  function `U`, constructed via Komlós's theorem on convex hull convergence.
+* `numeraire P S`: The canonical numeraire e-variable for a measure `P` and a set of measures `S`,
+  defined when `P` and all measures in `S` are finite.
+
+## Main results
+
+* `exists_eq_iSup_eintegral_of_le`: Existence of a utility-maximizing e-variable for bounded
+  utility functions. Uses Komlós's theorem to extract a converging sequence from the convex hull.
+* `exists_numeraire`: Existence of the numeraire characterized by the property that the expected
+  ratio of any e-variable to the numeraire is at most the expected ratio of the numeraire to itself.
+* `isNumeraire_numeraire`: The canonical numeraire satisfies the numeraire property.
+* `IsNumeraire.ae_eq_numeraire`: Any numeraire is almost everywhere equal to the canonical
+  numeraire, establishing essential uniqueness.
+
+
 -/
 
 open MeasureTheory Filter
@@ -18,7 +40,10 @@ open scoped ENNReal NNReal Topology
 
 namespace ProbabilityTheory
 
--- proved in the Brownian motion project
+/-- **Komlós's Theorem for ENNReal**: For any sequence of measurable functions taking values in
+`ℝ≥0∞`, there exists a subsequence of convex combinations that converges almost everywhere.
+This is a version of Komlós's theorem adapted to extended non-negative reals. The proof is
+established in the Brownian motion project. -/
 lemma komlos_ennreal {Ω : Type*} {mΩ : MeasurableSpace Ω} {X : ℕ → Ω → ℝ≥0∞}
     (hX : ∀ n, Measurable (X n)) (P : Measure Ω) [SFinite P] :
     ∃ (Y : ℕ → Ω → ℝ≥0∞) (Y_lim : Ω → ℝ≥0∞),
@@ -32,9 +57,9 @@ section
 
 variable {U : ℝ≥0∞ → EReal}
 
--- needs only two things about IsEVar: convex and closed under a.e. limits
-/-- There exists a utility-maximizing e-variable which is infinite whenever another e-variable
-is infinite. -/
+/-- **Existence of Utility-Maximizing E-Variable (Preliminary Version)**:
+For a concave, continuous, monotone, and bounded utility function `U`, there exists an e-variable
+`Y` that maximizes the expected utility `𝔼[U(Y)]` among all e-variables. -/
 lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
     {b : ℝ} (hU_cont : Continuous U) (hU_mono : Monotone U) (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
     (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
@@ -90,8 +115,10 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
       rw [Tendsto.limsup_eq]
       exact (hU_cont.tendsto _).comp hx
 
-/-- There exists a utility-maximizing e-variable which is infinite whenever another e-variable
-is infinite. -/
+/-- **Existence of Utility-Maximizing E-Variable**:
+For a concave, continuous, monotone, and bounded utility function `U`, there exists an e-variable
+`Y` that maximizes the expected utility among all e-variables and has the property that `Y` is
+infinite at a point only if some other e-variable is also infinite at that point. -/
 lemma exists_eq_iSup_eintegral_of_le (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
     {b : ℝ} (hU_cont : Continuous U) (hU_mono : Monotone U) (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
     (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
@@ -136,6 +163,7 @@ def numeraireOfBounded (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x 
     𝓧 → ℝ≥0∞ :=
   (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS).choose
 
+/-- The numeraire associated with a bounded utility function is indeed an e-variable. -/
 lemma isEVar_numeraireOfBounded (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
     (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     IsEVar (numeraireOfBounded U hU_le P S hS) S :=
@@ -156,7 +184,9 @@ lemma lt_top_of_numeraireOfBounded_lt_top (U : Utility) {b : ℝ} (hU_le : ∀ x
   ((Classical.choose_spec
     (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS)).2 X hX_evar).2
 
--- first order optimality condition for bounded utility functions
+/-- **First-Order Optimality Condition for Bounded Utility**:
+The numeraire associated with a bounded utility function satisfies a first-order optimality
+condition. -/
 lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
     (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {Y : 𝓧 → ℝ≥0∞} (hY : IsEVar Y S) :
@@ -164,13 +194,18 @@ lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞
       * (Y x - numeraireOfBounded U hU_le P S hS x) ∂P ≤ 0 := by
   sorry
 
--- first order optimality condition for log utility
+/-- **First-Order Optimality Condition for Logarithmic Utility**:
+There exists an e-variable `Y` satisfying the first-order optimality condition for the
+logarithmic utility. -/
 lemma eintegral_deriv_log_mul_le (P : Measure 𝓧) [SFinite P]
     (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S →
       ∫ᵉ x, logUtility.deriv (Y x) * (X x - Y x) ∂P ≤ 0 := by
   sorry
 
+/-- **Existence of Numeraire (Preliminary Form)**:
+There exists an e-variable `Y` such that for all e-variables `X`, the expected value of
+`X/Y - Y/Y` is non-positive. -/
 lemma exists_numeraire' (P : Measure 𝓧) [SFinite P]
     (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S →
@@ -201,6 +236,10 @@ lemma exists_numeraire' (P : Measure 𝓧) [SFinite P]
   simp_rw [h_sub] at h_opt
   exact h_opt
 
+/-- **Existence of Numeraire**:
+Under finite measure conditions, there exists an e-variable `Y` such that for all e-variables `X`,
+the integral of `X/Y` is at most the integral of `Y/Y`. This is the defining property of the
+numeraire. -/
 lemma exists_numeraire (P : Measure 𝓧) [IsFiniteMeasure P]
     (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S →
@@ -229,7 +268,7 @@ lemma exists_numeraire (P : Measure 𝓧) [IsFiniteMeasure P]
   norm_cast at h_opt
 
 open Classical in
-/-- The numeraire e-variable. -/
+/-- The canonical Numeraire e-variable -/
 noncomputable
 def numeraire (P : Measure 𝓧) (S : Set (Measure 𝓧)) : 𝓧 → ℝ≥0∞ :=
   if _ : IsFiniteMeasure P then
@@ -278,11 +317,13 @@ lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
     ∫⁻ x, X x / (numeraire P S x) ∂P ≤ 1 := by
   simpa using lintegral_div_numeraire_le_measure_univ P hS hX_evar
 
-/-- `numeraire` is a numeraire. -/
+/-- The canonical numeraire `numeraire P S` is indeed a numeraire for `S` and `P`. -/
 lemma isNumeraire_numeraire (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     IsNumeraire (numeraire P S) S P :=
   ⟨isEVar_numeraire P S, fun _ ↦ lintegral_div_numeraire_le_measure_fsupport P hS⟩
 
+/-- Any numeraire is almost everywhere equal to the canonical
+numeraire `numeraire P S`. -/
 lemma IsNumeraire.ae_eq_numeraire [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX : IsNumeraire X S P) :
     X =ᵐ[P] numeraire P S :=
