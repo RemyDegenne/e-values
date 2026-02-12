@@ -211,20 +211,70 @@ lemma eintegrable_congr {f g : 𝓧 → EReal} (h_ae : f =ᵐ[P] g) :
     refine lintegral_congr_ae ?_
     filter_upwards [h_ae] with x hx using by simp [hx]
 
-lemma Integrable.eintegrable {f : 𝓧 → ℝ} (hf : Integrable f P) : eintegrable (fun x ↦ f x) P := by
+-- lemma Integrable.eintegrable {f : 𝓧 → ℝ} (hf : Integrable f P) :
+--     eintegrable (fun x ↦ f x) P := by
+--   sorry
+
+lemma eintegrable_klFun_rnDeriv (P μ : Measure 𝓧) :
+    eintegrable (fun ω ↦ klFun (μ.rnDeriv P ω).toReal) P := by
+  refine eintegrable_of_nonneg ?_
+  simp only [EReal.coe_nonneg]
+  exact fun _ ↦ klFun_nonneg ENNReal.toReal_nonneg
+
+lemma eintegrable_rnDeriv_mul_log_iff {μ ν : Measure 𝓧} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (hμν : μ ≪ ν) :
+    eintegrable (fun a ↦ (μ.rnDeriv ν a).toReal * Real.log (μ.rnDeriv ν a).toReal) ν
+      ↔ eintegrable (fun a ↦ llr μ ν a) μ := by
   sorry
+
+lemma eintegral_add_ne_bot {f g : 𝓧 → EReal} (hf : AEMeasurable f P) (hg : AEMeasurable g P)
+    (hf_int : ∫ᵉ x, f x ∂P ≠ ⊥) (hg_int : ∫ᵉ x, g x ∂P ≠ ⊥) :
+    ∫ᵉ x, f x + g x ∂P ≠ ⊥ := by
+  rw [eintegral_add (by fun_prop) (by fun_prop) (eintegrable_of_eintegral_ne_bot hf_int)
+    (eintegrable_of_eintegral_ne_bot hg_int)]
+  · simp [hf_int, hg_int]
+  · simp [hf_int]
+  · simp [hg_int]
+
+lemma eintegrable_add_of_ne_bot {f g : 𝓧 → EReal} (hf : AEMeasurable f P) (hg : AEMeasurable g P)
+    (hf_int : ∫ᵉ x, f x ∂P ≠ ⊥) (hg_int : ∫ᵉ x, g x ∂P ≠ ⊥) :
+    eintegrable (fun x ↦ f x + g x) P :=
+  eintegrable_of_eintegral_ne_bot (eintegral_add_ne_bot hf hg hf_int hg_int)
+
+lemma eintegrable_llr [IsFiniteMeasure P] {μ : Measure 𝓧} [IsFiniteMeasure μ]
+    (h_ac : P ≪ μ) :
+    eintegrable (fun ω ↦ llr P μ ω) P := by
+  rw [← eintegrable_rnDeriv_mul_log_iff h_ac]
+  have h_eq a : (((∂P/∂μ) a).toReal * Real.log ((∂P/∂μ) a).toReal : EReal) =
+      ((klFun (P.rnDeriv μ a).toReal + (P.rnDeriv μ a).toReal - 1 : ℝ) : EReal) := by
+    simp [klFun]
+  rw [eintegrable_congr (ae_of_all _ h_eq)]
+  have h_int := eintegrable_klFun_rnDeriv μ P
+  simp only [EReal.coe_sub, EReal.coe_add, EReal.coe_one]
+  simp_rw [sub_eq_add_neg]
+  refine eintegrable_add_of_ne_bot (by fun_prop) (by fun_prop) ?_ (by simp)
+  refine eintegral_add_ne_bot (by fun_prop) (by fun_prop) ?_ ?_
+  · rw [eintegral_of_nonneg]
+    · simp
+    · simp only [EReal.coe_nonneg]
+      exact fun _ ↦ klFun_nonneg ENNReal.toReal_nonneg
+  · rw [eintegral_of_nonneg]
+    · simp
+    · simp
 
 lemma eintegrable_ennreal_log_rnDeriv [IsFiniteMeasure P] {μ : Measure 𝓧} [IsFiniteMeasure μ]
     (h_ac : P ≪ μ) :
-    eintegrable (fun ω ↦ ENNReal.log (μ.rnDeriv P ω)) P := by
-  have h_ae : (fun ω ↦ ENNReal.log (μ.rnDeriv P ω)) =ᵐ[P]
-      (fun ω ↦ (Real.log (μ.rnDeriv P ω).toReal)) := by
+    eintegrable (fun ω ↦ ENNReal.log ((μ.rnDeriv P)⁻¹ ω)) P := by
+  have h_ae : (fun ω ↦ ENNReal.log ((μ.rnDeriv P)⁻¹ ω)) =ᵐ[P]
+      (fun ω ↦ (Real.log ((μ.rnDeriv P)⁻¹ ω).toReal)) := by
     filter_upwards [Measure.rnDeriv_ne_top μ P, Measure.rnDeriv_pos' h_ac] with x hx1 hx2
     simp [ENNReal.log, hx1, hx2.ne']
   rw [eintegrable_congr h_ae]
-  -- klFun(rnDeriv) is nonneg, hence eintegrable. llr is the same up to a 1 - rnDeriv, which is
-  -- integrable.
-  sorry
+  have h_ae' : (fun ω ↦ (llr P μ ω : EReal)) =ᵐ[P]
+      fun x ↦ (Real.log ((μ.rnDeriv P)⁻¹ x).toReal : EReal) := by
+    filter_upwards [llr_ae_eq_log_inv_rnDeriv h_ac] with x hx using by simp [hx]
+  rw [eintegrable_congr h_ae'.symm]
+  exact eintegrable_llr h_ac
 
 lemma eintegral_log_isEVar_le_eintegral_rnDeriv [IsProbabilityMeasure P]
     {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ) [IsFiniteMeasure μ] (h_ac : P ≪ μ)
@@ -239,11 +289,8 @@ lemma eintegral_log_isEVar_le_eintegral_rnDeriv [IsProbabilityMeasure P]
   have hX_int : eintegrable (fun ω ↦ ENNReal.log (X ω)) P := by
     by_contra h_false
     simp [eintegral_of_not_eintegrable h_false] at hX_bot
-  have h_int' : eintegrable (fun ω ↦ ENNReal.log ((μ.rnDeriv P)⁻¹ ω)) P := by
-    simp only [Pi.inv_apply, ENNReal.log_inv]
-    refine eintegrable.neg ?_
-    simp only [ENNReal.log]
-    exact eintegrable_ennreal_log_rnDeriv h_ac
+  have h_int' : eintegrable (fun ω ↦ ENNReal.log ((μ.rnDeriv P)⁻¹ ω)) P :=
+    eintegrable_ennreal_log_rnDeriv h_ac
   have h_nonpos := eintegral_log_mul_nonpos_of_memEffectiveSet hμ hX (P := P)
   simp_rw [ENNReal.log_mul_add] at h_nonpos
   have h_eq_sub : ∫ᵉ ω, ENNReal.log (X ω) + ENNReal.log ((∂μ/∂P) ω) ∂P =
