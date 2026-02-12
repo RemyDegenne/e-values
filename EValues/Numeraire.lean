@@ -11,15 +11,29 @@ import EValues.Utility
 /-!
 # Numeraire E-variables
 
-
+This file defines numeraire e-variables, which are e-variables that maximize the expected
+logarithmic utility among all e-variables in a given set.
 
 ## Main definitions
 
-* TODO
+* `IsNumeraire X S μ`: A random variable `X` is the numeraire for a set of measures `S` and a
+  measure `μ` if it is an e-variable for `S` and the expectation of the ratio of any e-variable
+  `Y` over `X` is at most the measure of the finite support of `X` under `μ`.
 
 ## Main statements
 
-* TODO
+* `IsNumeraire.ae_unique`: The numeraire is almost-everywhere unique under finite measures.
+* `IsNumeraire.eintegral_log_div_nonpos`: A numeraire is log-optimal - the expected log of the
+  ratio of any e-variable to the numeraire is non-positive.
+* `IsNumeraire.eintegral_log_le`: A numeraire maximizes the expected logarithm among all
+  e-variables.
+* `IsNumeraire.eintegrable_log`: The logarithm of the numeraire is e-integrable.
+
+## Implementation notes
+
+The numeraire optimality is characterized through two equivalent perspectives:
+- Direct definition: `∫⁻ ω, Y ω / X ω ∂μ ≤ μ X.fsupport` for all e-variables `Y`
+- Log-optimality: `∫ᵉ ω, log(Y ω / X ω) ∂μ ≤ 0` for all e-variables `Y`
 
 -/
 
@@ -31,14 +45,15 @@ variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableS
 
 namespace ProbabilityTheory
 
+/-- If a function is almost everywhere equal to `∞`, then its finite support has measure zero. -/
 lemma measure_fsupport_eq_zero_of_ae_eq_top {μ : Measure 𝓧} {X : 𝓧 → ℝ≥0∞}
-    (hX_top : ∀ᵐ ω ∂μ, X ω = ∞) :
-    μ X.fsupport = 0 := by
+    (hX_top : ∀ᵐ ω ∂μ, X ω = ∞) : μ X.fsupport = 0 := by
   suffices μ {x | ¬ x ∈ X.fsupportᶜ} = 0 by simpa
   rw [← ae_iff]
   filter_upwards [hX_top] with x hx
   simp [hx]
 
+/-- The integral of `Y / Y` equals the measure of the finite support of `Y`. -/
 lemma lintegral_div_self_eq_measure_fsupport {Y : 𝓧 → ℝ≥0∞} (hY : Measurable Y) {P : Measure 𝓧} :
     ∫⁻ ω, Y ω / Y ω ∂P = P Y.fsupport := by
   have m_fsupport : MeasurableSet Y.fsupport := hY.measurable_fsupport
@@ -85,6 +100,7 @@ protected lemma smul (hX : IsNumeraire X S μ) (c : ℝ≥0∞) :
     rw [lintegral_smul_measure, Measure.smul_apply]
     grw [hX.lintegral_div_le_measure_fsupport hY]
 
+/-- For a numeraire `X`, the integral of `(X)⁻¹` is at most the measure of its finite support. -/
 lemma lintegral_inv_le_measure_fsupport (hX : IsNumeraire X S μ) :
     ∫⁻ ω, (X ω)⁻¹ ∂μ ≤ μ X.fsupport := by
   simpa using hX.lintegral_div_le_measure_fsupport (isEVar_one S)
@@ -101,6 +117,7 @@ lemma lintegral_div_le_one [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) (
     _ ≤ μ univ := lintegral_div_le_measure_univ hX hY
     _ = 1 := by simp
 
+/-- A numeraire is almost everywhere positive under finite measures. -/
 lemma ae_pos [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, 0 < X ω := by
   suffices ∀ᵐ ω ∂μ, (X ω)⁻¹ < ∞ by
     simp only [pos_iff_ne_zero]
@@ -110,6 +127,7 @@ lemma ae_pos [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, 0
     fun_prop
   · exact ne_top_of_le_ne_top (measure_ne_top _ _) hX.lintegral_inv_le_measure_fsupport
 
+/-- A numeraire is almost everywhere non-zero under finite measures. -/
 lemma ae_ne_zero [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, X ω ≠ 0 := by
   filter_upwards [hX.ae_pos] with ω hω using hω.ne'
 
@@ -140,6 +158,8 @@ lemma lintegral_eq_setLIntegral_fsupport [IsFiniteMeasure μ] (hX : IsNumeraire 
     and_true, Decidable.not_not] at hω₂
   simp [hω₂]
 
+/-- If an e-variable `Y` is infinite at a point, then the numeraire `X` must also be infinite
+at that point almost everywhere. -/
 lemma ae_top_implies_numeraire_top [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∀ᵐ ω ∂μ, Y ω = ∞ → X ω = ∞ := by
   by_contra h
@@ -180,6 +200,7 @@ lemma measure_fsupport_ne_zero_or_ae_top [IsFiniteMeasure μ] (hX : IsNumeraire 
   filter_upwards [h', ae_ne_zero hX] with ω hω_mem hω_ne_zero
   simpa [hω_ne_zero] using hω_mem
 
+/-- Two numeraires have equal finite support measures. -/
 lemma measure_fsupport_eq_measure_fsupport [IsFiniteMeasure μ] (hX : IsNumeraire X S μ)
     (hY : IsNumeraire Y S μ) : μ X.fsupport = μ Y.fsupport := by
   refine measure_congr ?_
@@ -254,7 +275,9 @@ lemma inv_measure_fsupport_mul_lintegral_div_eq_one [IsFiniteMeasure μ] (hX : I
   · left
     simp
 
-/-- The Numeraire is almost-everywhere unique. -/
+/-- **Uniqueness Theorem**: The numeraire is almost-everywhere unique under finite measures.
+If `X` and `Y` are both numeraires for the same set of measures `S` and measure `μ`, then
+`X = Y` almost everywhere. -/
 theorem ae_unique [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) :
     X =ᵐ[μ] Y := by
   rcases hY.measure_fsupport_ne_zero_or_ae_top with μ_fsupport | hYₜ
@@ -300,6 +323,8 @@ theorem ae_unique [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) (hY : IsNumerai
     have := h_lt.trans_le this
     simp_all
 
+/-- If `X` is a numeraire and `Y` is an e-variable almost everywhere equal to `X`, then `Y` is
+also a numeraire. -/
 lemma congr (hX : IsNumeraire X S μ) (hY_evar : IsEVar Y S) (hY : Y =ᵐ[μ] X) :
     IsNumeraire Y S μ := by
   refine ⟨hY_evar, fun Z hZ_evar ↦ ?_⟩
@@ -324,7 +349,8 @@ lemma congr (hX : IsNumeraire X S μ) (hY_evar : IsEVar Y S) (hY : Y =ᵐ[μ] X)
 section LogOptimal
 
 -- todo: prove that log-optimal implies numeraire
-/-- A Numeraire is log-optimal. -/
+/-- **Log-Optimality (Probability Measures)**: A numeraire is log-optimal. For any e-variable `Y`,
+the expected logarithm of the ratio `Y/X` is non-positive under probability measures. -/
 theorem eintegral_log_div_nonpos [IsProbabilityMeasure μ]
     (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫ᵉ ω, ENNReal.log (Y ω / X ω) ∂μ ≤ 0 := by
@@ -336,7 +362,7 @@ theorem eintegral_log_div_nonpos [IsProbabilityMeasure μ]
     simp only [ENNReal.log_le_zero_iff]
     exact lintegral_div_le_one hX hY
 
-/-- A Numeraire is log-optimal. -/
+/-- **Log-Optimality (Finite Measures)**: A numeraire is log-optimal under finite measures. -/
 theorem eintegral_log_div_nonpos' [IsFiniteMeasure μ]
     (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫ᵉ ω, ENNReal.log (Y ω / X ω) ∂μ ≤ 0 := by
@@ -451,6 +477,7 @@ lemma eintegral_sub_div_le_one [IsProbabilityMeasure μ]
     ∫ᵉ ω, (Y ω - X ω) / X ω ∂μ ≤ 1 := by
   simpa using eintegral_sub_div_le_measure_univ hX hY
 
+/-- The expected logarithm of a numeraire is bounded below by the negative of the total measure. -/
 theorem eintegral_log_ge_neg_measure_univ [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) :
     - μ univ ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by
   have hX_meas := hX.measurable
@@ -538,10 +565,12 @@ theorem eintegral_log_ge_neg_measure_univ [IsFiniteMeasure μ] (hX : IsNumeraire
     gcongr
     convert hX.eintegral_sub_div_le_measure_univ hY -- `convert` instead of `exact` for speed
 
+/-- For probability measures, the expected logarithm of a numeraire is at least `-1`. -/
 theorem eintegral_log_ge_neg_one [IsProbabilityMeasure μ] (hX : IsNumeraire X S μ) :
     -1 ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by
   simpa using eintegral_log_ge_neg_measure_univ hX
 
+/-- The expected logarithm of a numeraire is never `⊥` under finite measures. -/
 lemma eintegral_log_ne_bot [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) :
     ∫ᵉ ω, ENNReal.log (X ω) ∂μ ≠ ⊥ := by
   have h_le := eintegral_log_ge_neg_measure_univ hX
@@ -552,14 +581,17 @@ lemma eintegral_log_ne_bot [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) :
 lemma neBotUtilityEVar [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) :
     NeBotUtilityEVar X μ S logUtility := ⟨hX.toIsEVar, hX.eintegral_log_ne_bot⟩
 
-/-- The logarithm of the numeraire is `eintegrable`. -/
+/-- **Integrability of the Log-Numeraire**: The logarithm of the numeraire is e-integrable under
+finite measures. -/
 protected lemma eintegrable_log [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) :
     eintegrable (fun ω ↦ ENNReal.log (X ω)) μ := by
   by_contra h_false
   refine hX.eintegral_log_ne_bot ?_
   exact eintegral_of_not_eintegrable h_false
 
-/-- A Numeraire maximizes the integral of the logarithm. -/
+/-- **Maximization of Expected Logarithm**: A numeraire maximizes the expected logarithm among
+all e-variables. For any e-variable `Y`, we have `𝔼[log Y] ≤ 𝔼[log X]` where `X` is the
+numeraire. -/
 theorem eintegral_log_le [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∫ᵉ ω, ENNReal.log (Y ω) ∂μ ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by
   by_cases hY_bot : ∫ᵉ ω, ENNReal.log (Y ω) ∂μ = ⊥
@@ -580,6 +612,7 @@ theorem eintegral_log_le [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) (hY : Is
   · simp [hX_top]
   · simp [hY_bot]
 
+/-- The expected logarithm of a numeraire is non-negative. -/
 lemma eintegral_log_nonneg [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) :
     0 ≤ ∫ᵉ ω, ENNReal.log (X ω) ∂μ := by
   simpa using eintegral_log_le hX (isEVar_one S)
