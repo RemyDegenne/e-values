@@ -225,7 +225,33 @@ lemma eintegrable_rnDeriv_mul_log_iff {μ ν : Measure 𝓧} [IsFiniteMeasure μ
     (hμν : μ ≪ ν) :
     eintegrable (fun a ↦ (μ.rnDeriv ν a).toReal * Real.log (μ.rnDeriv ν a).toReal) ν
       ↔ eintegrable (fun a ↦ llr μ ν a) μ := by
-  sorry
+  rw [eintegrable, eintegrable]
+  congr! 1
+  · nth_rw 3 [← Measure.withDensity_rnDeriv_eq μ ν hμν]
+    rw [lintegral_withDensity_eq_lintegral_mul _ (by fun_prop) (by fun_prop)]
+    congr! 1
+    refine lintegral_congr_ae ?_
+    filter_upwards [Measure.rnDeriv_ne_top μ ν] with x hx
+    simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true, EReal.toENNReal_of_ne_top,
+      EReal.toReal_coe, Pi.mul_apply]
+    rw [EReal.toENNReal_mul (by simp)]
+    simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true, EReal.toENNReal_of_ne_top,
+      EReal.toReal_coe]
+    rw [ENNReal.ofReal_toReal hx]
+    rfl
+  · nth_rw 3 [← Measure.withDensity_rnDeriv_eq μ ν hμν]
+    rw [lintegral_withDensity_eq_lintegral_mul _ (by fun_prop) (by fun_prop)]
+    congr! 1
+    refine lintegral_congr_ae ?_
+    filter_upwards [Measure.rnDeriv_ne_top μ ν] with x hx
+    simp only [ne_eq, EReal.neg_eq_top_iff, EReal.coe_ne_bot, not_false_eq_true,
+      EReal.toENNReal_of_ne_top, EReal.toReal_neg_eq, EReal.toReal_coe, Pi.mul_apply]
+    rw [mul_comm, ← EReal.neg_mul, mul_comm]
+    rw [EReal.toENNReal_mul (by simp)]
+    simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true, EReal.toENNReal_of_ne_top,
+      EReal.toReal_coe]
+    rw [ENNReal.ofReal_toReal hx]
+    rfl
 
 lemma eintegral_add_ne_bot {f g : 𝓧 → EReal} (hf : AEMeasurable f P) (hg : AEMeasurable g P)
     (hf_int : ∫ᵉ x, f x ∂P ≠ ⊥) (hg_int : ∫ᵉ x, g x ∂P ≠ ⊥) :
