@@ -10,7 +10,7 @@ import EValues.Utility
 # E-variables
 
 This file defines e-variables and randomized e-variables, which are fundamental objects in
-e-value theory for sequential testing and statistical inference.
+e-value theory.
 
 ## Main definitions
 
