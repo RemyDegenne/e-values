@@ -8,15 +8,20 @@ import EValues.NumeraireExistence
 import Mathlib.InformationTheory.KullbackLeibler.Basic
 
 /-!
-# Reverse Information Projection
+# Reverse Information Projection and duality
 
 ## Main definitions
 
-* TODO
+* `ripr P S`: Reverse Information Projection of the measure `P` on the set `S`.
+  It is defined as `P.withDensity fun ω ↦ (numeraire P S ω)⁻¹`.
+* `KL`: a version of the Kullback-Leibler divergence between two measures, which differ from the
+  one in Mathlib (`klDiv`) in that it has only the integral term. It does not compensate for the
+  case where the measures are not probability measures.
 
 ## Main statements
 
-* TODO
+* `maxUtility_eq_KL_ripr`: if the numeraire is almost everywhere finite, then
+  `maxUtility P S logUtility = KL P (ripr P S)`.
 
 -/
 
