@@ -76,7 +76,8 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
         rwa [Tendsto.liminf_eq]
     calc ⨆ n, ∫ᵉ x, U (X n x) ∂P
     _ = limsup (fun n ↦ ∫ᵉ x, U (X n x) ∂P) atTop := by
-      sorry
+      simp_rw [← hu_eq]
+      rw [Tendsto.limsup_eq hu_tendsto, iSup_eq_of_tendsto hu_mono hu_tendsto]
     _ ≤ limsup (fun n ↦ ∫ᵉ x, U (Y n x) ∂P) atTop := by
       refine limsup_le_limsup (.of_forall fun n ↦ ?_)
       simp only
