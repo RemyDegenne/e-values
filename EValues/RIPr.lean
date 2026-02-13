@@ -12,16 +12,22 @@ import Mathlib.InformationTheory.KullbackLeibler.Basic
 
 ## Main definitions
 
-* `ripr P S`: Reverse Information Projection of the measure `P` on the set `S`.
-  It is defined as `P.withDensity fun ω ↦ (numeraire P S ω)⁻¹`.
 * `KL`: a version of the Kullback-Leibler divergence between two measures, which differ from the
   one in Mathlib (`klDiv`) in that it has only the integral term. It does not compensate for the
   case where the measures are not probability measures.
+* `MemEffectiveSet S μ`: a measure `μ` is in the effective set of a set of measures `S` if the
+  expectation under `μ` of every e-variable for `S` is at most 1.
+* `ripr P S`: Reverse Information Projection of the measure `P` on the set `S`.
+  It is defined as `P.withDensity fun ω ↦ (numeraire P S ω)⁻¹`. It minimizes the Kullback-Leibler
+  divergence `KL P μ` among measures in the effective set of `S`.
 
 ## Main statements
 
 * `maxUtility_eq_KL_ripr`: if the numeraire is almost everywhere finite, then
   `maxUtility P S logUtility = KL P (ripr P S)`.
+* `maxUtility_eq_iInf_KL_memEffectiveSet`: if the numeraire is almost everywhere finite, then
+  `maxUtility P S logUtility = ⨅ (μ) (_hμ : MemEffectiveSet S μ), KL P μ`. This is the
+  duality between maximal logarithmic utility and minimal Kullback-Leibler divergence.
 
 -/
 
