@@ -83,18 +83,46 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
       simp only
       specialize hY_mem n
       simp only [mem_convexHull_iff] at hY_mem
-      refine hY_mem {Z | ∫ᵉ ω, U (X n ω) ∂P ≤ ∫ᵉ ω, U (Z ω) ∂P} ?_ ?_
+      refine (hY_mem {Z | Measurable Z ∧ ∫ᵉ ω, U (X n ω) ∂P ≤ ∫ᵉ ω, U (Z ω) ∂P} ?_ ?_).2
       · rintro _ ⟨m, rfl⟩
         simp only [Set.mem_setOf_eq]
         simp_rw [← hu_eq]
-        exact hu_mono (by grind)
-      · intro Y hY Z hZ a b ha hb hab
-        simp only [Set.mem_setOf_eq, Pi.add_apply, Pi.smul_apply, smul_eq_mul] at hY hZ ⊢
+        exact ⟨(hX_evar _).measurable, hu_mono (by grind)⟩
+      · intro Y ⟨hY_meas, hY⟩ Z ⟨hZ_meas, hZ⟩ a b ha hb hab
+        have hU_meas : Measurable U := hU_cont.measurable
+        refine ⟨by fun_prop, ?_⟩
+        simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] at hY hZ ⊢
+        have ha_ne_top : a ≠ ∞ := fun ha_top ↦ by simp [ha_top] at hab
+        have hb_ne_top : b ≠ ∞ := fun hb_top ↦ by simp [hb_top] at hab
         calc ∫ᵉ ω, U (X n ω) ∂P
         _ = a * ∫ᵉ ω, U (X n ω) ∂P + b * ∫ᵉ ω, U (X n ω) ∂P := by
           sorry
         _ ≤ a * ∫ᵉ ω, U (Y ω) ∂P + b * ∫ᵉ ω, U (Z ω) ∂P := by gcongr
-        _ ≤ ∫ᵉ ω, U (a * Y ω + b * Z ω) ∂P := sorry -- concavity of U
+        _ = ∫ᵉ ω, a • U (Y ω) + b • U (Z ω) ∂P := by
+          rw [← eintegral_mul_const (by simp) (by simpa),
+            ← eintegral_mul_const (by simp) (by simpa)]
+          rotate_left
+          · sorry -- eintegrable since U bounded above
+          · sorry -- same
+          rw [eintegral_add]
+          · simp
+          · simp only [EReal.smul_ennreal_eq_mul]; fun_prop
+          · simp only [EReal.smul_ennreal_eq_mul]; fun_prop
+          · simp only [EReal.smul_ennreal_eq_mul]
+            refine eintegrable.const_mul ?_ (by simp) (by simpa)
+            sorry -- same
+          · simp only [EReal.smul_ennreal_eq_mul]
+            refine eintegrable.const_mul ?_ (by simp) (by simpa)
+            sorry -- same
+          · right; sorry -- same
+          · left; sorry -- same
+        _ ≤ ∫ᵉ ω, U (a * Y ω + b * Z ω) ∂P := by
+          gcongr
+          intro ω
+          lift a to ℝ≥0 using ha_ne_top
+          lift b to ℝ≥0 using hb_ne_top
+          norm_cast at ha hb hab
+          exact hU_ccv.2 (by simp : Y ω ∈ Set.univ) (by simp) ha hb hab
     _ ≤ ∫ᵉ x, limsup (fun n ↦ U (Y n x)) atTop ∂P := by
       -- eintegral version of Fatou's lemma `limsup_lintegral_le`
       sorry
