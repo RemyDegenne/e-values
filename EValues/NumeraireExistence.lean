@@ -81,7 +81,20 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
     _ ≤ limsup (fun n ↦ ∫ᵉ x, U (Y n x) ∂P) atTop := by
       refine limsup_le_limsup (.of_forall fun n ↦ ?_)
       simp only
-      sorry  -- concavity of U, Jensen
+      specialize hY_mem n
+      simp only [mem_convexHull_iff] at hY_mem
+      refine hY_mem {Z | ∫ᵉ ω, U (X n ω) ∂P ≤ ∫ᵉ ω, U (Z ω) ∂P} ?_ ?_
+      · rintro _ ⟨m, rfl⟩
+        simp only [Set.mem_setOf_eq]
+        simp_rw [← hu_eq]
+        exact hu_mono (by grind)
+      · intro Y hY Z hZ a b ha hb hab
+        simp only [Set.mem_setOf_eq, Pi.add_apply, Pi.smul_apply, smul_eq_mul] at hY hZ ⊢
+        calc ∫ᵉ ω, U (X n ω) ∂P
+        _ = a * ∫ᵉ ω, U (X n ω) ∂P + b * ∫ᵉ ω, U (X n ω) ∂P := by
+          sorry
+        _ ≤ a * ∫ᵉ ω, U (Y ω) ∂P + b * ∫ᵉ ω, U (Z ω) ∂P := by gcongr
+        _ ≤ ∫ᵉ ω, U (a * Y ω + b * Z ω) ∂P := sorry -- concavity of U
     _ ≤ ∫ᵉ x, limsup (fun n ↦ U (Y n x)) atTop ∂P := by
       -- eintegral version of Fatou's lemma `limsup_lintegral_le`
       sorry
