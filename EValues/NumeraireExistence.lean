@@ -60,6 +60,60 @@ lemma eintegral_lt_top_of_le {f : 𝓧 → EReal} {b : EReal} (hf : ∀ x, f x �
     rw [lt_top_iff_ne_top, ne_eq, EReal.coe_ennreal_eq_top_iff]
     simp [hb, ENNReal.mul_eq_top]
 
+lemma convex_eintegral_utility_ge [IsFiniteMeasure P] (u : EReal)
+    (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
+    (hU_meas : Measurable U) {B : EReal} (hU_le : ∀ x : ℝ≥0∞, U x ≤ B) (hB : B ≠ ⊤) :
+    Convex ℝ≥0∞ {Z | Measurable Z ∧ u ≤ ∫ᵉ (ω : 𝓧), U (Z ω) ∂P} := by
+  intro Y ⟨hY_meas, hY⟩ Z ⟨hZ_meas, hZ⟩ a b ha hb hab
+  --have hU_meas : Measurable U := hU_cont.measurable
+  refine ⟨by fun_prop, ?_⟩
+  simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] at hY hZ ⊢
+  have ha_ne_top : a ≠ ∞ := fun ha_top ↦ by simp [ha_top] at hab
+  have hb_ne_top : b ≠ ∞ := fun hb_top ↦ by simp [hb_top] at hab
+  have h_int (Y : 𝓧 → ℝ≥0∞) : eintegrable (fun ω ↦ U (Y ω)) P :=
+    eintegrable_of_le (fun _ ↦ hU_le _) (by simpa) P
+  calc u
+  _ = a * u + b * u := by
+    conv_lhs => rw [← one_mul u]
+    have : (1 : EReal) = (1 : ℝ≥0∞) := rfl
+    rw [this, ← hab]
+    simp only [EReal.coe_ennreal_add]
+    sorry
+  _ ≤ a * ∫ᵉ ω, U (Y ω) ∂P + b * ∫ᵉ ω, U (Z ω) ∂P := by gcongr
+  _ = ∫ᵉ ω, a • U (Y ω) + b • U (Z ω) ∂P := by
+    rw [← eintegral_mul_const (by simp) (by simpa),
+      ← eintegral_mul_const (by simp) (by simpa)]
+    rotate_left
+    · exact h_int _
+    · exact h_int _
+    rw [eintegral_add]
+    · simp
+    · simp only [EReal.smul_ennreal_eq_mul]; fun_prop
+    · simp only [EReal.smul_ennreal_eq_mul]; fun_prop
+    · simp only [EReal.smul_ennreal_eq_mul]
+      exact eintegrable.const_mul (h_int _) (by simp) (by simpa)
+    · simp only [EReal.smul_ennreal_eq_mul]
+      exact eintegrable.const_mul (h_int _) (by simp) (by simpa)
+    · right
+      refine (eintegral_lt_top_of_le (b := b • B) (fun ω ↦ ?_) ?_ P).ne
+      · simp only [EReal.smul_ennreal_eq_mul]
+        gcongr
+        exact hU_le _
+      · simp [EReal.mul_eq_top, hb_ne_top, hB, not_lt.mpr (EReal.coe_ennreal_nonneg b)]
+    · left
+      refine (eintegral_lt_top_of_le (b := a • B) (fun ω ↦ ?_) ?_ P).ne
+      · simp only [EReal.smul_ennreal_eq_mul]
+        gcongr
+        exact hU_le _
+      · simp [EReal.mul_eq_top, ha_ne_top, not_lt.mpr (EReal.coe_ennreal_nonneg a), hB]
+  _ ≤ ∫ᵉ ω, U (a * Y ω + b * Z ω) ∂P := by
+    gcongr
+    intro ω
+    lift a to ℝ≥0 using ha_ne_top
+    lift b to ℝ≥0 using hb_ne_top
+    norm_cast at ha hb hab
+    exact hU_ccv.2 (by simp : Y ω ∈ Set.univ) (by simp) ha hb hab
+
 -- needs only two things about IsEVar: convex and closed under a.e. limits
 /-- There exists a utility-maximizing e-variable which is infinite whenever another e-variable
 is infinite. -/
@@ -116,51 +170,7 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
         simp only [Set.mem_setOf_eq]
         simp_rw [← hu_eq]
         exact ⟨(hX_evar _).measurable, hu_mono (by grind)⟩
-      · intro Y ⟨hY_meas, hY⟩ Z ⟨hZ_meas, hZ⟩ a b ha hb hab
-        have hU_meas : Measurable U := hU_cont.measurable
-        refine ⟨by fun_prop, ?_⟩
-        simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] at hY hZ ⊢
-        have ha_ne_top : a ≠ ∞ := fun ha_top ↦ by simp [ha_top] at hab
-        have hb_ne_top : b ≠ ∞ := fun hb_top ↦ by simp [hb_top] at hab
-        have h_int (Y : 𝓧 → ℝ≥0∞) : eintegrable (fun ω ↦ U (Y ω)) P :=
-          eintegrable_of_le (fun _ ↦ hU_le _) (by simp) P
-        calc ∫ᵉ ω, U (X n ω) ∂P
-        _ = a * ∫ᵉ ω, U (X n ω) ∂P + b * ∫ᵉ ω, U (X n ω) ∂P := by
-          sorry
-        _ ≤ a * ∫ᵉ ω, U (Y ω) ∂P + b * ∫ᵉ ω, U (Z ω) ∂P := by gcongr
-        _ = ∫ᵉ ω, a • U (Y ω) + b • U (Z ω) ∂P := by
-          rw [← eintegral_mul_const (by simp) (by simpa),
-            ← eintegral_mul_const (by simp) (by simpa)]
-          rotate_left
-          · exact h_int _
-          · exact h_int _
-          rw [eintegral_add]
-          · simp
-          · simp only [EReal.smul_ennreal_eq_mul]; fun_prop
-          · simp only [EReal.smul_ennreal_eq_mul]; fun_prop
-          · simp only [EReal.smul_ennreal_eq_mul]
-            exact eintegrable.const_mul (h_int _) (by simp) (by simpa)
-          · simp only [EReal.smul_ennreal_eq_mul]
-            exact eintegrable.const_mul (h_int _) (by simp) (by simpa)
-          · right
-            refine (eintegral_lt_top_of_le (b := b • B) (fun ω ↦ ?_) ?_ P).ne
-            · simp only [EReal.smul_ennreal_eq_mul]
-              gcongr
-              exact hU_le _
-            · simp [EReal.mul_eq_top, hb_ne_top]
-          · left
-            refine (eintegral_lt_top_of_le (b := a • B) (fun ω ↦ ?_) ?_ P).ne
-            · simp only [EReal.smul_ennreal_eq_mul]
-              gcongr
-              exact hU_le _
-            · simp [EReal.mul_eq_top, ha_ne_top]
-        _ ≤ ∫ᵉ ω, U (a * Y ω + b * Z ω) ∂P := by
-          gcongr
-          intro ω
-          lift a to ℝ≥0 using ha_ne_top
-          lift b to ℝ≥0 using hb_ne_top
-          norm_cast at ha hb hab
-          exact hU_ccv.2 (by simp : Y ω ∈ Set.univ) (by simp) ha hb hab
+      · exact convex_eintegral_utility_ge _ hU_ccv hU_cont.measurable hU_le (by simp)
     _ ≤ ∫ᵉ x, limsup (fun n ↦ U (Y n x)) atTop ∂P := by
       -- eintegral version of Fatou's lemma `limsup_lintegral_le`
       sorry
