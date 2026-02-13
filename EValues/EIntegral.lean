@@ -43,6 +43,23 @@ def eintegrable (f : α → EReal) (μ : Measure α := by volume_tac) : Prop :=
 -- if the integral of `f` gives `⊤ - ⊤ = ⊥`, then `-f` also gives `⊤ - ⊤ = ⊥`, so the integral
 -- of `-f` is not the negation of the integral of `f`
 
+lemma eintegrable_congr {f g : α → EReal} (h_ae : f =ᵐ[μ] g) :
+    eintegrable f μ ↔ eintegrable g μ := by
+  suffices ∀ {f g : α → EReal} (h_ae : f =ᵐ[μ] g) (hf : eintegrable f μ), eintegrable g μ from
+    ⟨fun h ↦ this h_ae h, fun h ↦ this h_ae.symm h⟩
+  intro f g h_ae hf
+  cases hf with
+  | inl hf =>
+    left
+    convert hf using 1
+    refine lintegral_congr_ae ?_
+    filter_upwards [h_ae] with x hx using by simp [hx]
+  | inr hf =>
+    right
+    convert hf using 1
+    refine lintegral_congr_ae ?_
+    filter_upwards [h_ae] with x hx using by simp [hx]
+
 lemma eintegrable_of_nonneg {f : α → EReal} (hf : ∀ x, 0 ≤ f x) : eintegrable f μ :=
   Or.inr <| by simp [hf]
 
@@ -1077,6 +1094,20 @@ lemma eintegral_sub'' (hf_meas : AEMeasurable f μ) (hg_meas : AEMeasurable g μ
   rw [eintegral_sub _ hf_meas hg_int hg_meas (by simp [hf_ne_top]) (by simp [hf_ne_bot])]
   by_contra h_false
   simp [eintegral_of_not_eintegrable h_false] at hf_ne_bot
+
+lemma eintegral_add_ne_bot (hf : AEMeasurable f μ) (hg : AEMeasurable g μ)
+    (hf_int : ∫ᵉ x, f x ∂μ ≠ ⊥) (hg_int : ∫ᵉ x, g x ∂μ ≠ ⊥) :
+    ∫ᵉ x, f x + g x ∂μ ≠ ⊥ := by
+  rw [eintegral_add (by fun_prop) (by fun_prop) (eintegrable_of_eintegral_ne_bot hf_int)
+    (eintegrable_of_eintegral_ne_bot hg_int)]
+  · simp [hf_int, hg_int]
+  · simp [hf_int]
+  · simp [hg_int]
+
+lemma eintegrable_add_of_ne_bot (hf : AEMeasurable f μ) (hg : AEMeasurable g μ)
+    (hf_int : ∫ᵉ x, f x ∂μ ≠ ⊥) (hg_int : ∫ᵉ x, g x ∂μ ≠ ⊥) :
+    eintegrable (fun x ↦ f x + g x) μ :=
+  eintegrable_of_eintegral_ne_bot (eintegral_add_ne_bot hf hg hf_int hg_int)
 
 lemma eintegral_prod_of_nonneg {β : Type*} {mβ : MeasurableSpace β} {ν : Measure β} [SFinite ν]
     (f : α × β → EReal) (hf : AEMeasurable f (μ.prod ν)) (hf_nonneg : ∀ (x : α × β), 0 ≤ f x) :

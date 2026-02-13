@@ -32,6 +32,48 @@ open MeasureTheory ProbabilityTheory InformationTheory
 variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableSpace 𝓨}
   {P : Measure 𝓧} {S : Set (Measure 𝓧)}
 
+section Aux
+
+lemma MeasureTheory.lintegral_rnDeriv_mul_le {μ : Measure 𝓧} {X : 𝓧 → ℝ≥0∞} (hX : Measurable X) :
+    ∫⁻ ω, (∂μ/∂P) ω * X ω ∂P ≤ ∫⁻ ω, X ω ∂μ := by
+  calc ∫⁻ ω, (∂μ/∂P) ω * X ω ∂P
+  _ = ∫⁻ ω, X ω ∂(P.withDensity (∂μ/∂P)) := by
+    rw [lintegral_withDensity_eq_lintegral_mul _ (by fun_prop) hX]; simp
+  _ ≤ ∫⁻ ω, X ω ∂μ := lintegral_mono' (μ.withDensity_rnDeriv_le P) le_rfl
+
+-- lemma Integrable.eintegrable {f : 𝓧 → ℝ} (hf : Integrable f P) :
+--     eintegrable (fun x ↦ f x) P := by
+--   sorry
+
+lemma eintegrable_rnDeriv_mul_iff {μ ν : Measure 𝓧} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    {f : 𝓧 → EReal} (hμν : μ ≪ ν) (hf : Measurable f) :
+    eintegrable (fun a ↦ (μ.rnDeriv ν a).toReal * f a) ν ↔ eintegrable f μ := by
+  rw [eintegrable, eintegrable]
+  congr! 1
+  · nth_rw 2 [← Measure.withDensity_rnDeriv_eq μ ν hμν]
+    rw [lintegral_withDensity_eq_lintegral_mul _ (by fun_prop) (by fun_prop)]
+    congr! 1
+    refine lintegral_congr_ae ?_
+    filter_upwards [Measure.rnDeriv_ne_top μ ν] with x hx
+    simp only [Pi.mul_apply]
+    rw [EReal.toENNReal_mul (by simp)]
+    simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true, EReal.toENNReal_of_ne_top,
+      EReal.toReal_coe]
+    rw [ENNReal.ofReal_toReal hx]
+  · nth_rw 2 [← Measure.withDensity_rnDeriv_eq μ ν hμν]
+    rw [lintegral_withDensity_eq_lintegral_mul _ (by fun_prop) (by fun_prop)]
+    congr! 1
+    refine lintegral_congr_ae ?_
+    filter_upwards [Measure.rnDeriv_ne_top μ ν] with x hx
+    simp only [Pi.mul_apply]
+    rw [mul_comm, ← EReal.neg_mul, mul_comm]
+    rw [EReal.toENNReal_mul (by simp)]
+    simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true, EReal.toENNReal_of_ne_top,
+      EReal.toReal_coe]
+    rw [ENNReal.ofReal_toReal hx]
+
+end Aux
+
 namespace ProbabilityTheory
 
 /-- Reverse Information Projection. -/
@@ -54,6 +96,8 @@ lemma ripr_univ_le_measure_univ (P : Measure 𝓧) :
   · unfold ripr numeraire
     simp [hS]
 
+/-- The reverse information projection is a sub-probability measure
+(its total mass is at most 1). -/
 lemma ripr_univ_le_one (P : Measure 𝓧) [IsProbabilityMeasure P] :
     ripr P S .univ ≤ 1 := by simpa using ripr_univ_le_measure_univ P
 
@@ -141,6 +185,8 @@ lemma maxUtility_eq_KL_ripr [IsFiniteMeasure P]
     rw [integrable_llr_div_ripr_iff hS h_top] at h_int
     simpa using h_int
 
+/-- A measure `μ` is in the effective set of a set of measures `S` if the expectation under `μ` of
+every e-variable for `S` is at most 1. -/
 def MemEffectiveSet (S : Set (Measure 𝓧)) (μ : Measure 𝓧) : Prop :=
   ∀ X, IsEVar X S → ∫⁻ ω, X ω ∂μ ≤ 1
 
@@ -159,13 +205,6 @@ lemma memEffectiveSet_ripr (P : Measure 𝓧) [IsProbabilityMeasure P]
   have h_le := (isNumeraire_numeraire P hS).lintegral_div_le_one hX
   convert h_le with ω
   simp [ENNReal.div_eq_inv_mul]
-
-lemma lintegral_rnDeriv_mul_le {μ : Measure 𝓧} {X : 𝓧 → ℝ≥0∞} (hX : Measurable X) :
-    ∫⁻ ω, (∂μ/∂P) ω * X ω ∂P ≤ ∫⁻ ω, X ω ∂μ := by
-  calc ∫⁻ ω, (∂μ/∂P) ω * X ω ∂P
-  _ = ∫⁻ ω, X ω ∂(P.withDensity (∂μ/∂P)) := by
-    rw [lintegral_withDensity_eq_lintegral_mul _ (by fun_prop) hX]; simp
-  _ ≤ ∫⁻ ω, X ω ∂μ := lintegral_mono' (μ.withDensity_rnDeriv_le P) le_rfl
 
 lemma lintegral_mul_le_of_memEffectiveSet {μ : Measure 𝓧} (hμ : MemEffectiveSet S μ)
     {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S) :
@@ -194,27 +233,6 @@ lemma llr_ae_eq_log_inv_rnDeriv [IsFiniteMeasure P] {μ : Measure 𝓧} [IsFinit
     llr P μ =ᵐ[P] fun x ↦ Real.log ((μ.rnDeriv P)⁻¹ x).toReal := by
   filter_upwards [Measure.inv_rnDeriv' h_ac] with a ha using by rw [llr, ha]
 
-lemma eintegrable_congr {f g : 𝓧 → EReal} (h_ae : f =ᵐ[P] g) :
-    eintegrable f P ↔ eintegrable g P := by
-  suffices ∀ {f g : 𝓧 → EReal} (h_ae : f =ᵐ[P] g) (hf : eintegrable f P), eintegrable g P from
-    ⟨fun h ↦ this h_ae h, fun h ↦ this h_ae.symm h⟩
-  intro f g h_ae hf
-  cases hf with
-  | inl hf =>
-    left
-    convert hf using 1
-    refine lintegral_congr_ae ?_
-    filter_upwards [h_ae] with x hx using by simp [hx]
-  | inr hf =>
-    right
-    convert hf using 1
-    refine lintegral_congr_ae ?_
-    filter_upwards [h_ae] with x hx using by simp [hx]
-
--- lemma Integrable.eintegrable {f : 𝓧 → ℝ} (hf : Integrable f P) :
---     eintegrable (fun x ↦ f x) P := by
---   sorry
-
 lemma eintegrable_klFun_rnDeriv (P μ : Measure 𝓧) :
     eintegrable (fun ω ↦ klFun (μ.rnDeriv P ω).toReal) P := by
   refine eintegrable_of_nonneg ?_
@@ -224,48 +242,7 @@ lemma eintegrable_klFun_rnDeriv (P μ : Measure 𝓧) :
 lemma eintegrable_rnDeriv_mul_log_iff {μ ν : Measure 𝓧} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hμν : μ ≪ ν) :
     eintegrable (fun a ↦ (μ.rnDeriv ν a).toReal * Real.log (μ.rnDeriv ν a).toReal) ν
-      ↔ eintegrable (fun a ↦ llr μ ν a) μ := by
-  rw [eintegrable, eintegrable]
-  congr! 1
-  · nth_rw 3 [← Measure.withDensity_rnDeriv_eq μ ν hμν]
-    rw [lintegral_withDensity_eq_lintegral_mul _ (by fun_prop) (by fun_prop)]
-    congr! 1
-    refine lintegral_congr_ae ?_
-    filter_upwards [Measure.rnDeriv_ne_top μ ν] with x hx
-    simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true, EReal.toENNReal_of_ne_top,
-      EReal.toReal_coe, Pi.mul_apply]
-    rw [EReal.toENNReal_mul (by simp)]
-    simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true, EReal.toENNReal_of_ne_top,
-      EReal.toReal_coe]
-    rw [ENNReal.ofReal_toReal hx]
-    rfl
-  · nth_rw 3 [← Measure.withDensity_rnDeriv_eq μ ν hμν]
-    rw [lintegral_withDensity_eq_lintegral_mul _ (by fun_prop) (by fun_prop)]
-    congr! 1
-    refine lintegral_congr_ae ?_
-    filter_upwards [Measure.rnDeriv_ne_top μ ν] with x hx
-    simp only [ne_eq, EReal.neg_eq_top_iff, EReal.coe_ne_bot, not_false_eq_true,
-      EReal.toENNReal_of_ne_top, EReal.toReal_neg_eq, EReal.toReal_coe, Pi.mul_apply]
-    rw [mul_comm, ← EReal.neg_mul, mul_comm]
-    rw [EReal.toENNReal_mul (by simp)]
-    simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true, EReal.toENNReal_of_ne_top,
-      EReal.toReal_coe]
-    rw [ENNReal.ofReal_toReal hx]
-    rfl
-
-lemma eintegral_add_ne_bot {f g : 𝓧 → EReal} (hf : AEMeasurable f P) (hg : AEMeasurable g P)
-    (hf_int : ∫ᵉ x, f x ∂P ≠ ⊥) (hg_int : ∫ᵉ x, g x ∂P ≠ ⊥) :
-    ∫ᵉ x, f x + g x ∂P ≠ ⊥ := by
-  rw [eintegral_add (by fun_prop) (by fun_prop) (eintegrable_of_eintegral_ne_bot hf_int)
-    (eintegrable_of_eintegral_ne_bot hg_int)]
-  · simp [hf_int, hg_int]
-  · simp [hf_int]
-  · simp [hg_int]
-
-lemma eintegrable_add_of_ne_bot {f g : 𝓧 → EReal} (hf : AEMeasurable f P) (hg : AEMeasurable g P)
-    (hf_int : ∫ᵉ x, f x ∂P ≠ ⊥) (hg_int : ∫ᵉ x, g x ∂P ≠ ⊥) :
-    eintegrable (fun x ↦ f x + g x) P :=
-  eintegrable_of_eintegral_ne_bot (eintegral_add_ne_bot hf hg hf_int hg_int)
+      ↔ eintegrable (fun a ↦ llr μ ν a) μ := eintegrable_rnDeriv_mul_iff hμν (by fun_prop)
 
 lemma eintegrable_llr [IsFiniteMeasure P] {μ : Measure 𝓧} [IsFiniteMeasure μ]
     (h_ac : P ≪ μ) :
