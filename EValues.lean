@@ -15,4 +15,5 @@ import EValues.Mathlib.unitInterval
 import EValues.Numeraire
 import EValues.NumeraireExistence
 import EValues.Product
+import EValues.RIPr
 import EValues.Utility
