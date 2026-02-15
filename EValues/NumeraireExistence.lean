@@ -56,7 +56,7 @@ section
 variable {U : ℝ≥0∞ → EReal}
 
 /-- **Existence of Utility-Maximizing E-Variable (Preliminary Version)**:
-For a concave, continuous, monotone, and bounded utility function `U`, there exists an e-variable
+For a concave, continuous, and bounded utility function `U`, there exists an e-variable
 `Y` that maximizes the expected utility `𝔼[U(Y)]` among all e-variables. -/
 lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
     {b : ℝ} (hU_cont : Continuous U) (hU_mono : Monotone U) (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
