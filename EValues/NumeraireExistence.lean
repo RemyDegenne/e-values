@@ -225,8 +225,13 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
         exact ⟨(hX_evar _).measurable, hu_mono (by grind)⟩
       · exact convex_eintegral_utility_ge _ hU_ccv hU_cont.measurable hU_le (by simp)
     _ ≤ ∫ᵉ x, limsup (fun n ↦ U (Y n x)) atTop ∂P := by
-      -- eintegral version of Fatou's lemma `limsup_lintegral_le`
-      sorry
+      refine limsup_eintegral_le (g := fun _ ↦ B) (fun n ↦ ?_) (fun n ↦ ?_) eintegrable_const ?_
+      · have := (hY_evar n).measurable
+        fun_prop
+      · refine ae_of_all _ fun x ↦ ?_
+        simp [hU_le]
+      · rw [eintegral_const, EReal.mul_ne_top]
+        simp
     _ = ∫ᵉ x, U (Ylim x) ∂P := by
       refine eintegral_congr_ae ?_
       filter_upwards [hY_tendsto] with x hx

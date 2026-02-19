@@ -273,3 +273,11 @@ lemma EReal.neg_coe_ennreal_sub_toENNReal {a b : ℝ≥0∞} (h : a ≠ ∞ ∨ 
     convert EReal.coe_ennreal_sub_toENNReal _ _ using 1;
     congr! 1;
     exact EReal.coe_eq_coe_iff.mpr (by norm_num)
+
+open Filter in
+lemma EReal.coe_ennreal_limsup {α : Type} (F : Filter α) (g : α → ℝ≥0∞) [F.NeBot] :
+    (limsup g F).toEReal = limsup (fun x => (g x).toEReal) F := by
+  refine Monotone.map_limsup_of_continuousAt ?_ _ ?_
+  · intro x y hxy
+    simp [hxy]
+  · exact continuous_coe_ennreal_ereal.continuousAt

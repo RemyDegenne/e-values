@@ -6,6 +6,7 @@ Authors: Gaëtan Serré, Rémy Degenne
 import Mathlib.MeasureTheory.Measure.Prod
 import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Probability.Kernel.Composition.MeasureComp
+import Mathlib
 import EValues.Mathlib.EReal
 
 
@@ -1285,5 +1286,41 @@ lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
       rw [lintegral_prod_swap (ν := ν) (fun p ↦ (f p).toENNReal),
         lintegral_prod_swap (ν := ν) (fun p ↦ (-f p).toENNReal)]
   _ = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by simp
+
+open Filter in
+lemma limsup_eintegral_le {f : ℕ → α → EReal} (hf : ∀ n, Measurable (f n))
+    {g : α → ℝ≥0∞} (h_bound : ∀ n, EReal.toENNReal ∘ f n ≤ᵐ[μ] g) (h_fin : ∫⁻ x, g x ∂μ ≠ ⊤) :
+    limsup (fun n ↦ ∫ᵉ x, f n x ∂μ) atTop ≤ ∫ᵉ x, limsup (fun n ↦ f n x) atTop ∂μ := by
+  simp only [eintegral]
+  /- let u := fun n ↦ (∫⁻ (x : α), (f n x).toENNReal ∂μ).toEReal
+  let v := fun n ↦ - (∫⁻ (x : α), (-f n x).toENNReal ∂μ).toEReal
+  have : (fun n ↦ (∫⁻ (x : α), (f n x).toENNReal ∂μ).toEReal
+      - (∫⁻ (x : α), (-f n x).toENNReal ∂μ).toEReal) = u + v := by
+    simp only [u, v]
+    ext n
+    rfl
+  rw [this]
+  clear this -/
+  refine le_trans (EReal.limsup_add_le ?_ ?_) ?_
+  · sorry
+  · sorry
+  · have : (∫⁻ (x : α), (limsup (fun n ↦ f n x) atTop).toENNReal ∂μ).toEReal
+        - (∫⁻ (x : α), (-limsup (fun n ↦ f n x) atTop).toENNReal ∂μ).toEReal =
+        (∫⁻ (x : α), (limsup (fun n ↦ f n x) atTop).toENNReal ∂μ).toEReal
+        + (- (∫⁻ (x : α), (-limsup (fun n ↦ f n x) atTop).toENNReal ∂μ).toEReal) := by
+      rfl
+    rw [this]
+    clear this
+    gcongr
+    · have : ∀ x, (limsup (fun n ↦ f n x) atTop).toENNReal =
+          limsup (fun n ↦ (f n x).toENNReal) atTop := by
+        intro x
+        sorry
+      rw [← EReal.coe_ennreal_limsup]
+      simp_rw [this]
+      norm_cast
+      exact limsup_lintegral_le g (by fun_prop) h_bound h_fin
+    · sorry
+
 
 end MeasureTheory
