@@ -225,13 +225,41 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
         exact ⟨(hX_evar _).measurable, hu_mono (by grind)⟩
       · exact convex_eintegral_utility_ge _ hU_ccv hU_cont.measurable hU_le (by simp)
     _ ≤ ∫ᵉ x, limsup (fun n ↦ U (Y n x)) atTop ∂P := by
-      refine limsup_eintegral_le (g := fun _ ↦ B) (fun n ↦ ?_) (fun n ↦ ?_) eintegrable_const ?_
-      · have := (hY_evar n).measurable
+      refine limsup_eintegral_le (g := fun _ ↦ .ofReal B) ?_ ?_ ?_ ?_
+      · intro n
+        have := (hY_evar n).measurable
         fun_prop
-      · refine ae_of_all _ fun x ↦ ?_
-        simp [hU_le]
-      · rw [eintegral_const, EReal.mul_ne_top]
-        simp
+      · intro n
+        refine ae_of_all _ fun x ↦ ?_
+        simp only [Function.comp_apply]
+        have : ENNReal.ofReal B = B.toEReal.toENNReal := by simp
+        rw [this]
+        exact EReal.toENNReal_le_toENNReal <| hU_le (Y n x)
+      · simp only [lintegral_const]
+        refine ENNReal.mul_ne_top (by simp) (by simp)
+      · left
+        rw [EReal.ne_top_exists_finite_iff]
+        refine ⟨B * P .univ, ?_, ?_⟩
+        · exact (EReal.mul_ne_top _ _).mpr (by simp)
+        · rw [Filter.limsup_le_iff']
+          intro y hy
+          refine Eventually.of_forall fun n ↦ LT.lt.le <| lt_of_le_of_lt ?_ hy
+          /- Disjonction de cas sur B : si B < 0 alors B.toEReal * (P univ = 0).toEReal = 0 et
+            (U (Y n x)).toENNReal = 0 aussi (hU_le). Sinon on continue la majoration.
+            Peut-être qu'on peut faire plus simple. -/
+          have : B.toEReal = (ENNReal.ofReal B).toEReal := by
+            simp only [EReal.coe_ennreal_ofReal, EReal.coe_eq_coe_iff, left_eq_sup]
+            sorry
+          rw [this]
+          norm_cast
+          suffices ∀ x, (U (Y n x)).toENNReal ≤ ENNReal.ofReal B by
+            calc
+            _ ≤ ∫⁻ x, ENNReal.ofReal B ∂P := lintegral_mono this
+            _ = ENNReal.ofReal B * P .univ := by simp [lintegral_const]
+          intro x
+          have : ENNReal.ofReal B = B.toEReal.toENNReal := by simp
+          rw [this]
+          exact EReal.toENNReal_le_toENNReal (hU_le (Y n x))
     _ = ∫ᵉ x, U (Ylim x) ∂P := by
       refine eintegral_congr_ae ?_
       filter_upwards [hY_tendsto] with x hx

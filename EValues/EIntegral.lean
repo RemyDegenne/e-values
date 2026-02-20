@@ -6,7 +6,6 @@ Authors: Gaëtan Serré, Rémy Degenne
 import Mathlib.MeasureTheory.Measure.Prod
 import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Probability.Kernel.Composition.MeasureComp
-import Mathlib
 import EValues.Mathlib.EReal
 
 
@@ -1288,39 +1287,42 @@ lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
   _ = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by simp
 
 open Filter in
+/-- *Fatou's lemma* for the extended integral. -/
 lemma limsup_eintegral_le {f : ℕ → α → EReal} (hf : ∀ n, Measurable (f n))
-    {g : α → ℝ≥0∞} (h_bound : ∀ n, EReal.toENNReal ∘ f n ≤ᵐ[μ] g) (h_fin : ∫⁻ x, g x ∂μ ≠ ⊤) :
+    {g : α → ℝ≥0∞} (h_bound : ∀ n, EReal.toENNReal ∘ f n ≤ᵐ[μ] g) (h_fin : ∫⁻ x, g x ∂μ ≠ ⊤)
+    (fin_limsup : limsup (fun n ↦ (∫⁻ (x : α), (f n x).toENNReal ∂μ).toEReal) atTop ≠ ⊤ ∨
+      limsup (fun n ↦ -(∫⁻ (x : α), (-f n x).toENNReal ∂μ).toEReal) atTop ≠ ⊥) :
     limsup (fun n ↦ ∫ᵉ x, f n x ∂μ) atTop ≤ ∫ᵉ x, limsup (fun n ↦ f n x) atTop ∂μ := by
   simp only [eintegral]
-  /- let u := fun n ↦ (∫⁻ (x : α), (f n x).toENNReal ∂μ).toEReal
-  let v := fun n ↦ - (∫⁻ (x : α), (-f n x).toENNReal ∂μ).toEReal
-  have : (fun n ↦ (∫⁻ (x : α), (f n x).toENNReal ∂μ).toEReal
-      - (∫⁻ (x : α), (-f n x).toENNReal ∂μ).toEReal) = u + v := by
-    simp only [u, v]
-    ext n
-    rfl
-  rw [this]
-  clear this -/
-  refine le_trans (EReal.limsup_add_le ?_ ?_) ?_
-  · sorry
-  · sorry
-  · have : (∫⁻ (x : α), (limsup (fun n ↦ f n x) atTop).toENNReal ∂μ).toEReal
-        - (∫⁻ (x : α), (-limsup (fun n ↦ f n x) atTop).toENNReal ∂μ).toEReal =
-        (∫⁻ (x : α), (limsup (fun n ↦ f n x) atTop).toENNReal ∂μ).toEReal
-        + (- (∫⁻ (x : α), (-limsup (fun n ↦ f n x) atTop).toENNReal ∂μ).toEReal) := by
-      rfl
-    rw [this]
-    clear this
+  refine le_trans (EReal.limsup_add_le ?_ fin_limsup) ?_
+  · left
+    refine EReal.ne_bot_of_nonneg ?_
+    rw [Filter.le_limsup_iff]
+    intro y hy
+    refine Frequently.of_forall fun n ↦ ?_
+    refine lt_of_lt_of_le hy ?_
+    norm_cast
+    simp
+  · rw [sub_eq_add_neg]
     gcongr
-    · have : ∀ x, (limsup (fun n ↦ f n x) atTop).toENNReal =
-          limsup (fun n ↦ (f n x).toENNReal) atTop := by
-        intro x
-        sorry
-      rw [← EReal.coe_ennreal_limsup]
+    · rw [← EReal.coe_ennreal_limsup]
+      have : ∀ x, (limsup (fun n ↦ f n x) atTop).toENNReal =
+          limsup (fun n ↦ (f n x).toENNReal) atTop :=
+        fun _ ↦ EReal.limsup_coe_ennreal _ _
       simp_rw [this]
       norm_cast
       exact limsup_lintegral_le g (by fun_prop) h_bound h_fin
-    · sorry
+    · rw [← Pi.neg_def, EReal.limsup_neg]
+      have : ∀ x, (-limsup (fun n ↦ f n x) atTop).toENNReal =
+          liminf (fun n ↦ (-f n x).toENNReal) atTop := by
+        intro x
+        rw [← EReal.liminf_neg, EReal.liminf_coe_ennreal]
+        rfl
+      simp_rw [this]
+      clear this
+      rw [EReal.neg_le_neg_iff, ← EReal.coe_ennreal_liminf]
+      norm_cast
+      exact lintegral_liminf_le (by fun_prop)
 
 
 end MeasureTheory

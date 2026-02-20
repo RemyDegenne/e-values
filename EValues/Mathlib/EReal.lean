@@ -274,10 +274,40 @@ lemma EReal.neg_coe_ennreal_sub_toENNReal {a b : ℝ≥0∞} (h : a ≠ ∞ ∨ 
     congr! 1;
     exact EReal.coe_eq_coe_iff.mpr (by norm_num)
 
-open Filter in
-lemma EReal.coe_ennreal_limsup {α : Type} (F : Filter α) (g : α → ℝ≥0∞) [F.NeBot] :
+lemma EReal.ne_top_exists_finite_iff {a : EReal} : a ≠ ⊤ ↔ ∃ b, b ≠ ⊤ ∧ a ≤ b := by
+  constructor
+  · intro ha
+    exact ⟨a, ha, le_refl _⟩
+  · rintro ⟨b, hb_top, hab⟩
+    rw [← lt_top_iff_ne_top]
+    exact lt_of_le_of_lt hab hb_top.lt_top
+
+open Filter
+
+lemma EReal.coe_ennreal_limsup {α : Type} (F : Filter α) [F.NeBot] (g : α → ℝ≥0∞) :
     (limsup g F).toEReal = limsup (fun x => (g x).toEReal) F := by
   refine Monotone.map_limsup_of_continuousAt ?_ _ ?_
   · intro x y hxy
     simp [hxy]
   · exact continuous_coe_ennreal_ereal.continuousAt
+
+lemma EReal.limsup_coe_ennreal {α : Type} (F : Filter α) [F.NeBot] (g : α → EReal) :
+    (limsup g F).toENNReal = limsup (fun x => (g x).toENNReal) F := by
+  refine Monotone.map_limsup_of_continuousAt ?_ _ ?_
+  · intro x y hxy
+    exact EReal.toENNReal_le_toENNReal hxy
+  · exact EReal.continuous_toENNReal.continuousAt
+
+lemma EReal.coe_ennreal_liminf {α : Type} (F : Filter α) [F.NeBot] (g : α → ℝ≥0∞) :
+    (liminf g F).toEReal = liminf (fun x => (g x).toEReal) F := by
+  refine Monotone.map_liminf_of_continuousAt ?_ _ ?_
+  · intro x y hxy
+    simp [hxy]
+  · exact continuous_coe_ennreal_ereal.continuousAt
+
+lemma EReal.liminf_coe_ennreal {α : Type} (F : Filter α) [F.NeBot] (g : α → EReal) :
+    (liminf g F).toENNReal = liminf (fun x => (g x).toENNReal) F := by
+  refine Monotone.map_liminf_of_continuousAt ?_ _ ?_
+  · intro x y hxy
+    exact EReal.toENNReal_le_toENNReal hxy
+  · exact EReal.continuous_toENNReal.continuousAt
