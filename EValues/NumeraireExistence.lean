@@ -244,9 +244,8 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
         · rw [Filter.limsup_le_iff']
           intro y hy
           refine Eventually.of_forall fun n ↦ LT.lt.le <| lt_of_le_of_lt ?_ hy
-          /- Disjonction de cas sur B : si B < 0 alors B.toEReal * (P univ = 0).toEReal = 0 et
-            (U (Y n x)).toENNReal = 0 aussi (hU_le). Sinon on continue la majoration.
-            Peut-être qu'on peut faire plus simple. -/
+          /- Disjonction de cas sur B : si B < 0 alors (U (Y n x)).toENNReal = 0 et l'intégrale
+          aussi. Sinon on continue la majoration. Peut-être qu'on peut faire plus simple. -/
           have : B.toEReal = (ENNReal.ofReal B).toEReal := by
             simp only [EReal.coe_ennreal_ofReal, EReal.coe_eq_coe_iff, left_eq_sup]
             sorry
