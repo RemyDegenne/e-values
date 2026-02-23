@@ -1299,7 +1299,7 @@ lemma limsup_eintegral_le {f : ℕ → α → EReal} (hf : ∀ n, Measurable (f 
     refine EReal.ne_bot_of_nonneg ?_
     rw [Filter.le_limsup_iff]
     intro y hy
-    refine Frequently.of_forall fun n ↦ ?_
+    refine .of_forall fun n ↦ ?_
     refine lt_of_lt_of_le hy ?_
     norm_cast
     simp

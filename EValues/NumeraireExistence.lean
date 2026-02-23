@@ -191,13 +191,7 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
   let Yliminf := fun x ↦ liminf (fun n ↦ Y n x) atTop
   have hYliminf_meas : Measurable Yliminf := Measurable.liminf fun n ↦ (hY_evar n).measurable
   refine ⟨Yliminf, ?_, ?_⟩
-  · -- todo: extract lemma IsEVar.liminf
-    refine IsEVar.of_lintegral_le_measure_univ hS hYliminf_meas fun μ hμ ↦ ?_
-    calc ∫⁻ ω, Yliminf ω ∂μ
-    _ ≤ liminf (fun n ↦ ∫⁻ ω, Y n ω ∂μ) atTop := lintegral_liminf_le fun n ↦ (hY_evar n).measurable
-    _ ≤ μ .univ := by
-      refine liminf_le_of_frequently_le ?_
-      exact .of_forall fun n ↦ (hY_evar n).lintegral_le_measure_univ μ hμ
+  · exact isEVar_liminf hY_evar hS
   · suffices ⨆ n, ∫ᵉ x, U (X n x) ∂P ≤ ∫ᵉ x, U (Ylim x) ∂P by
       intro Z hZ_evar
       refine le_trans ?_ (this.trans_eq ?_)
@@ -239,26 +233,36 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
         refine ENNReal.mul_ne_top (by simp) (by simp)
       · left
         rw [EReal.ne_top_exists_finite_iff]
-        refine ⟨B * P .univ, ?_, ?_⟩
-        · exact (EReal.mul_ne_top _ _).mpr (by simp)
-        · rw [Filter.limsup_le_iff']
+        by_cases hB : B < 0
+        · refine ⟨0, by simp, ?_⟩
+          rw [Filter.limsup_le_iff']
           intro y hy
-          refine Eventually.of_forall fun n ↦ LT.lt.le <| lt_of_le_of_lt ?_ hy
-          /- Disjonction de cas sur B : si B < 0 alors (U (Y n x)).toENNReal = 0 et l'intégrale
-          aussi. Sinon on continue la majoration. Peut-être qu'on peut faire plus simple. -/
-          have : B.toEReal = (ENNReal.ofReal B).toEReal := by
-            simp only [EReal.coe_ennreal_ofReal, EReal.coe_eq_coe_iff, left_eq_sup]
-            sorry
-          rw [this]
-          norm_cast
-          suffices ∀ x, (U (Y n x)).toENNReal ≤ ENNReal.ofReal B by
-            calc
-            _ ≤ ∫⁻ x, ENNReal.ofReal B ∂P := lintegral_mono this
-            _ = ENNReal.ofReal B * P .univ := by simp [lintegral_const]
+          refine .of_forall fun n ↦ LT.lt.le <| lt_of_le_of_lt (Eq.le ?_) hy
+          suffices ∀ x, (U (Y n x)).toENNReal = 0 by
+            simp_rw [this]
+            simp
           intro x
-          have : ENNReal.ofReal B = B.toEReal.toENNReal := by simp
-          rw [this]
-          exact EReal.toENNReal_le_toENNReal (hU_le (Y n x))
+          replace hB : B.toEReal < 0 := by simp [hB]
+          replace hU_le := (lt_of_le_of_lt (hU_le (Y n x)) hB).le
+          simp [hU_le]
+        · refine ⟨B * P .univ, ?_, ?_⟩
+          · exact (EReal.mul_ne_top _ _).mpr (by simp)
+          · rw [Filter.limsup_le_iff']
+            intro y hy
+            refine .of_forall fun n ↦ LT.lt.le <| lt_of_le_of_lt ?_ hy
+            have : B.toEReal = (ENNReal.ofReal B).toEReal := by
+              push_neg at hB
+              simp only [EReal.coe_ennreal_ofReal, hB, sup_of_le_left]
+            rw [this]
+            norm_cast
+            suffices ∀ x, (U (Y n x)).toENNReal ≤ ENNReal.ofReal B by
+              calc
+              _ ≤ ∫⁻ x, ENNReal.ofReal B ∂P := lintegral_mono this
+              _ = ENNReal.ofReal B * P .univ := by simp [lintegral_const]
+            intro x
+            have : ENNReal.ofReal B = B.toEReal.toENNReal := by simp
+            rw [this]
+            exact EReal.toENNReal_le_toENNReal (hU_le (Y n x))
     _ = ∫ᵉ x, U (Ylim x) ∂P := by
       refine eintegral_congr_ae ?_
       filter_upwards [hY_tendsto] with x hx
