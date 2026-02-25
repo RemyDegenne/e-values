@@ -55,9 +55,8 @@ section
 
 variable {U : ℝ≥0∞ → EReal}
 
-lemma eintegrable_of_le {f : 𝓧 → EReal} {b : EReal} (hf : ∀ x, f x ≤ b) (hb : b ≠ ⊤) (P : Measure 𝓧)
-    [IsFiniteMeasure P] :
-    eintegrable f P := by
+lemma eintegrable_of_le {f : 𝓧 → EReal} {b : EReal} (hf : ∀ x, f x ≤ b) (hb : b ≠ ⊤)
+    (P : Measure 𝓧) [IsFiniteMeasure P] : eintegrable f P := by
   refine .inl (ne_of_lt ?_)
   calc ∫⁻ x, (f x).toENNReal ∂P
   _ ≤ ∫⁻ x, b.toENNReal ∂P := by

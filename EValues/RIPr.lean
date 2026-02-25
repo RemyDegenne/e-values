@@ -4,8 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
 import EValues.DPI
-import EValues.NumeraireExistence
-import Mathlib.InformationTheory.KullbackLeibler.Basic
+import Mathlib.Probability.Notation
+import Mathlib.InformationTheory.KullbackLeibler.KLFun
 
 /-!
 # Reverse Information Projection and duality
