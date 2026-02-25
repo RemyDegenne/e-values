@@ -28,7 +28,10 @@ This file defines integration for functions taking values in `EReal` (the extend
   integrability conditions).
 * `eintegral_prod`: Fubini's theorem for extended real-valued functions on product measures,
   allowing interchange of integration order.
-* `limsup_eintegral_le`: A Fatou-type lemma for the extended integral, relating the limsup of integrals to the integral of the limsup.
+* `limsup_eintegral_le`: A Fatou-type lemma for the extended integral, relating the limsup of
+integrals to the integral of the limsup.
+* `eintegral_liminf_le`: A Fatou-type lemma for the extended integral, relating the liminf of
+integrals to the integral of the liminf.
 
 ## Notation
 
@@ -1324,8 +1327,12 @@ lemma eintegral_prod_symm {β : Type*} {mβ : MeasurableSpace β} [SFinite μ]
         lintegral_prod_swap (ν := ν) (fun p ↦ (-f p).toENNReal)]
   _ = ∫ᵉ y, ∫ᵉ x, f (x, y) ∂μ ∂ν := by simp
 
-open Filter in
-/-- *Fatou's lemma* for the extended integral. -/
+section FatouLemmas
+
+open Filter
+
+
+/-- *Fatou's lemma* on limsup for the extended integral. -/
 lemma limsup_eintegral_le {f : ℕ → α → EReal} (hf : ∀ n, Measurable (f n))
     {g : α → ℝ≥0∞} (h_bound : ∀ n, EReal.toENNReal ∘ f n ≤ᵐ[μ] g) (h_fin : ∫⁻ x, g x ∂μ ≠ ⊤)
     (fin_limsup : limsup (fun n ↦ (∫⁻ (x : α), (f n x).toENNReal ∂μ).toEReal) atTop ≠ ⊤ ∨
@@ -1357,10 +1364,36 @@ lemma limsup_eintegral_le {f : ℕ → α → EReal} (hf : ∀ n, Measurable (f 
         rw [← EReal.liminf_neg, EReal.liminf_coe_ennreal]
         rfl
       simp_rw [this]
-      clear this
       rw [EReal.neg_le_neg_iff, ← EReal.coe_ennreal_liminf]
       norm_cast
       exact lintegral_liminf_le (by fun_prop)
 
+/-- *Fatou's lemma* on liminf for the extended integral. -/
+lemma eintegral_liminf_le {f : ℕ → α → EReal} (hf : ∀ n, Measurable (f n))
+    {g : α → ℝ≥0∞} (h_bound : ∀ n, EReal.toENNReal ∘ (-f n) ≤ᵐ[μ] g) (h_fin : ∫⁻ x, g x ∂μ ≠ ⊤) :
+    ∫ᵉ x, liminf (fun n ↦ f n x) atTop ∂μ ≤ liminf (fun n ↦ ∫ᵉ x, f n x ∂μ) atTop := by
+  simp only [eintegral]
+  refine le_trans ?_ EReal.le_liminf_add
+  · rw [sub_eq_add_neg]
+    gcongr
+    · rw [← EReal.coe_ennreal_liminf]
+      have : ∀ x, (liminf (fun n ↦ f n x) atTop).toENNReal =
+          liminf (fun n ↦ (f n x).toENNReal) atTop :=
+        fun _ ↦ EReal.liminf_coe_ennreal _ _
+      simp_rw [this]
+      norm_cast
+      refine lintegral_liminf_le (by fun_prop)
+    · rw [← Pi.neg_def, EReal.liminf_neg]
+      have : ∀ x, (-liminf (fun n ↦ f n x) atTop).toENNReal =
+          limsup (fun n ↦ (-f n x).toENNReal) atTop := by
+        intro x
+        rw [← EReal.limsup_neg, EReal.limsup_coe_ennreal]
+        rfl
+      simp_rw [this]
+      rw [EReal.neg_le_neg_iff, ← EReal.coe_ennreal_limsup]
+      norm_cast
+      exact limsup_lintegral_le g (by fun_prop) h_bound h_fin
+
+end FatouLemmas
 
 end MeasureTheory
