@@ -340,6 +340,7 @@ lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞
     {Y : 𝓧 → ℝ≥0∞} (hY : IsEVar Y S) :
     ∫ᵉ x, U.deriv (numeraireOfBounded U hU_le P S hS x)
       * (Y x - numeraireOfBounded U hU_le P S hS x) ∂P ≤ 0 := by
+  -- Lemma 2.9 of _Larsson et al._ (2025)?
   sorry
 
 -- first order optimality condition for log utility
