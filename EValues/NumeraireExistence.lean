@@ -55,12 +55,147 @@ section
 
 variable {U : ℝ≥0∞ → EReal}
 
+lemma eintegrable_of_le {f : 𝓧 → EReal} {b : EReal} (hf : ∀ x, f x ≤ b) (hb : b ≠ ⊤) (P : Measure 𝓧)
+    [IsFiniteMeasure P] :
+    eintegrable f P := by
+  refine .inl (ne_of_lt ?_)
+  calc ∫⁻ x, (f x).toENNReal ∂P
+  _ ≤ ∫⁻ x, b.toENNReal ∂P := by
+    gcongr
+    exact EReal.toENNReal_le_toENNReal (hf _) -- missing gcongr
+  _ = b.toENNReal * P .univ := by simp [lintegral_const]
+  _ < ⊤ := by simp [hb, lt_top_iff_ne_top, ENNReal.mul_eq_top]
+
+lemma eintegral_lt_top_of_le {f : 𝓧 → EReal} {b : EReal} (hf : ∀ x, f x ≤ b) (hb : b ≠ ⊤)
+    (P : Measure 𝓧) [IsFiniteMeasure P] :
+    ∫ᵉ x, f x ∂P < ⊤ := by
+  rw [eintegral]
+  calc (∫⁻ x, (f x).toENNReal ∂P : EReal) - ∫⁻ x, (-f x).toENNReal ∂P
+  _ ≤ ∫⁻ x, (f x).toENNReal ∂P - 0 := EReal.sub_le_sub le_rfl (by positivity)
+  _ ≤ ∫⁻ x, b.toENNReal ∂P := by
+    simp only [sub_zero]
+    refine EReal.coe_ennreal_le_coe_ennreal_iff.mpr ?_ -- missing gcongr
+    gcongr
+    exact EReal.toENNReal_le_toENNReal (hf _)
+  _ = b.toENNReal * P .univ := by simp [lintegral_const]
+  _ < ⊤ := by
+    norm_cast
+    rw [lt_top_iff_ne_top, ne_eq, EReal.coe_ennreal_eq_top_iff]
+    simp [hb, ENNReal.mul_eq_top]
+
+lemma todo' {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (u : EReal) : (a + b) * u = a * u + b * u := by
+  cases u with
+  | bot =>
+    by_cases ha_zero : a = 0
+    · simp [ha_zero]
+    rw [EReal.mul_bot_of_pos (by positivity), EReal.mul_bot_of_pos (by positivity)]
+    simp
+  | coe u => norm_cast; ring
+  | top =>
+    by_cases ha_zero : a = 0
+    · simp [ha_zero]
+    rw [EReal.mul_top_of_pos (by positivity), EReal.mul_top_of_pos (by positivity)]
+    by_cases hb_zero : b = 0
+    · simp [hb_zero]
+    rw [EReal.mul_top_of_pos (by positivity)]
+    simp
+
+lemma todo (a b : ℝ≥0∞) (u : EReal) : (a + b) * u = a * u + b * u := by
+  by_cases ha : a = 0
+  · simp [ha]
+  by_cases hb : b = 0
+  · simp [hb]
+  have ha_pos : 0 < a := by positivity
+  have hb_pos : 0 < b := by positivity
+  by_cases ha_top : a = ∞
+  · simp only [ha_top, EReal.coe_ennreal_top, ne_eq, EReal.coe_ennreal_ne_bot, not_false_eq_true,
+      EReal.top_add_of_ne_bot]
+    rcases lt_trichotomy u 0 with (hu_neg | rfl | hu_pos)
+    · rw [EReal.top_mul_of_neg (by simpa)]; simp
+    · simp
+    · rw [EReal.top_mul_of_pos (by simpa), EReal.top_add_of_ne_bot]
+      simp only [ne_eq, EReal.mul_eq_bot, EReal.coe_ennreal_ne_bot, false_and,
+        EReal.coe_ennreal_pos, hb_pos, true_and, EReal.coe_ennreal_eq_top_iff, false_or, not_or,
+        not_and, not_lt, hu_pos.le, implies_true]
+      refine ⟨fun h ↦ by simp [h] at hu_pos, fun h ↦ ?_⟩
+      norm_cast at h
+      exact absurd hb_pos.le (not_le.mpr h)
+  by_cases hb_top : b = ∞
+  · simp only [hb_top, EReal.coe_ennreal_top, ne_eq, EReal.coe_ennreal_ne_bot, not_false_eq_true,
+      EReal.add_top_of_ne_bot]
+    rcases lt_trichotomy u 0 with (hu_neg | rfl | hu_pos)
+    · rw [EReal.top_mul_of_neg (by simpa)]; simp
+    · simp
+    · rw [EReal.top_mul_of_pos (by simpa), EReal.add_top_of_ne_bot]
+      simp only [ne_eq, EReal.mul_eq_bot, EReal.coe_ennreal_ne_bot, false_and,
+        EReal.coe_ennreal_pos, ha_pos, true_and, EReal.coe_ennreal_eq_top_iff, false_or, not_or,
+        not_and, not_lt, hu_pos.le, implies_true]
+      refine ⟨fun h ↦ by simp [h] at hu_pos, fun h ↦ ?_⟩
+      norm_cast at h
+      exact absurd ha_pos.le (not_le.mpr h)
+  have ha_real : (a : EReal) = a.toReal := by rw [EReal.coe_ennreal_toReal ha_top]
+  have hb_real : (b : EReal) = b.toReal := by rw [EReal.coe_ennreal_toReal hb_top]
+  rw [ha_real, hb_real, todo' (by simp) (by simp)]
+
+lemma convex_eintegral_utility_ge [IsFiniteMeasure P] (u : EReal)
+    (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
+    (hU_meas : Measurable U) {B : EReal} (hU_le : ∀ x : ℝ≥0∞, U x ≤ B) (hB : B ≠ ⊤) :
+    Convex ℝ≥0∞ {Z | Measurable Z ∧ u ≤ ∫ᵉ ω, U (Z ω) ∂P} := by
+  intro Y ⟨hY_meas, hY⟩ Z ⟨hZ_meas, hZ⟩ a b ha hb hab
+  refine ⟨by fun_prop, ?_⟩
+  simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] at hY hZ ⊢
+  have ha_ne_top : a ≠ ∞ := fun ha_top ↦ by simp [ha_top] at hab
+  have hb_ne_top : b ≠ ∞ := fun hb_top ↦ by simp [hb_top] at hab
+  have h_int (Y : 𝓧 → ℝ≥0∞) : eintegrable (fun ω ↦ U (Y ω)) P :=
+    eintegrable_of_le (fun _ ↦ hU_le _) (by simpa) P
+  calc u
+  _ = a * u + b * u := by
+    conv_lhs => rw [← one_mul u]
+    have : (1 : EReal) = (1 : ℝ≥0∞) := rfl
+    rw [this, ← hab]
+    simp only [EReal.coe_ennreal_add]
+    exact todo _ _ _
+  _ ≤ a * ∫ᵉ ω, U (Y ω) ∂P + b * ∫ᵉ ω, U (Z ω) ∂P := by gcongr
+  _ = ∫ᵉ ω, a • U (Y ω) + b • U (Z ω) ∂P := by
+    rw [← eintegral_mul_const (by simp) (by simpa),
+      ← eintegral_mul_const (by simp) (by simpa)]
+    rotate_left
+    · exact h_int _
+    · exact h_int _
+    rw [eintegral_add]
+    · simp
+    · simp only [EReal.smul_ennreal_eq_mul]; fun_prop
+    · simp only [EReal.smul_ennreal_eq_mul]; fun_prop
+    · simp only [EReal.smul_ennreal_eq_mul]
+      exact eintegrable.const_mul (h_int _) (by simp) (by simpa)
+    · simp only [EReal.smul_ennreal_eq_mul]
+      exact eintegrable.const_mul (h_int _) (by simp) (by simpa)
+    · right
+      refine (eintegral_lt_top_of_le (b := b • B) (fun ω ↦ ?_) ?_ P).ne
+      · simp only [EReal.smul_ennreal_eq_mul]
+        gcongr
+        exact hU_le _
+      · simp [EReal.mul_eq_top, hb_ne_top, hB, not_lt.mpr (EReal.coe_ennreal_nonneg b)]
+    · left
+      refine (eintegral_lt_top_of_le (b := a • B) (fun ω ↦ ?_) ?_ P).ne
+      · simp only [EReal.smul_ennreal_eq_mul]
+        gcongr
+        exact hU_le _
+      · simp [EReal.mul_eq_top, ha_ne_top, not_lt.mpr (EReal.coe_ennreal_nonneg a), hB]
+  _ ≤ ∫ᵉ ω, U (a * Y ω + b * Z ω) ∂P := by
+    gcongr
+    intro ω
+    lift a to ℝ≥0 using ha_ne_top
+    lift b to ℝ≥0 using hb_ne_top
+    norm_cast at ha hb hab
+    exact hU_ccv.2 (by simp : Y ω ∈ Set.univ) (by simp) ha hb hab
+
 /-- **Existence of Utility-Maximizing E-Variable (Preliminary Version)**:
 For a concave, continuous, and bounded utility function `U`, there exists an e-variable
 `Y` that maximizes the expected utility `𝔼[U(Y)]` among all e-variables. -/
 lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
-    {b : ℝ} (hU_cont : Continuous U) (hU_mono : Monotone U) (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    {B : ℝ} (hU_cont : Continuous U) (hU_le : ∀ x : ℝ≥0∞, U x ≤ B)
+    (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S → ∫ᵉ x, U (X x) ∂P ≤ ∫ᵉ x, U (Y x) ∂P := by
   let S' := {y | ∃ X, IsEVar X S ∧ y = ∫ᵉ x, U (X x) ∂P}
   have hS' : S'.Nonempty := ⟨∫ᵉ x, U 1 ∂P, ⟨1, isEVar_one _, rfl⟩⟩
@@ -79,13 +214,7 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
   let Yliminf := fun x ↦ liminf (fun n ↦ Y n x) atTop
   have hYliminf_meas : Measurable Yliminf := Measurable.liminf fun n ↦ (hY_evar n).measurable
   refine ⟨Yliminf, ?_, ?_⟩
-  · -- todo: extract lemma IsEVar.liminf
-    refine IsEVar.of_lintegral_le_measure_univ hS hYliminf_meas fun μ hμ ↦ ?_
-    calc ∫⁻ ω, Yliminf ω ∂μ
-    _ ≤ liminf (fun n ↦ ∫⁻ ω, Y n ω ∂μ) atTop := lintegral_liminf_le fun n ↦ (hY_evar n).measurable
-    _ ≤ μ .univ := by
-      refine liminf_le_of_frequently_le ?_
-      exact .of_forall fun n ↦ (hY_evar n).lintegral_le_measure_univ μ hμ
+  · exact isEVar_liminf hY_evar hS
   · suffices ⨆ n, ∫ᵉ x, U (X n x) ∂P ≤ ∫ᵉ x, U (Ylim x) ∂P by
       intro Z hZ_evar
       refine le_trans ?_ (this.trans_eq ?_)
@@ -99,14 +228,64 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
         rwa [Tendsto.liminf_eq]
     calc ⨆ n, ∫ᵉ x, U (X n x) ∂P
     _ = limsup (fun n ↦ ∫ᵉ x, U (X n x) ∂P) atTop := by
-      sorry
+      simp_rw [← hu_eq]
+      rw [Tendsto.limsup_eq hu_tendsto, iSup_eq_of_tendsto hu_mono hu_tendsto]
     _ ≤ limsup (fun n ↦ ∫ᵉ x, U (Y n x) ∂P) atTop := by
       refine limsup_le_limsup (.of_forall fun n ↦ ?_)
       simp only
-      sorry  -- concavity of U, Jensen
+      specialize hY_mem n
+      simp only [mem_convexHull_iff] at hY_mem
+      refine (hY_mem {Z | Measurable Z ∧ ∫ᵉ ω, U (X n ω) ∂P ≤ ∫ᵉ ω, U (Z ω) ∂P} ?_ ?_).2
+      · rintro _ ⟨m, rfl⟩
+        simp only [Set.mem_setOf_eq]
+        simp_rw [← hu_eq]
+        exact ⟨(hX_evar _).measurable, hu_mono (by grind)⟩
+      · exact convex_eintegral_utility_ge _ hU_ccv hU_cont.measurable hU_le (by simp)
     _ ≤ ∫ᵉ x, limsup (fun n ↦ U (Y n x)) atTop ∂P := by
-      -- eintegral version of Fatou's lemma `limsup_lintegral_le`
-      sorry
+      refine limsup_eintegral_le (g := fun _ ↦ .ofReal B) ?_ ?_ ?_ ?_
+      · intro n
+        have := (hY_evar n).measurable
+        fun_prop
+      · intro n
+        refine ae_of_all _ fun x ↦ ?_
+        simp only [Function.comp_apply]
+        have : ENNReal.ofReal B = B.toEReal.toENNReal := by simp
+        rw [this]
+        exact EReal.toENNReal_le_toENNReal <| hU_le (Y n x)
+      · simp only [lintegral_const]
+        refine ENNReal.mul_ne_top (by simp) (by simp)
+      · left
+        rw [EReal.ne_top_exists_finite_iff]
+        by_cases hB : B < 0
+        · refine ⟨0, by simp, ?_⟩
+          rw [Filter.limsup_le_iff']
+          intro y hy
+          refine .of_forall fun n ↦ LT.lt.le <| lt_of_le_of_lt (Eq.le ?_) hy
+          suffices ∀ x, (U (Y n x)).toENNReal = 0 by
+            simp_rw [this]
+            simp
+          intro x
+          replace hB : B.toEReal < 0 := by simp [hB]
+          replace hU_le := (lt_of_le_of_lt (hU_le (Y n x)) hB).le
+          simp [hU_le]
+        · refine ⟨B * P .univ, ?_, ?_⟩
+          · exact (EReal.mul_ne_top _ _).mpr (by simp)
+          · rw [Filter.limsup_le_iff']
+            intro y hy
+            refine .of_forall fun n ↦ LT.lt.le <| lt_of_le_of_lt ?_ hy
+            have : B.toEReal = (ENNReal.ofReal B).toEReal := by
+              push_neg at hB
+              simp only [EReal.coe_ennreal_ofReal, hB, sup_of_le_left]
+            rw [this]
+            norm_cast
+            suffices ∀ x, (U (Y n x)).toENNReal ≤ ENNReal.ofReal B by
+              calc
+              _ ≤ ∫⁻ x, ENNReal.ofReal B ∂P := lintegral_mono this
+              _ = ENNReal.ofReal B * P .univ := by simp [lintegral_const]
+            intro x
+            have : ENNReal.ofReal B = B.toEReal.toENNReal := by simp
+            rw [this]
+            exact EReal.toENNReal_le_toENNReal (hU_le (Y n x))
     _ = ∫ᵉ x, U (Ylim x) ∂P := by
       refine eintegral_congr_ae ?_
       filter_upwards [hY_tendsto] with x hx
@@ -119,10 +298,10 @@ For a concave, continuous, monotone, and bounded utility function `U`, there exi
 infinite at a point only if some other e-variable is also infinite at that point. -/
 lemma exists_eq_iSup_eintegral_of_le (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
     {b : ℝ} (hU_cont : Continuous U) (hU_mono : Monotone U) (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S →
       (∫ᵉ x, U (X x) ∂P ≤ ∫ᵉ x, U (Y x) ∂P) ∧ (∀ᵐ x ∂P, Y x < ∞ → X x < ∞) := by
-  obtain ⟨Y, hY_evar, h_opt⟩ := exists_eq_iSup_eintegral_of_le' hU_ccv hU_cont hU_mono hU_le P S hS
+  obtain ⟨Y, hY_evar, h_opt⟩ := exists_eq_iSup_eintegral_of_le' hU_ccv hU_cont hU_le P S hS
   classical
   let Y' := fun x ↦ if x ∈ acSet P S then ∞ else Y x
   have hY' : Measurable Y' :=
@@ -157,26 +336,26 @@ end
 /-- The numeraire associated with a bounded utility function. -/
 noncomputable
 def numeraireOfBounded (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     𝓧 → ℝ≥0∞ :=
   (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS).choose
 
 /-- The numeraire associated with a bounded utility function is indeed an e-variable. -/
 lemma isEVar_numeraireOfBounded (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     IsEVar (numeraireOfBounded U hU_le P S hS) S :=
   (Classical.choose_spec
     (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS)).1
 
 lemma eintegral_le_numeraireOfBounded (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+    (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
     ∫ᵉ x, U (X x) ∂P ≤ ∫ᵉ x, U (numeraireOfBounded U hU_le P S hS x) ∂P :=
   ((Classical.choose_spec
     (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS)).2 X hX_evar).1
 
 lemma lt_top_of_numeraireOfBounded_lt_top (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+    (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
     ∀ᵐ x ∂P, (numeraireOfBounded U hU_le P S hS x) < ∞ → X x < ∞ :=
   ((Classical.choose_spec
@@ -186,7 +365,7 @@ lemma lt_top_of_numeraireOfBounded_lt_top (U : Utility) {b : ℝ} (hU_le : ∀ x
 The numeraire associated with a bounded utility function satisfies a first-order optimality
 condition. -/
 lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [SFinite P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+    (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {Y : 𝓧 → ℝ≥0∞} (hY : IsEVar Y S) :
     ∫ᵉ x, U.deriv (numeraireOfBounded U hU_le P S hS x)
       * (Y x - numeraireOfBounded U hU_le P S hS x) ∂P ≤ 0 := by
