@@ -5,7 +5,8 @@ Authors: Rémy Degenne, Gaëtan Serré
 -/
 import EValues.LebesgueDecomposition
 import EValues.Numeraire
-import Mathlib
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Topology.Metrizable.Urysohn
 
 /-!
 # Existence of the Numeraire
