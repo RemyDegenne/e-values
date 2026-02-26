@@ -5,8 +5,7 @@ Authors: Rémy Degenne, Gaëtan Serré
 -/
 import EValues.LebesgueDecomposition
 import EValues.Numeraire
-import Mathlib.MeasureTheory.Measure.WithDensityFinite
-import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
+import Mathlib
 
 /-!
 # Existence of the Numeraire
@@ -14,7 +13,7 @@ import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
 -/
 
 open MeasureTheory Filter
-open scoped ENNReal NNReal Topology
+open scoped ENNReal NNReal Topology unitInterval
 
 namespace ProbabilityTheory
 
@@ -334,13 +333,60 @@ lemma lt_top_of_numeraireOfBounded_lt_top (U : Utility) {b : ℝ} (hU_le : ∀ x
   ((Classical.choose_spec
     (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS)).2 X hX_evar).2
 
+
 -- first order optimality condition for bounded utility functions
+noncomputable instance inst_smul_I_ENNReal : SMul I ℝ≥0∞ where
+  smul a x := ENNReal.ofReal a * x
+
+instance : MeasurableConstSMul I ℝ≥0∞ where
+  measurable_const_smul c := by
+    change Measurable (fun x ↦ ENNReal.ofReal c * x)
+    fun_prop
+
 lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
     (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {Y : 𝓧 → ℝ≥0∞} (hY : IsEVar Y S) :
     ∫ᵉ x, U.deriv (numeraireOfBounded U hU_le P S hS x)
       * (Y x - numeraireOfBounded U hU_le P S hS x) ∂P ≤ 0 := by
   -- Lemma 2.9 of _Larsson et al._ (2025)?
+  set X := numeraireOfBounded U hU_le P S hS
+  -- Remove aesop
+  let Z := fun (t : I) ↦ t • Y + (⟨1 - t, by aesop⟩ : I) • X
+
+  have hZ (t : I) : IsEVar (Z t) S := by
+    refine ⟨?_, ?_, ?_⟩
+    · simp only [Z]
+      have := hY.measurable
+      have : Measurable X := by sorry
+      fun_prop
+    · sorry
+    · sorry
+
+  have (t : I) (ht : 0 < t) : ∫ᵉ x, (t : EReal)⁻¹ * (U (Z t x) - U (Z 0 x)) ∂P ≤ 0 := by
+    suffices ∫ᵉ x, (U (Z t x) - U (Z 0 x)) ∂P ≤ 0 by
+      have : (t : EReal)⁻¹ ≠ ⊥ ∧ (t : EReal)⁻¹ ≠ ⊤ := by
+        sorry
+      rw [eintegral_mul_const this.1 this.2, ← mul_zero (t : EReal)⁻¹]
+      · gcongr
+        refine EReal.inv_nonneg_of_nonneg ?_
+        simp [t.2.1]
+      · sorry
+    rw [eintegral_sub]
+    · rw [EReal.sub_nonpos]
+      have (x : 𝓧) : Z 0 x = X x := by
+        simp only [Pi.add_apply, Pi.smul_apply, Set.Icc.coe_zero, sub_zero, Set.Icc.mk_one, Z]
+        change ENNReal.ofReal (0 : I) * Y x + ENNReal.ofReal (1 : I) * X x = X x
+        simp
+      simp_rw [this]
+      exact eintegral_le_numeraireOfBounded U hU_le P S hS (hZ t)
+    · sorry
+    · have := (hZ t).measurable
+      fun_prop
+    · sorry
+    · have := (hZ 0).measurable
+      fun_prop
+    · sorry
+    · sorry
   sorry
 
 -- first order optimality condition for log utility
