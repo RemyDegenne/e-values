@@ -354,14 +354,16 @@ lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞
   -- Remove aesop
   let Z := fun (t : I) ↦ t • Y + (⟨1 - t, by aesop⟩ : I) • X
 
+  -- Extract a lemma?
   have hZ (t : I) : IsEVar (Z t) S := by
-    refine ⟨?_, ?_, ?_⟩
-    · simp only [Z]
-      have := hY.measurable
-      have : Measurable X := by sorry
-      fun_prop
-    · sorry
-    · sorry
+    change (Z t) ∈ {Z | IsEVar Z S}
+    refine convex_isEVar S hY (isEVar_numeraireOfBounded U hU_le P S hS) ?_ ?_ ?_
+    · positivity
+    · positivity
+    · rw [← ENNReal.ofReal_add]
+      · simp
+      · unit_interval
+      · unit_interval
 
   have (t : I) (ht : 0 < t) : ∫ᵉ x, (t : EReal)⁻¹ * (U (Z t x) - U (Z 0 x)) ∂P ≤ 0 := by
     suffices ∫ᵉ x, (U (Z t x) - U (Z 0 x)) ∂P ≤ 0 by
