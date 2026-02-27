@@ -309,28 +309,28 @@ end
 
 /-- The numeraire associated with a bounded utility function. -/
 noncomputable
-def numeraireOfBounded (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+def numeraireOfBounded {U : Utility} {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
+    (P : Measure 𝓧) [IsFiniteMeasure P] {S : Set (Measure 𝓧)} (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     𝓧 → ℝ≥0∞ :=
   (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS).choose
 
-lemma isEVar_numeraireOfBounded (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
-    IsEVar (numeraireOfBounded U hU_le P S hS) S :=
+lemma isEVar_numeraireOfBounded {U : Utility} {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
+    (P : Measure 𝓧) [IsFiniteMeasure P] {S : Set (Measure 𝓧)} (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    IsEVar (numeraireOfBounded hU_le P hS) S :=
   (Classical.choose_spec
     (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS)).1
 
-lemma eintegral_le_numeraireOfBounded (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+lemma eintegral_le_numeraireOfBounded {U : Utility} {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
+    (P : Measure 𝓧) [IsFiniteMeasure P] {S : Set (Measure 𝓧)} (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
-    ∫ᵉ x, U (X x) ∂P ≤ ∫ᵉ x, U (numeraireOfBounded U hU_le P S hS x) ∂P :=
+    ∫ᵉ x, U (X x) ∂P ≤ ∫ᵉ x, U (numeraireOfBounded hU_le P hS x) ∂P :=
   ((Classical.choose_spec
     (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS)).2 X hX_evar).1
 
-lemma lt_top_of_numeraireOfBounded_lt_top (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
-    (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
+lemma lt_top_of_numeraireOfBounded_lt_top {U : Utility} {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
+    (P : Measure 𝓧) [IsFiniteMeasure P] {S : Set (Measure 𝓧)} (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
-    ∀ᵐ x ∂P, (numeraireOfBounded U hU_le P S hS x) < ∞ → X x < ∞ :=
+    ∀ᵐ x ∂P, (numeraireOfBounded hU_le P hS x) < ∞ → X x < ∞ :=
   ((Classical.choose_spec
     (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS)).2 X hX_evar).2
 
@@ -347,17 +347,17 @@ instance : MeasurableConstSMul I ℝ≥0∞ where
 lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
     (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {Y : 𝓧 → ℝ≥0∞} (hY : IsEVar Y S) :
-    ∫ᵉ x, U.deriv (numeraireOfBounded U hU_le P S hS x)
-      * (Y x - numeraireOfBounded U hU_le P S hS x) ∂P ≤ 0 := by
+    ∫ᵉ x, U.deriv (numeraireOfBounded hU_le P hS x)
+      * (Y x - numeraireOfBounded hU_le P hS x) ∂P ≤ 0 := by
   -- Lemma 2.9 of _Larsson et al._ (2025)?
-  set X := numeraireOfBounded U hU_le P S hS
+  set X := numeraireOfBounded hU_le P hS
   -- Remove aesop
   let Z := fun (t : I) ↦ t • Y + (⟨1 - t, by aesop⟩ : I) • X
 
   -- Extract a lemma?
   have hZ (t : I) : IsEVar (Z t) S := by
     change (Z t) ∈ {Z | IsEVar Z S}
-    refine convex_isEVar S hY (isEVar_numeraireOfBounded U hU_le P S hS) ?_ ?_ ?_
+    refine convex_isEVar S hY (isEVar_numeraireOfBounded hU_le P hS) ?_ ?_ ?_
     · positivity
     · positivity
     · rw [← ENNReal.ofReal_add]
@@ -381,7 +381,7 @@ lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞
         change ENNReal.ofReal (0 : I) * Y x + ENNReal.ofReal (1 : I) * X x = X x
         simp
       simp_rw [this]
-      exact eintegral_le_numeraireOfBounded U hU_le P S hS (hZ t)
+      exact eintegral_le_numeraireOfBounded hU_le P hS (hZ t)
     · sorry
     · have := (hZ t).measurable
       fun_prop
@@ -394,7 +394,7 @@ lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞
 
 -- first order optimality condition for log utility
 lemma eintegral_deriv_log_mul_le (P : Measure 𝓧) [IsFiniteMeasure P]
-    (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    {S : Set (Measure 𝓧)} (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S →
       ∫ᵉ x, logUtility.deriv (Y x) * (X x - Y x) ∂P ≤ 0 := by
   sorry
@@ -403,7 +403,7 @@ lemma exists_numeraire' (P : Measure 𝓧) [IsFiniteMeasure P]
     (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     ∃ Y : 𝓧 → ℝ≥0∞, IsEVar Y S ∧ ∀ X, IsEVar X S →
       ∫ᵉ x, (X x / Y x : ℝ≥0∞) - (Y x / Y x : ℝ≥0∞) ∂P ≤ 0 := by
-  obtain ⟨Y, hY_evar, h_opt⟩ := eintegral_deriv_log_mul_le P S hS
+  obtain ⟨Y, hY_evar, h_opt⟩ := eintegral_deriv_log_mul_le P hS
   refine ⟨Y, hY_evar, fun X hX_evar ↦ ?_⟩
   specialize h_opt X hX_evar
   simp_rw [deriv_logUtility_eq_ennreal] at h_opt
