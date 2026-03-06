@@ -382,14 +382,27 @@ lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞
         simp
       simp_rw [this]
       exact eintegral_le_numeraireOfBounded hU_le P hS (hZ t)
-    · sorry
+    · refine eintegrable_of_le (b := b) (fun x ↦ ?_) (by simp) P
+      exact hU_le (Z t x)
     · have := (hZ t).measurable
       fun_prop
-    · sorry
+    · refine eintegrable_of_le (b := b) (fun x ↦ ?_) (by simp) P
+      exact hU_le (Z 0 x)
     · have := (hZ 0).measurable
       fun_prop
-    · sorry
-    · sorry
+    · refine .inl (ne_of_lt ?_)
+      calc
+      _ ≤ ∫ᵉ x, b.toEReal ∂P := by
+        gcongr
+        intro x
+        exact hU_le (Z t x)
+      _ < ⊤ := by
+        refine Ne.lt_top ?_
+        rw [eintegral_const, EReal.mul_ne_top]
+        simp
+    · right
+
+      sorry
   sorry
 
 -- first order optimality condition for log utility
