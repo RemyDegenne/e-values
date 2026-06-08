@@ -415,4 +415,15 @@ lemma IsEVar.neBotUtilityEVar_iff (hX : IsEVar X S) {P : Measure 𝓧} {U : Util
     NeBotUtilityEVar X P S U ↔ ∫ᵉ x, (U ∘ X) x ∂P ≠ ⊥ :=
   ⟨fun h ↦ h.utility_ne_bot, fun h_eintegrable ↦ ⟨hX, h_eintegrable⟩⟩
 
+open Filter in
+lemma isEVar_liminf {X : ℕ → 𝓧 → ℝ≥0∞} (hX : ∀ n, (IsEVar (X n) S))
+    (hS : ∀ μ ∈ S, IsFiniteMeasure μ) : IsEVar (fun ω ↦ liminf (fun n ↦ X n ω) atTop) S := by
+  refine IsEVar.of_lintegral_le_measure_univ hS ?_ fun μ hμ ↦ ?_
+  · exact Measurable.liminf fun n ↦ (hX n).measurable
+  · calc ∫⁻ ω, (fun ω ↦ liminf (fun n ↦ X n ω) atTop) ω ∂μ
+    _ ≤ liminf (fun n ↦ ∫⁻ ω, X n ω ∂μ) atTop := lintegral_liminf_le fun n ↦ (hX n).measurable
+    _ ≤ μ .univ := by
+      refine liminf_le_of_frequently_le ?_
+      exact .of_forall fun n ↦ (hX n).lintegral_le_measure_univ μ hμ
+
 end ProbabilityTheory

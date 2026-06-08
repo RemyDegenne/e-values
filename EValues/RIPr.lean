@@ -9,6 +9,8 @@ module
 public import EValues.DPI
 public import EValues.NumeraireExistence
 public import Mathlib.InformationTheory.KullbackLeibler.Basic
+public import Mathlib.Probability.Notation
+public import Mathlib.InformationTheory.KullbackLeibler.KLFun
 
 /-!
 # Reverse Information Projection and duality

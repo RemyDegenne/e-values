@@ -1,3 +1,4 @@
 [["defsWithUnderscore", "instSMulENNRealEReal_eValues"],
  ["defsWithUnderscore", "instSMulNNRealEReal_eValues"],
- ["defsWithUnderscore", "MeasureTheory.instENormEReal_eValues"]]
+ ["defsWithUnderscore", "MeasureTheory.instENormEReal_eValues"],
+ ["defsWithUnderscore", "ProbabilityTheory.inst_smul_I_ENNReal"]]
