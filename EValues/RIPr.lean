@@ -3,9 +3,14 @@ Copyright (c) 2026 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-import EValues.DPI
-import Mathlib.Probability.Notation
-import Mathlib.InformationTheory.KullbackLeibler.KLFun
+
+module
+
+public import EValues.DPI
+public import EValues.NumeraireExistence
+public import Mathlib.InformationTheory.KullbackLeibler.Basic
+public import Mathlib.Probability.Notation
+public import Mathlib.InformationTheory.KullbackLeibler.KLFun
 
 /-!
 # Reverse Information Projection and duality
@@ -30,6 +35,8 @@ import Mathlib.InformationTheory.KullbackLeibler.KLFun
   duality between maximal logarithmic utility and minimal Kullback-Leibler divergence.
 
 -/
+
+@[expose] public section
 
 open scoped ENNReal NNReal ProbabilityTheory
 

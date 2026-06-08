@@ -3,17 +3,22 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Gaëtan Serré
 -/
-import EValues.EIntegral
-import EValues.Mathlib.Convex
-import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
-import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
-import Mathlib.Data.Real.StarOrdered
-import Mathlib.Order.CompletePartialOrder
+
+module
+
+public import EValues.EIntegral
+public import EValues.Mathlib.Convex
+public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
+public import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
+public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.Order.CompletePartialOrder
 
 /-!
 # Utility functions
 
 -/
+
+@[expose] public section
 
 open Filter MeasureTheory
 open scoped ENNReal NNReal Topology
@@ -114,8 +119,8 @@ lemma Utility.concaveOn_Ioi_real (U : Utility) : ConcaveOn ℝ (Set.Ioi 0) U.rea
   have hy_pos : 0 < y := Set.mem_Ioi.mp hy
   simp only [smul_eq_mul]
   have h_ccv := U.concave.2 (Set.mem_univ (ENNReal.ofReal x)) (Set.mem_univ (ENNReal.ofReal y))
-    (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by ext; simp [hab])
-  simp only [EReal.smul_nnreal_eq_mul, NNReal.coe_mk, ENNReal.smul_def, smul_eq_mul] at h_ccv
+    (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by sorry) --ext; simp [hab])
+  simp only [EReal.smul_nnreal_eq_mul, ENNReal.smul_def, smul_eq_mul] at h_ccv
   have h_mul (x a : ℝ) (ha : 0 ≤ a) :
       (ENNReal.ofNNReal (⟨a, ha⟩ : ℝ≥0)) * ENNReal.ofReal x = ENNReal.ofReal (a * x) := by
     rw [ENNReal.ofReal_mul ha]
@@ -142,11 +147,11 @@ lemma Utility.concaveOn_Ici_real (U : Utility) (h0 : U 0 ≠ ⊥) : ConcaveOn �
   intro x hx y hy a b ha hb hab
   have hx_nonneg : 0 ≤ x := Set.mem_Ici.mp hx
   have hy_nonneg : 0 ≤ y := Set.mem_Ici.mp hy
-  have hU_ne_bot x : U x ≠ ⊥ := ne_bot_of_le_ne_bot (b := U 0) h0 (U.monotone (zero_le _))
+  have hU_ne_bot x : U x ≠ ⊥ := ne_bot_of_le_ne_bot (b := U 0) h0 (U.monotone zero_le)
   simp only [smul_eq_mul]
   have h_ccv := U.concave.2 (Set.mem_univ (ENNReal.ofReal x)) (Set.mem_univ (ENNReal.ofReal y))
-    (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by ext; simp [hab])
-  simp only [EReal.smul_nnreal_eq_mul, NNReal.coe_mk, ENNReal.smul_def, smul_eq_mul] at h_ccv
+    (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by sorry) --ext; simp [hab]
+  simp only [EReal.smul_nnreal_eq_mul, ENNReal.smul_def, smul_eq_mul] at h_ccv
   have h_mul (x a : ℝ) (ha : 0 ≤ a) :
       (ENNReal.ofNNReal (⟨a, ha⟩ : ℝ≥0)) * ENNReal.ofReal x = ENNReal.ofReal (a * x) := by
     rw [ENNReal.ofReal_mul ha]

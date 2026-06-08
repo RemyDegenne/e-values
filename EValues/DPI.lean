@@ -3,11 +3,19 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Gaëtan Serré
 -/
-import EValues.EValue
-import EValues.Utility
-import EValues.Mathlib.iSup
-import EValues.Mathlib.unitInterval
-import EValues.NumeraireExistence
+
+module
+
+public import EValues.EValue
+public import EValues.Utility
+public import EValues.Mathlib.iSup
+public import EValues.Mathlib.unitInterval
+public import EValues.NumeraireExistence
+
+/-! # Data processing inequality for the maximum utility and maximum randomized utility
+-/
+
+@[expose] public section
 
 open scoped ENNReal NNReal ProbabilityTheory
 

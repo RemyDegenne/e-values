@@ -3,14 +3,19 @@ Copyright (c) 2026 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
-import Mathlib.MeasureTheory.Measure.WithDensityFinite
+
+module
+
+public import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
+public import Mathlib.MeasureTheory.Measure.WithDensityFinite
 
 
 /-!
 # Lemma A1: Lebesgue decomposition with respect to a set of measures
 
 -/
+
+@[expose] public section
 
 open Filter
 open scoped ENNReal Topology
@@ -76,9 +81,9 @@ lemma exists_auxMaxNullSet_measure_ge (ν : Measure α) [IsFiniteMeasure ν]
     simp only [ht_meas, ht_mem, iSup_true] at ht
     exact ht.le
   · refine ⟨∅, MeasurableSet.empty, by simp, ?_⟩
-    push_neg at hC_lt
+    push Not at hC_lt
     rw [tsub_eq_zero_of_le hC_lt]
-    exact zero_le _
+    exact zero_le
 
 /-- A null set for `S` with close to maximal measure with respect to `ν`. -/
 def _root_.MeasureTheory.Measure.auxMaxNullSet (ν : Measure α) [IsFiniteMeasure ν]
@@ -166,7 +171,7 @@ lemma A1_of_isFiniteMeasure (Q : Measure 𝓧) [IsFiniteMeasure Q] (S : Set (Mea
     _ < Q.restrict N N + Q.restrict Nᶜ s := by
       conv_lhs => rw [← add_zero (Q N)]
       refine ENNReal.add_lt_add_of_le_of_lt (by simp) (le_of_eq (by simp)) ?_
-      exact lt_of_le_of_ne' (zero_le _) h_pos
+      exact lt_of_le_of_ne' zero_le h_pos
     _ ≤ Q.restrict N (N ∪ s) + Q.restrict Nᶜ (N ∪ s) := by gcongr <;> simp
     _ = Q (N ∪ s) := by rw [← Measure.add_apply, Measure.restrict_add_restrict_compl hN]
   · simp [N, Measure.restrict_apply hN.compl]
@@ -236,7 +241,7 @@ lemma acSetPart_add_singularSetPart (Q : Measure 𝓧) [SFinite Q] (S : Set (Mea
 lemma measure_acSet_diff {Q : Measure 𝓧} [SFinite Q] {S : Set (Measure 𝓧)}
     {s : Set 𝓧} (hs : nullSet s S) :
     Q (s \ acSet Q S) = 0 := by
-  refine le_antisymm ?_ (zero_le _)
+  refine le_antisymm ?_ zero_le
   calc Q (s \ acSet Q S)
   _ = Q.acSetPart S (s \ acSet Q S) + Q.singularSetPart S (s \ acSet Q S) := by
     rw [← Measure.add_apply, acSetPart_add_singularSetPart Q S]

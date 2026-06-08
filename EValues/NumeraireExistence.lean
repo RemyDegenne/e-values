@@ -3,15 +3,21 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Gaëtan Serré
 -/
-import EValues.LebesgueDecomposition
-import EValues.Numeraire
-import Mathlib.Algebra.Order.Ring.Star
-import Mathlib.Topology.Metrizable.Urysohn
+module
+
+public import EValues.LebesgueDecomposition
+public import EValues.Numeraire
+public import Mathlib.MeasureTheory.Measure.WithDensityFinite
+public import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
+public import Mathlib.Algebra.Order.Ring.Star
+public import Mathlib.Topology.Metrizable.Urysohn
 
 /-!
 # Existence of the Numeraire
 
 -/
+
+@[expose] public section
 
 open MeasureTheory Filter
 open scoped ENNReal NNReal Topology unitInterval
@@ -250,7 +256,7 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
             intro y hy
             refine .of_forall fun n ↦ LT.lt.le <| lt_of_le_of_lt ?_ hy
             have : B.toEReal = (ENNReal.ofReal B).toEReal := by
-              push_neg at hB
+              push Not at hB
               simp only [EReal.coe_ennreal_ofReal, hB, sup_of_le_left]
             rw [this]
             norm_cast
@@ -430,7 +436,7 @@ lemma exists_numeraire' (P : Measure 𝓧) [IsFiniteMeasure P]
       rw [ENNReal.div_zero hX, EReal.top_mul_of_pos]
       · simp
       · simp only [EReal.coe_ennreal_pos]
-        exact lt_of_le_of_ne' (zero_le _) hX
+        exact lt_of_le_of_ne' zero_le hX
     rw [EReal.mul_sub_of_nonneg_of_ne_top]
     rotate_left
     · positivity
