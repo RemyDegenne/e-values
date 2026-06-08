@@ -55,7 +55,7 @@ lemma erenyiDiv_empty_left {T : Set (Measure 𝓧)} (hα : α ≠ 0) : erenyiDiv
         y = α * (⊤ * R Set.univ) + (1 - α) * (maxUtility R T logUtility).toENNReal} = ∅ by
       rw [this, sInf_empty]
     simp_all
-  · push_neg at hR_prob
+  · push Not at hR_prob
     suffices {y | ∃ R, IsProbabilityMeasure R ∧
         y = α * (⊤ * R Set.univ) + (1 - α) * (maxUtility R T logUtility).toENNReal} = {⊤} by
       rw [this]
@@ -85,7 +85,7 @@ lemma erenyiDiv_empty_right {S : Set (Measure 𝓧)} (hα : α < 1) : erenyiDiv 
         y = α * (maxUtility R S logUtility).toENNReal + (1 - α) * (⊤ * R Set.univ)} = ∅ by
       rw [this, sInf_empty]
     simp_all
-  · push_neg at hR_prob
+  · push Not at hR_prob
     suffices {y | ∃ R, IsProbabilityMeasure R ∧
         y = α * (maxUtility R S logUtility).toENNReal + (1 - α) * (⊤ * R Set.univ)} = {⊤} by
       rw [this]

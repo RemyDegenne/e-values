@@ -376,7 +376,7 @@ lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : A
         · exact .inl <| .inl ⟨hx, hfx⟩
         by_cases hgx : g x ≤ 0
         · exact .inl <| .inr ⟨hx, hgx⟩
-        push_neg at hfx hgx
+        push Not at hfx hgx
         exact .inr ⟨hx, hfx, hgx⟩
       · intro hx
         simp only [Set.mem_union] at hx
@@ -621,6 +621,12 @@ lemma lintegral_enorm_ereal_toReal (hf_ne_bot : ∀ᵐ x ∂μ, f x ≠ ⊥) (hf
     EReal.coe_ne_top, EReal.zero_ne_top, or_self, not_false_eq_true, EReal.toENNReal_of_ne_top,
     EReal.neg_eq_top_iff, min_eq_bot, EReal.coe_ne_bot, EReal.zero_ne_bot]
   rcases le_total 0 r with h | h <;> simp [ENNReal.ofReal, Real.toNNReal, h]
+  · congr
+    simp
+    rfl
+  · congr
+    simp
+    rfl
 
 lemma integrable_toReal (hf_meas : AEMeasurable f μ) (h_int_bot : ∫ᵉ x, f x ∂μ ≠ ⊥)
     (h_int_top : ∫ᵉ x, f x ∂μ ≠ ⊤) :

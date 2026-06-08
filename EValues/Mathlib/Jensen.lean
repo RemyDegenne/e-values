@@ -38,7 +38,7 @@ lemma Inv.le_add_deriv_mul {x y : ℝ≥0∞} (hx_top : x ≠ ⊤) (hy_zero : y 
   · simp only [hy_top, inv_top, EReal.coe_ennreal_zero, Inv.deriv, top_ne_zero, ↓reduceIte,
     EReal.coe_ennreal_top, EReal.sub_top, zero_mul, add_zero]
     positivity
-  · push_neg at hy_top
+  · push Not at hy_top
     by_cases hx_zero: x = 0
     · simp [hx_zero]
     have h_cvx := convexOn_inv_Ioi.add_deriv_mul_le (x := x.toReal) (y := y.toReal) ?_ ?_ ?_
@@ -136,7 +136,7 @@ lemma Inv.lt_add_deriv_mul {x y : ℝ≥0∞} (hx_top : x ≠ ⊤) (hy_zero : y 
     y⁻¹ + Inv.deriv y * (x - y) < x⁻¹ := by
   by_cases hy_top : y = ⊤
   · simp [hy_top, Inv.deriv, hx_top]
-  · push_neg at hy_top
+  · push Not at hy_top
     by_cases hx_zero: x = 0
     · simp_all only [ne_eq, zero_ne_top, not_false_eq_true, Inv.deriv, ↓reduceIte, deriv_inv',
       EReal.coe_neg, EReal.coe_ennreal_zero, zero_sub, mul_neg, neg_mul, neg_neg, ENNReal.inv_zero,

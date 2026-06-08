@@ -36,7 +36,7 @@ lemma EReal.mul_add_ENNReal {a : ℝ≥0∞} {b c : EReal} (hb₀ : 0 ≤ b) (hc
       | inr hcₜ =>
         rw [hcₜ]
         simp_all
-  · push_neg at hₜ
+  · push Not at hₜ
     rw [toENNReal_of_ne_top hₜ]
     suffices ENNReal.ofReal (b + c).toReal = b.toENNReal + c.toENNReal by
       rw [this]

@@ -76,7 +76,7 @@ lemma exists_auxMaxNullSet_measure_ge (ν : Measure α) [IsFiniteMeasure ν]
     simp only [ht_meas, ht_mem, iSup_true] at ht
     exact ht.le
   · refine ⟨∅, MeasurableSet.empty, by simp, ?_⟩
-    push_neg at hC_lt
+    push Not at hC_lt
     rw [tsub_eq_zero_of_le hC_lt]
     exact zero_le _
 

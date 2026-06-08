@@ -121,25 +121,25 @@ lemma strictConvexOn_inv : StrictConvexOn ℝ≥0∞ univ <| Inv.inv (α := ℝ�
     · exact mul_ne_top bₜ <| yₜ
   · simp only [not_and_or] at h
     rcases h with x₀ | xₜ | y₀ | yₜ
-    · push_neg at x₀
+    · push Not at x₀
       simp only [x₀, mul_zero, zero_add, ENNReal.inv_zero, ENNReal.mul_top a₀.ne', top_add,
         inv_lt_top, CanonicallyOrderedAdd.mul_pos]
       refine ⟨b₀, pos_of_ne_zero ?_⟩
       rw [← x₀]
       exact hxy.symm
-    · push_neg at xₜ
+    · push Not at xₜ
       simp only [xₜ, ENNReal.mul_top a₀.ne', top_add, inv_top, mul_zero, zero_add,
         CanonicallyOrderedAdd.mul_pos, ENNReal.inv_pos, ne_eq]
       refine ⟨b₀, ?_⟩
       rw [xₜ] at hxy
       exact hxy.symm
-    · push_neg at y₀
+    · push Not at y₀
       simp only [y₀, mul_zero, add_zero, ENNReal.inv_zero, ENNReal.mul_top b₀.ne', add_top,
         inv_lt_top, CanonicallyOrderedAdd.mul_pos]
       refine ⟨a₀, pos_of_ne_zero ?_⟩
       rw [y₀] at hxy
       exact hxy
-    · push_neg at yₜ
+    · push Not at yₜ
       simp only [yₜ, ENNReal.mul_top b₀.ne', add_top, inv_top, mul_zero, add_zero,
         CanonicallyOrderedAdd.mul_pos, ENNReal.inv_pos, ne_eq]
       refine ⟨a₀, ?_⟩
@@ -211,32 +211,32 @@ lemma ConcaveOn_log' : ConcaveOn ℝ≥0∞ univ log := by
       aesop
   · simp only [not_and_or] at h
     rcases h with x₀ | xₜ | y₀ | yₜ
-    · push_neg at x₀
+    · push Not at x₀
       by_cases a_eq₀ : a = 0
       · simp_all
-      · push_neg at a_eq₀
+      · push Not at a_eq₀
         replace a₀ : 0 < a := pos_of_ne_zero a_eq₀
         rw [x₀, log_zero, EReal.mul_bot_of_pos <| EReal.coe_ennreal_pos.mpr a₀]
         simp
-    · push_neg at xₜ
+    · push Not at xₜ
       by_cases a_eq₀ : a = 0
       · simp_all
-      · push_neg at a_eq₀
+      · push Not at a_eq₀
         replace a₀ : 0 < a := pos_of_ne_zero a_eq₀
         rw [xₜ, log_top, EReal.mul_top_of_pos <| EReal.coe_ennreal_pos.mpr a₀]
         rw [ENNReal.mul_top a₀.ne']
         simp
-    · push_neg at y₀
+    · push Not at y₀
       by_cases b_eq₀ : b = 0
       · simp_all
-      · push_neg at b_eq₀
+      · push Not at b_eq₀
         replace b₀ : 0 < b := pos_of_ne_zero b_eq₀
         rw [y₀, log_zero, EReal.mul_bot_of_pos <| EReal.coe_ennreal_pos.mpr b₀]
         simp
-    · push_neg at yₜ
+    · push Not at yₜ
       by_cases b_eq₀ : b = 0
       · simp_all
-      · push_neg at b_eq₀
+      · push Not at b_eq₀
         replace b₀ : 0 < b := pos_of_ne_zero b_eq₀
         rw [yₜ, log_top, EReal.mul_top_of_pos <| EReal.coe_ennreal_pos.mpr b₀]
         rw [ENNReal.mul_top b₀.ne']
