@@ -333,6 +333,27 @@ lemma eintegral_le_numeraireOfBounded {U : Utility} {b : ℝ} (hU_le : ∀ x : �
   ((Classical.choose_spec
     (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS)).2 X hX_evar).1
 
+lemma eintegral_numeraireOfBounded_ge {U : Utility} {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
+    (P : Measure 𝓧) [IsFiniteMeasure P] {S : Set (Measure 𝓧)} (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    U 1 * P .univ ≤ ∫ᵉ x, U (numeraireOfBounded hU_le P hS x) ∂P := calc
+  U 1 * P .univ
+  _ = ∫ᵉ x, U 1 ∂P := by simp
+  _ ≤ ∫ᵉ x, U (numeraireOfBounded hU_le P hS x) ∂P :=
+    eintegral_le_numeraireOfBounded hU_le P hS (isEVar_one _)
+
+lemma eintegral_numeraireOfBounded_ne_bot {U : Utility} {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
+    (P : Measure 𝓧) [IsFiniteMeasure P] {S : Set (Measure 𝓧)} (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    ∫ᵉ x, U (numeraireOfBounded hU_le P hS x) ∂P ≠ ⊥ := by
+  refine ne_bot_of_le_ne_bot ?_ (eintegral_numeraireOfBounded_ge hU_le P hS)
+  rw [EReal.mul_ne_bot]
+  have h : U 1 ≠ ⊥ ∧ U 1 ≠ ⊤ := U.eq_coe (by simp) (by simp)
+  simp [h.1, h.2]
+
+lemma eintegrable_utility_numeraireOfBounded {U : Utility} {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
+    (P : Measure 𝓧) [IsFiniteMeasure P] {S : Set (Measure 𝓧)} (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
+    eintegrable (fun x ↦ U (numeraireOfBounded hU_le P hS x)) P :=
+  eintegrable_of_eintegral_ne_bot (eintegral_numeraireOfBounded_ne_bot hU_le P hS)
+
 lemma lt_top_of_numeraireOfBounded_lt_top {U : Utility} {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
     (P : Measure 𝓧) [IsFiniteMeasure P] {S : Set (Measure 𝓧)} (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {X : 𝓧 → ℝ≥0∞} (hX_evar : IsEVar X S) :
@@ -340,8 +361,6 @@ lemma lt_top_of_numeraireOfBounded_lt_top {U : Utility} {b : ℝ} (hU_le : ∀ x
   ((Classical.choose_spec
     (exists_eq_iSup_eintegral_of_le U.concave U.continuous U.monotone hU_le P S hS)).2 X hX_evar).2
 
-
--- first order optimality condition for bounded utility functions
 noncomputable instance inst_smul_I_ENNReal : SMul I ℝ≥0∞ where
   smul a x := ENNReal.ofReal a * x
 
@@ -350,6 +369,7 @@ instance : MeasurableConstSMul I ℝ≥0∞ where
     change Measurable (fun x ↦ ENNReal.ofReal c * x)
     fun_prop
 
+-- first order optimality condition for bounded utility functions
 lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
     (P : Measure 𝓧) [IsFiniteMeasure P] (S : Set (Measure 𝓧)) (hS : ∀ μ ∈ S, IsFiniteMeasure μ)
     {Y : 𝓧 → ℝ≥0∞} (hY : IsEVar Y S) :
@@ -357,36 +377,27 @@ lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞
       * (Y x - numeraireOfBounded hU_le P hS x) ∂P ≤ 0 := by
   -- Lemma 2.9 of _Larsson et al._ (2025)?
   set X := numeraireOfBounded hU_le P hS
-  -- Remove aesop
-  let Z := fun (t : I) ↦ t • Y + (⟨1 - t, by aesop⟩ : I) • X
-
-  -- Extract a lemma?
+  let Z := fun (t : I) ↦ t • Y + (⟨1 - t, by grind⟩ : I) • X
+  have hZ_zero : Z 0 = X := by
+    simp only [Set.Icc.coe_zero, sub_zero, Set.Icc.mk_one, Z]
+    change ENNReal.ofReal (0 : I) • Y + ENNReal.ofReal (1 : I) • X = X
+    simp
   have hZ (t : I) : IsEVar (Z t) S := by
-    change (Z t) ∈ {Z | IsEVar Z S}
-    refine convex_isEVar S hY (isEVar_numeraireOfBounded hU_le P hS) ?_ ?_ ?_
-    · positivity
-    · positivity
-    · rw [← ENNReal.ofReal_add]
-      · simp
-      · unit_interval
-      · unit_interval
-
+    refine convex_isEVar S hY (isEVar_numeraireOfBounded hU_le P hS) (by positivity) (by positivity)
+      ?_
+    rw [← ENNReal.ofReal_add (by unit_interval) (by unit_interval)]
+    simp
   have (t : I) (ht : 0 < t) : ∫ᵉ x, (t : EReal)⁻¹ * (U (Z t x) - U (Z 0 x)) ∂P ≤ 0 := by
     suffices ∫ᵉ x, (U (Z t x) - U (Z 0 x)) ∂P ≤ 0 by
-      have : (t : EReal)⁻¹ ≠ ⊥ ∧ (t : EReal)⁻¹ ≠ ⊤ := by
-        sorry
-      rw [eintegral_mul_const this.1 this.2, ← mul_zero (t : EReal)⁻¹]
+      have ht : (t : EReal)⁻¹ ≠ ⊥ ∧ (t : EReal)⁻¹ ≠ ⊤ := by simp [← EReal.coe_inv]
+      rw [eintegral_mul_const ht.1 ht.2, ← mul_zero (t : EReal)⁻¹]
       · gcongr
         refine EReal.inv_nonneg_of_nonneg ?_
         simp [t.2.1]
       · sorry
     rw [eintegral_sub]
     · rw [EReal.sub_nonpos]
-      have (x : 𝓧) : Z 0 x = X x := by
-        simp only [Pi.add_apply, Pi.smul_apply, Set.Icc.coe_zero, sub_zero, Set.Icc.mk_one, Z]
-        change ENNReal.ofReal (0 : I) * Y x + ENNReal.ofReal (1 : I) * X x = X x
-        simp
-      simp_rw [this]
+      simp_rw [hZ_zero]
       exact eintegral_le_numeraireOfBounded hU_le P hS (hZ t)
     · refine eintegrable_of_le (b := b) (fun x ↦ ?_) (by simp) P
       exact hU_le (Z t x)
@@ -397,18 +408,17 @@ lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞
     · have := (hZ 0).measurable
       fun_prop
     · refine .inl (ne_of_lt ?_)
-      calc
+      calc ∫ᵉ x, U.toFun (Z t x) ∂P
       _ ≤ ∫ᵉ x, b.toEReal ∂P := by
         gcongr
-        intro x
-        exact hU_le (Z t x)
+        exact fun x ↦ hU_le (Z t x)
       _ < ⊤ := by
         refine Ne.lt_top ?_
         rw [eintegral_const, EReal.mul_ne_top]
         simp
     · right
-
-      sorry
+      simp only [hZ_zero, ne_eq]
+      exact eintegral_numeraireOfBounded_ne_bot hU_le P hS
   sorry
 
 -- first order optimality condition for log utility
