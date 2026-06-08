@@ -3,13 +3,18 @@ Copyright (c) 2025 Gaëtan Serré. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré, Rémy Degenne
 -/
-import Mathlib.MeasureTheory.Measure.Prod
-import Mathlib.MeasureTheory.Integral.Prod
-import Mathlib.Probability.Kernel.Composition.MeasureComp
-import EValues.Mathlib.EReal
+
+module
+
+public import Mathlib.MeasureTheory.Measure.Prod
+public import Mathlib.MeasureTheory.Integral.Prod
+public import Mathlib.Probability.Kernel.Composition.MeasureComp
+public import EValues.Mathlib.EReal
 
 /-! # Integral of EReal-valued functions
 -/
+
+@[expose] public section
 
 open ProbabilityTheory
 

@@ -4,11 +4,15 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré
 -/
 
-import Mathlib.Data.EReal.Basic
-import Mathlib.Order.CompletePartialOrder
+module
+
+public import Mathlib.Data.EReal.Basic
+public import Mathlib.Order.CompletePartialOrder
 
 /-! # Lemmas about iSup and iInf
 -/
+
+@[expose] public section
 
 lemma iSup₂_eq_sSup {α ι : Type*} [CompleteLattice ι] {P : α → Prop} {g : α → ι} :
     ⨆ (x : α) (_ : P x), g x = sSup {y | ∃ x, P x ∧ y = g x} := by

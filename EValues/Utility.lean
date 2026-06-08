@@ -3,17 +3,22 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Gaëtan Serré
 -/
-import EValues.EIntegral
-import EValues.Mathlib.Convex
-import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
-import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
-import Mathlib.Data.Real.StarOrdered
-import Mathlib.Order.CompletePartialOrder
+
+module
+
+public import EValues.EIntegral
+public import EValues.Mathlib.Convex
+public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
+public import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
+public import Mathlib.Data.Real.StarOrdered
+public import Mathlib.Order.CompletePartialOrder
 
 /-!
 # Utility functions
 
 -/
+
+@[expose] public section
 
 open Filter MeasureTheory
 open scoped ENNReal NNReal Topology

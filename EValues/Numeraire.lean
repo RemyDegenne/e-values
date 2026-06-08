@@ -4,9 +4,11 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré, Rémy Degenne
 -/
 
-import EValues.EValue
-import EValues.Mathlib.Jensen
-import EValues.Utility
+module
+
+public import EValues.EValue
+public import EValues.Mathlib.Jensen
+public import EValues.Utility
 
 /-!
 # Numeraire E-variables
@@ -22,6 +24,8 @@ import EValues.Utility
 * TODO
 
 -/
+
+@[expose] public section
 
 open ENNReal
 

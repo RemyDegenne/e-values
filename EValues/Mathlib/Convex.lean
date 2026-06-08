@@ -4,13 +4,17 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré
 -/
 
-import EValues.Mathlib.EReal
-import Mathlib.Algebra.Lie.OfAssociative
-import Mathlib.Analysis.Convex.Deriv
-import Mathlib.Analysis.Convex.SpecificFunctions.Basic
+module
+
+public import EValues.Mathlib.EReal
+public import Mathlib.Algebra.Lie.OfAssociative
+public import Mathlib.Analysis.Convex.Deriv
+public import Mathlib.Analysis.Convex.SpecificFunctions.Basic
 
 /-! # Convexity lemmas
 -/
+
+@[expose] public section
 
 open Set ENNReal NNReal
 

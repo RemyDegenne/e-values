@@ -4,11 +4,15 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré
 -/
 
-import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLog
-import Mathlib.Order.CompletePartialOrder
+module
+
+public import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLog
+public import Mathlib.Order.CompletePartialOrder
 
 /-! # ENNReal lemmas
 -/
+
+@[expose] public section
 
 open ENNReal
 

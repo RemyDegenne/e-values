@@ -3,15 +3,19 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Gaëtan Serré
 -/
-import EValues.LebesgueDecomposition
-import EValues.Numeraire
-import Mathlib.MeasureTheory.Measure.WithDensityFinite
-import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
+module
+
+public import EValues.LebesgueDecomposition
+public import EValues.Numeraire
+public import Mathlib.MeasureTheory.Measure.WithDensityFinite
+public import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
 
 /-!
 # Existence of the Numeraire
 
 -/
+
+@[expose] public section
 
 open MeasureTheory Filter
 open scoped ENNReal NNReal Topology

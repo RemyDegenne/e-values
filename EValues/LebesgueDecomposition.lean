@@ -3,14 +3,19 @@ Copyright (c) 2026 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
-import Mathlib.MeasureTheory.Measure.WithDensityFinite
+
+module
+
+public import Mathlib.MeasureTheory.Measure.Decomposition.RadonNikodym
+public import Mathlib.MeasureTheory.Measure.WithDensityFinite
 
 
 /-!
 # Lemma A1: Lebesgue decomposition with respect to a set of measures
 
 -/
+
+@[expose] public section
 
 open Filter
 open scoped ENNReal Topology

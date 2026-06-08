@@ -3,11 +3,13 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Gaëtan Serré
 -/
-import EValues.DPI
-import EValues.Product
-import EValues.Mathlib.iSup
-import EValues.Mathlib.unitInterval
-import Mathlib.MeasureTheory.Measure.GiryMonad
+module
+
+public import EValues.DPI
+public import EValues.Product
+public import EValues.Mathlib.iSup
+public import EValues.Mathlib.unitInterval
+public import Mathlib.MeasureTheory.Measure.GiryMonad
 
 /-!
 # E-Rényi divergence
@@ -15,6 +17,8 @@ import Mathlib.MeasureTheory.Measure.GiryMonad
 An analogue of the Rényi divergence for e-variables.
 
 -/
+
+@[expose] public section
 
 open MeasureTheory Filter
 open scoped ENNReal NNReal Topology

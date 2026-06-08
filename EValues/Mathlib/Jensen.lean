@@ -4,12 +4,16 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré
 -/
 
-import EValues.EIntegral
-import EValues.Mathlib.Convex
-import Mathlib.Analysis.Calculus.Deriv.Inv
+module
+
+public import EValues.EIntegral
+public import EValues.Mathlib.Convex
+public import Mathlib.Analysis.Calculus.Deriv.Inv
 
 /-! # Convexity results
 -/
+
+@[expose] public section
 
 open Function Set ENNReal
 
