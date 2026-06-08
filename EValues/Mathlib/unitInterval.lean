@@ -10,6 +10,9 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
 import Mathlib.Topology.EMetricSpace.Paracompact
 import Mathlib.Topology.Separation.CompletelyRegular
 
+/-! # Lemmas about the unit interval
+-/
+
 open unitInterval MeasureTheory ENNReal
 
 lemma doubleton_eq (s : Set ({0, 1} : Set ℝ)) :

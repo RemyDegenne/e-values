@@ -189,7 +189,7 @@ lemma exists_numeraire' (P : Measure 𝓧) [SFinite P]
       rw [ENNReal.div_zero hX, EReal.top_mul_of_pos]
       · simp
       · simp only [EReal.coe_ennreal_pos]
-        exact lt_of_le_of_ne' (zero_le _) hX
+        exact lt_of_le_of_ne' zero_le hX
     rw [EReal.mul_sub_of_nonneg_of_ne_top]
     rotate_left
     · positivity

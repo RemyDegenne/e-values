@@ -9,6 +9,9 @@ import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.Analysis.Convex.Deriv
 import Mathlib.Analysis.Convex.SpecificFunctions.Basic
 
+/-! # Convexity lemmas
+-/
+
 open Set ENNReal NNReal
 
 lemma ConcaveOn.le_add_deriv_mul {S : Set ℝ} {f : ℝ → ℝ} {x y : ℝ}
@@ -65,22 +68,8 @@ lemma strictConvexOn_inv_Ioi : StrictConvexOn ℝ (Ioi (0 : ℝ)) Inv.inv := by
   apply strictConvexOn_of_slope_strict_mono_adjacent (convex_Ioi (0 : ℝ))
   intro x y z (hx : 0 < x) (hz : 0 < z) hxy hyz
   have hy : 0 < y := hx.trans hxy
-  have A : (y⁻¹ - x⁻¹) / (y - x) = -1 / (x * y) := by
-    field_simp [ne_of_gt hx, ne_of_gt hy]
-    have : (x - y) / (y - x) = -((y - x) / (y - x)) := by ring
-    rw [this]
-    suffices (y - x) / (y - x) = 1 by
-      rw [this]
-    rw [div_eq_iff (ne_of_lt <| sub_pos.2 hxy).symm]
-    simp
-  have B : (z⁻¹ - y⁻¹) / (z - y) = -1 / (y * z) := by
-    field_simp [ne_of_gt hy, ne_of_gt hz]
-    have : (y - z) / (z - y) = -((z - y) / (z - y)) := by ring
-    rw [this]
-    suffices (z - y) / (z - y) = 1 by
-      rw [this]
-    rw [div_eq_iff (ne_of_lt <| sub_pos.2 hyz).symm]
-    simp
+  have A : (y⁻¹ - x⁻¹) / (y - x) = -1 / (x * y) := by field [ne_of_gt hx, ne_of_gt hy]
+  have B : (z⁻¹ - y⁻¹) / (z - y) = -1 / (y * z) := by field [ne_of_gt hy, ne_of_gt hz]
   rw [A, B]
   field_simp
   linarith
@@ -246,4 +235,4 @@ lemma ConcaveOn_log : ConcaveOn ℝ≥0 univ log := by
   refine ⟨convex_univ, ?_⟩
   intro x hx y hy a b a₀ b₀ hab
   obtain ⟨_, conv⟩ := ConcaveOn_log'
-  exact conv hx hy (zero_le _) (zero_le _) <| (toNNReal_eq_one_iff _).mp hab
+  exact conv hx hy zero_le zero_le <| (toNNReal_eq_one_iff _).mp hab

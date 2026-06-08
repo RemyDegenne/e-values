@@ -7,6 +7,9 @@ Authors: Gaëtan Serré
 import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLog
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Real
 
+/-! # Lemmas about EReal
+-/
+
 open ENNReal
 
 lemma EReal.le_of_toReal_le {a b : EReal} (h1 : a ≠ ⊤) (h2 : b ≠ ⊤) (h3 : a ≠ ⊥) (h4 : b ≠ ⊥)

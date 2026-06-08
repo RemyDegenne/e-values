@@ -8,6 +8,8 @@ import Mathlib.MeasureTheory.Integral.Prod
 import Mathlib.Probability.Kernel.Composition.MeasureComp
 import EValues.Mathlib.EReal
 
+/-! # Integral of EReal-valued functions
+-/
 
 open ProbabilityTheory
 
@@ -621,12 +623,6 @@ lemma lintegral_enorm_ereal_toReal (hf_ne_bot : ∀ᵐ x ∂μ, f x ≠ ⊥) (hf
     EReal.coe_ne_top, EReal.zero_ne_top, or_self, not_false_eq_true, EReal.toENNReal_of_ne_top,
     EReal.neg_eq_top_iff, min_eq_bot, EReal.coe_ne_bot, EReal.zero_ne_bot]
   rcases le_total 0 r with h | h <;> simp [ENNReal.ofReal, Real.toNNReal, h]
-  · congr
-    simp
-    rfl
-  · congr
-    simp
-    rfl
 
 lemma integrable_toReal (hf_meas : AEMeasurable f μ) (h_int_bot : ∫ᵉ x, f x ∂μ ≠ ⊥)
     (h_int_top : ∫ᵉ x, f x ∂μ ≠ ⊤) :
@@ -1213,7 +1209,7 @@ lemma eintegral_smul_measure {c : ℝ≥0∞} (hc : c ≠ ∞) (f : α → EReal
   simp only [eintegral, lintegral_smul_measure, smul_eq_mul, EReal.coe_ennreal_mul]
   rw [EReal.mul_sub_of_nonneg_of_ne_top _ (by simp [hc])]
   norm_cast
-  exact zero_le _
+  exact zero_le
 
 @[simp]
 lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClass α]

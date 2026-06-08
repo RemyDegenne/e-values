@@ -9,6 +9,9 @@ import EValues.Mathlib.iSup
 import EValues.Mathlib.unitInterval
 import EValues.NumeraireExistence
 
+/-! # Data processing inequality for the maximum utility and maximum randomized utility
+-/
+
 open scoped ENNReal NNReal ProbabilityTheory
 
 open MeasureTheory ProbabilityTheory

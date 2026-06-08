@@ -8,6 +8,9 @@ import EValues.EIntegral
 import EValues.Mathlib.Convex
 import Mathlib.Analysis.Calculus.Deriv.Inv
 
+/-! # Convexity results
+-/
+
 open Function Set ENNReal
 
 open MeasureTheory ProbabilityTheory

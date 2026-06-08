@@ -3,7 +3,6 @@ import EValues.DPI
 import EValues.EIntegral
 import EValues.ERenyi
 import EValues.EValue
-import EValues.FindAxioms
 import EValues.LebesgueDecomposition
 import EValues.LowerBound
 import EValues.Mathlib.Convex

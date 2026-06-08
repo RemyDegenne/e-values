@@ -7,6 +7,9 @@ Authors: Gaëtan Serré
 import Mathlib.Data.EReal.Basic
 import Mathlib.Order.CompletePartialOrder
 
+/-! # Lemmas about iSup and iInf
+-/
+
 lemma iSup₂_eq_sSup {α ι : Type*} [CompleteLattice ι] {P : α → Prop} {g : α → ι} :
     ⨆ (x : α) (_ : P x), g x = sSup {y | ∃ x, P x ∧ y = g x} := by
   rw [sSup_eq_iSup]
@@ -93,7 +96,7 @@ lemma sInf_add' {α : Type*} [AddCommMagma α] [Sub α] [CompleteLattice α] [Or
     {s t : Set α} : sInf (s + t) = sInf s + sInf t := by
   let u := fun (p q : α) ↦ p + q
   let l := fun (a b : α) ↦ b - a
-  apply sInf_image2_eq_sInf_sInf (u := u) (l₁ := l) (l₂ := l) ?_ ?_
+  apply sInf_image2_eq_sInf_sInf (u := u) (u₁ := l) (u₂ := l) ?_ ?_
   all_goals simp only [GaloisConnection, tsub_le_iff_right, Function.swap, implies_true, l, u]
   simp_rw [add_comm]
   simp

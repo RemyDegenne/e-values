@@ -7,6 +7,9 @@ Authors: Gaëtan Serré
 import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLog
 import Mathlib.Order.CompletePartialOrder
 
+/-! # ENNReal lemmas
+-/
+
 open ENNReal
 
 namespace Function
