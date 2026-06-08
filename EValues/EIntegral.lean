@@ -3,11 +3,18 @@ Copyright (c) 2025 Gaëtan Serré. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Gaëtan Serré, Rémy Degenne
 -/
-import Mathlib.MeasureTheory.Measure.Prod
-import Mathlib.MeasureTheory.Integral.Prod
-import Mathlib.Probability.Kernel.Composition.MeasureComp
-import EValues.Mathlib.EReal
 
+module
+
+public import Mathlib.MeasureTheory.Measure.Prod
+public import Mathlib.MeasureTheory.Integral.Prod
+public import Mathlib.Probability.Kernel.Composition.MeasureComp
+public import EValues.Mathlib.EReal
+
+/-! # Integral of EReal-valued functions
+-/
+
+@[expose] public section
 
 open ProbabilityTheory
 
@@ -376,7 +383,7 @@ lemma eintegral_strict_mono_ae (hμ : μ ≠ 0) (hg : AEMeasurable g μ) (hf : A
         · exact .inl <| .inl ⟨hx, hfx⟩
         by_cases hgx : g x ≤ 0
         · exact .inl <| .inr ⟨hx, hgx⟩
-        push_neg at hfx hgx
+        push Not at hfx hgx
         exact .inr ⟨hx, hfx, hgx⟩
       · intro hx
         simp only [Set.mem_union] at hx
@@ -1207,7 +1214,7 @@ lemma eintegral_smul_measure {c : ℝ≥0∞} (hc : c ≠ ∞) (f : α → EReal
   simp only [eintegral, lintegral_smul_measure, smul_eq_mul, EReal.coe_ennreal_mul]
   rw [EReal.mul_sub_of_nonneg_of_ne_top _ (by simp [hc])]
   norm_cast
-  exact zero_le _
+  exact zero_le
 
 @[simp]
 lemma eintegral_dirac {α : Type*} [MeasurableSpace α] [MeasurableSingletonClass α]

@@ -3,12 +3,16 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Gaëtan Serré
 -/
-import EValues.ERenyi
+module
+
+public import EValues.ERenyi
 
 /-!
 # Maximum utility and Bernoulli distributions
 
 -/
+
+@[expose] public section
 
 open MeasureTheory
 open scoped NNReal ENNReal
@@ -343,7 +347,7 @@ lemma eq_bernoulli_half_of_map_eq {R : Measure ({0, 1} : Set ℝ)} [IsProbabilit
       _ = 2⁻¹ := by rw [← hR_eq, mul_one]
     simp [this, h_one, Ber]
   rw [hR_eq, Measure.map_add _ _ (by fun_prop), Measure.map_smul, Measure.map_smul,
-    Measure.map_dirac (by fun_prop), Measure.map_dirac (by fun_prop)] at hRφ
+    Measure.map_dirac, Measure.map_dirac] at hRφ
   simp only [sub_zero, sub_self, Measure.ext_iff_singleton] at hRφ
   simpa using hRφ ⟨1, by simp⟩
 
@@ -352,9 +356,7 @@ lemma map_bernoulli_half_eq :
   rw [Ber, Measure.map_add _ _ (by fun_prop), Measure.map_smul, Measure.map_smul, add_comm]
   simp only [ENNReal.one_sub_inv_two]
   congr
-  all_goals
-    rw [Measure.map_dirac (by fun_prop)]
-    simp
+  all_goals simp [Measure.map_dirac]
 
 lemma map_bernoulli_le_eq_bernoulli_ge (δ : ℝ) :
     letI φ : ({0, 1} : Set ℝ) → ({0, 1} : Set ℝ) := fun x ↦ ⟨1 - x.1, by grind⟩

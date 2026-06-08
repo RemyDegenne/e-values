@@ -3,12 +3,13 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Gaëtan Serré
 -/
-import EValues.DPI
-import EValues.Product
-import EValues.Mathlib.iSup
-import EValues.Mathlib.unitInterval
-import Mathlib.MeasureTheory.Measure.GiryMonad
-import EValues.FindAxioms
+module
+
+public import EValues.DPI
+public import EValues.Product
+public import EValues.Mathlib.iSup
+public import EValues.Mathlib.unitInterval
+public import Mathlib.MeasureTheory.Measure.GiryMonad
 
 /-!
 # E-Rényi divergence
@@ -16,6 +17,8 @@ import EValues.FindAxioms
 An analogue of the Rényi divergence for e-variables.
 
 -/
+
+@[expose] public section
 
 open MeasureTheory Filter
 open scoped ENNReal NNReal Topology
@@ -55,7 +58,7 @@ lemma erenyiDiv_empty_left {T : Set (Measure 𝓧)} (hα : α ≠ 0) : erenyiDiv
         y = α * (⊤ * R Set.univ) + (1 - α) * (maxUtility R T logUtility).toENNReal} = ∅ by
       rw [this, sInf_empty]
     simp_all
-  · push_neg at hR_prob
+  · push Not at hR_prob
     suffices {y | ∃ R, IsProbabilityMeasure R ∧
         y = α * (⊤ * R Set.univ) + (1 - α) * (maxUtility R T logUtility).toENNReal} = {⊤} by
       rw [this]
@@ -85,7 +88,7 @@ lemma erenyiDiv_empty_right {S : Set (Measure 𝓧)} (hα : α < 1) : erenyiDiv 
         y = α * (maxUtility R S logUtility).toENNReal + (1 - α) * (⊤ * R Set.univ)} = ∅ by
       rw [this, sInf_empty]
     simp_all
-  · push_neg at hR_prob
+  · push Not at hR_prob
     suffices {y | ∃ R, IsProbabilityMeasure R ∧
         y = α * (maxUtility R S logUtility).toENNReal + (1 - α) * (⊤ * R Set.univ)} = {⊤} by
       rw [this]
@@ -436,14 +439,14 @@ lemma erenyiDiv_of_involutive_aux {S T : Set (Measure 𝓧)}
       gcongr
       · refine EReal.toENNReal_le_toENNReal ?_
         have h_conv := (convexOn_maxUtility S (U := logUtility)).2 (by simp : R ∈ Set.univ)
-          (by simp : R.map φ ∈ Set.univ) (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹)
-          (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹) (by simpa using ENNReal.add_halves 1)
+          (by simp : R.map φ ∈ Set.univ) (zero_le : 0 ≤ (2 : ℝ≥0∞)⁻¹)
+          (zero_le : 0 ≤ (2 : ℝ≥0∞)⁻¹) (by simpa using ENNReal.add_halves 1)
         unfold R'
         rwa [smul_add]
       · refine EReal.toENNReal_le_toENNReal ?_
         have h_conv := (convexOn_maxUtility T (U := logUtility)).2 (by simp : R ∈ Set.univ)
-          (by simp : R.map φ ∈ Set.univ) (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹)
-          (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹) (by simpa using ENNReal.add_halves 1)
+          (by simp : R.map φ ∈ Set.univ) (zero_le : 0 ≤ (2 : ℝ≥0∞)⁻¹)
+          (zero_le : 0 ≤ (2 : ℝ≥0∞)⁻¹) (by simpa using ENNReal.add_halves 1)
         unfold R'
         rwa [smul_add]
     _ = (2 : ℝ≥0∞)⁻¹ * ((2 : ℝ≥0∞)⁻¹ * maxUtility R S logUtility
@@ -525,14 +528,14 @@ lemma echernoffDiv_of_involutive_aux {S T : Set (Measure 𝓧)}
       gcongr
       · refine EReal.toENNReal_le_toENNReal ?_
         have h_conv := (convexOn_maxUtility S (U := logUtility)).2 (by simp : R ∈ Set.univ)
-          (by simp : R.map φ ∈ Set.univ) (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹)
-          (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹) (by simpa using ENNReal.add_halves 1)
+          (by simp : R.map φ ∈ Set.univ) (zero_le : 0 ≤ (2 : ℝ≥0∞)⁻¹)
+          (zero_le : 0 ≤ (2 : ℝ≥0∞)⁻¹) (by simpa using ENNReal.add_halves 1)
         unfold R'
         rwa [smul_add]
       · refine EReal.toENNReal_le_toENNReal ?_
         have h_conv := (convexOn_maxUtility T (U := logUtility)).2 (by simp : R ∈ Set.univ)
-          (by simp : R.map φ ∈ Set.univ) (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹)
-          (zero_le _ : 0 ≤ (2 : ℝ≥0∞)⁻¹) (by simpa using ENNReal.add_halves 1)
+          (by simp : R.map φ ∈ Set.univ) (zero_le : 0 ≤ (2 : ℝ≥0∞)⁻¹)
+          (zero_le : 0 ≤ (2 : ℝ≥0∞)⁻¹) (by simpa using ENNReal.add_halves 1)
         unfold R'
         rwa [smul_add]
     _ ≤ max ((2 : ℝ≥0∞)⁻¹ * max (maxUtility R S logUtility) (maxUtility R T logUtility)

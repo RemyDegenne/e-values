@@ -3,12 +3,17 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Gaëtan Serré
 -/
-import EValues.Bernoulli
+
+module
+
+public import EValues.Bernoulli
 
 /-!
 # Lower bound on e-Rényi and e-Chernoff divergences
 
 -/
+
+@[expose] public section
 
 open MeasureTheory
 open scoped NNReal ENNReal

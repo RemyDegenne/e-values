@@ -3,18 +3,21 @@ Copyright (c) 2025 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Gaëtan Serré
 -/
-import Mathlib.Analysis.InnerProductSpace.Basic
-import Mathlib.MeasureTheory.Integral.Bochner.Basic
-import Mathlib.MeasureTheory.VectorMeasure.Decomposition.Jordan
-import Mathlib.Order.CompletePartialOrder
-import Mathlib.Probability.Kernel.Composition.MeasureComp
-import Mathlib.Probability.Kernel.Composition.IntegralCompProd
-import Mathlib.Probability.Notation
-import EValues.EIntegral
-import EValues.Mathlib.Convex
-import EValues.Mathlib.ENNReal
-import EValues.Mathlib.unitInterval
-import EValues.Utility
+
+module
+
+public import Mathlib.Analysis.InnerProductSpace.Basic
+public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+public import Mathlib.MeasureTheory.VectorMeasure.Decomposition.Jordan
+public import Mathlib.Order.CompletePartialOrder
+public import Mathlib.Probability.Kernel.Composition.MeasureComp
+public import Mathlib.Probability.Kernel.Composition.IntegralCompProd
+public import Mathlib.Probability.Notation
+public import EValues.EIntegral
+public import EValues.Mathlib.Convex
+public import EValues.Mathlib.ENNReal
+public import EValues.Mathlib.unitInterval
+public import EValues.Utility
 
 /-!
 # E-variables
@@ -30,6 +33,8 @@ import EValues.Utility
 * TODO
 
 -/
+
+@[expose] public section
 
 open scoped ENNReal NNReal ProbabilityTheory
 
