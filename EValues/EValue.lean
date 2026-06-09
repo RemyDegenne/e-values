@@ -6,31 +6,33 @@ Authors: Rémy Degenne, Gaëtan Serré
 
 module
 
-public import Mathlib.Analysis.InnerProductSpace.Basic
-public import Mathlib.MeasureTheory.Integral.Bochner.Basic
-public import Mathlib.MeasureTheory.VectorMeasure.Decomposition.Jordan
-public import Mathlib.Order.CompletePartialOrder
-public import Mathlib.Probability.Kernel.Composition.MeasureComp
-public import Mathlib.Probability.Kernel.Composition.IntegralCompProd
-public import Mathlib.Probability.Notation
-public import EValues.EIntegral
-public import EValues.Mathlib.Convex
 public import EValues.Mathlib.ENNReal
-public import EValues.Mathlib.unitInterval
 public import EValues.Utility
 
 /-!
 # E-variables
 
-
+This file defines e-variables and randomized e-variables, which are fundamental objects in
+e-value theory.
 
 ## Main definitions
 
-* TODO
+* `IsEVar X S`: A random variable `X` is an e-variable for a set of measures `S` if it has
+  expected value at most 1 under all measures in `S`.
+* `IsRandEVar κ S`: A kernel `κ` is a randomized e-variable for `S` if its mean function is
+  an e-variable.
+* `NeBotUtilityEVar X P S U`: An e-variable `X` for which the composed utility integral is
+  not `⊥`.
 
-## Main statements
+## Main results
 
-* TODO
+* `isRandEVar_iff_isEVar`: A kernel is a randomized e-variable iff its mean function is an
+  e-variable.
+* `convex_isEVar`: The set of e-variables is convex.
+* `IsEVar.mono`: Monotonicity: if `Y` is an e-variable and `X ≤ Y`, then `X` is also an
+  e-variable.
+* `IsRandEVar.mono`: Monotonicity for randomized e-variables: if `η` is a randomized e-variable
+  and `κ ≤ η`, then `κ` is also a randomized e-variable.
 
 -/
 
@@ -46,7 +48,8 @@ variable {𝓧 𝓨 : Type*} {m𝓧 : MeasurableSpace 𝓧} {m𝓨 : MeasurableS
 namespace ProbabilityTheory
 
 /-- A random variable `X` is an e-variable for a set of measures `S` if it is measurable and
-its expectation is at most one for all measures in `S`. -/
+its expectation is at most one for all measures in `S`. This is formulated via the condition
+that `∫ᵉ ω, X ω - 1 ∂μ ≤ 0` for all `μ ∈ S`. -/
 structure IsEVar (X : 𝓧 → ℝ≥0∞) (S : Set (Measure 𝓧)) : Prop where
   measurable : Measurable X := by fun_prop
   eintegral_ne_bot : ∀ μ ∈ S, ∫ᵉ ω, X ω - 1 ∂μ ≠ ⊥
@@ -60,7 +63,6 @@ lemma eintegral_sub_one_ne_bot_of_isFiniteMeasure {X : 𝓧 → ℝ≥0∞} {S :
     simp
   · gcongr
     intro x
-    simp only
     conv_lhs => rw [← zero_sub (1 : EReal)]
     refine EReal.sub_le_sub ?_ le_rfl -- add gcongr tag?
     positivity
@@ -69,6 +71,7 @@ lemma IsEVar.eintegrable_sub_one {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S) (μ
     eintegrable (fun ω ↦ (X ω : EReal) - 1) μ :=
   eintegrable_of_eintegral_ne_bot (hX.eintegral_ne_bot μ hμ)
 
+/-- An e-variable has expected value at most the total measure. -/
 lemma IsEVar.lintegral_le_measure_univ {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S)
     (μ : Measure 𝓧) (hμ : μ ∈ S) :
     ∫⁻ ω, X ω ∂μ ≤ μ .univ := by
@@ -130,8 +133,8 @@ lemma IsEVar.of_lintegral_le_one (hS : ∀ μ ∈ S, IsProbabilityMeasure μ)
   specialize hS μ hμ
   simp
 
-/-- A random variables `X` is an e-variable for a set of measures `S` if it is measurable and
-its expectation is at most one for all measures in `S`. -/
+/-- A random variable `X` is a randomized e-variable for a set of measures `S` if it is a
+Markov kernel and its mean function is at most 1 under all measures in `S`. -/
 structure IsRandEVar (κ : Kernel 𝓧 ℝ≥0∞) (S : Set (Measure 𝓧)) : Prop where
   [markov : IsMarkovKernel κ]
   eintegral_ne_bot : ∀ μ ∈ S, ∫ᵉ ω, ∫⁻ x, x ∂(κ ω) - 1 ∂μ ≠ ⊥
@@ -402,7 +405,7 @@ lemma convex_isEVar (S : Set (Measure 𝓧)) : Convex ℝ≥0∞ {Z | IsEVar Z S
       norm_cast
       exact .inl ⟨hb, hY.eintegral_nonpos μ hμ⟩
 
-/-- An e-variable for which the eintegral of the composition with a utility function is not ⊥. -/
+/-- An e-variable for which the eintegral of the composition with a utility function is not `⊥`. -/
 structure NeBotUtilityEVar (X : 𝓧 → ℝ≥0∞) (P : Measure 𝓧)
     (S : Set (Measure 𝓧)) (U : Utility) : Prop extends IsEVar X S where
   utility_ne_bot : ∫ᵉ x, (U ∘ X) x ∂P ≠ ⊥

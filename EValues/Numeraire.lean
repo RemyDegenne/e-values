@@ -13,15 +13,29 @@ public import EValues.Utility
 /-!
 # Numeraire E-variables
 
-
+This file defines numeraire e-variables, which are e-variables that maximize the expected
+logarithmic utility among all e-variables in a given set.
 
 ## Main definitions
 
-* TODO
+* `IsNumeraire X S μ`: A random variable `X` is the numeraire for a set of measures `S` and a
+  measure `μ` if it is an e-variable for `S` and the expectation of the ratio of any e-variable
+  `Y` over `X` is at most the measure of the finite support of `X` under `μ`.
 
 ## Main statements
 
-* TODO
+* `IsNumeraire.ae_unique`: The numeraire is almost-everywhere unique under finite measures.
+* `IsNumeraire.eintegral_log_div_nonpos`: A numeraire is log-optimal: the expected log of the
+  ratio of any e-variable to the numeraire is non-positive.
+* `IsNumeraire.eintegral_log_le`: A numeraire maximizes the expected logarithm among all
+  e-variables.
+* `IsNumeraire.eintegrable_log`: The logarithm of the numeraire is e-integrable.
+
+## Implementation notes
+
+The numeraire optimality is characterized through two equivalent perspectives:
+- Direct definition: `∫⁻ ω, Y ω / X ω ∂μ ≤ μ X.fsupport` for all e-variables `Y`
+- Log-optimality: `∫ᵉ ω, log(Y ω / X ω) ∂μ ≤ 0` for all e-variables `Y`
 
 -/
 
@@ -43,6 +57,7 @@ lemma measure_fsupport_eq_zero_of_ae_eq_top {μ : Measure 𝓧} {X : 𝓧 → �
   filter_upwards [hX_top] with x hx
   simp [hx]
 
+/-- The integral of `Y / Y` equals the measure of the finite support of `Y`. -/
 lemma lintegral_div_self_eq_measure_fsupport {Y : 𝓧 → ℝ≥0∞} (hY : Measurable Y) {P : Measure 𝓧} :
     ∫⁻ ω, Y ω / Y ω ∂P = P Y.fsupport := by
   have m_fsupport : MeasurableSet Y.fsupport := hY.measurable_fsupport
@@ -144,6 +159,8 @@ lemma lintegral_eq_setLIntegral_fsupport [IsFiniteMeasure μ] (hX : IsNumeraire 
     and_true, Decidable.not_not] at hω₂
   simp [hω₂]
 
+/-- If an e-variable `Y` is ae-infinite at a point, then the numeraire `X` must also be
+ae-infinite. -/
 lemma ae_top_implies_numeraire_top [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) (hY : IsEVar Y S) :
     ∀ᵐ ω ∂μ, Y ω = ∞ → X ω = ∞ := by
   by_contra h
@@ -159,8 +176,7 @@ lemma ae_top_implies_numeraire_top [IsFiniteMeasure μ] (hX : IsNumeraire X S μ
   intro ω hω
   simp [hω.1, ENNReal.top_div, hω.2]
 
--- `rev`?
-lemma lintegral_eq_setLIntegral_rev_fsupport [IsFiniteMeasure μ] (hX : IsNumeraire X S μ)
+lemma lintegral_eq_setLIntegral_fsupport' [IsFiniteMeasure μ] (hX : IsNumeraire X S μ)
     (hY : IsEVar Y S) : ∫⁻ ω, Y ω / X ω ∂μ = ∫⁻ ω in Y.fsupport, Y ω / X ω ∂μ := by
   rw [← lintegral_add_compl _ hY.measurable_fsupport]
   suffices ∫⁻ ω in Y.fsupportᶜ, Y ω / X ω ∂μ = 0 by simp [this]
@@ -184,6 +200,7 @@ lemma measure_fsupport_ne_zero_or_ae_top [IsFiniteMeasure μ] (hX : IsNumeraire 
   filter_upwards [h', ae_ne_zero hX] with ω hω_mem hω_ne_zero
   simpa [hω_ne_zero] using hω_mem
 
+/-- Two numeraires have equal finite support measures. -/
 lemma measure_fsupport_eq_measure_fsupport [IsFiniteMeasure μ] (hX : IsNumeraire X S μ)
     (hY : IsNumeraire Y S μ) : μ X.fsupport = μ Y.fsupport := by
   refine measure_congr ?_
@@ -206,7 +223,7 @@ lemma setLIntegral_fsupport_inv_le_measure [IsFiniteMeasure μ] (hX : IsNumerair
     (hY : IsNumeraire Y S μ) : ∫⁻ ω in X.fsupport, (Y ω / X ω)⁻¹ ∂μ ≤ μ X.fsupport := by
   suffices ∫⁻ ω in X.fsupport, ((Y / X) ω)⁻¹ ∂μ ≤ μ X.fsupport from this
   rw [setLIntegral_congr_fun hX.measurable_fsupport <| ENNReal.inv_div_fsupport Y X,
-    ← hY.lintegral_eq_setLIntegral_rev_fsupport hX.toIsEVar]
+    ← hY.lintegral_eq_setLIntegral_fsupport' hX.toIsEVar]
   rw [hX.measure_fsupport_eq_measure_fsupport hY]
   exact hY.lintegral_div_le_measure_fsupport hX.toIsEVar
 
@@ -258,7 +275,7 @@ lemma inv_measure_fsupport_mul_lintegral_div_eq_one [IsFiniteMeasure μ] (hX : I
   · left
     simp
 
-/-- The Numeraire is almost-everywhere unique. -/
+/-- **Uniqueness Theorem**: The numeraire is almost-everywhere unique under finite measures. -/
 theorem ae_unique [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) (hY : IsNumeraire Y S μ) :
     X =ᵐ[μ] Y := by
   rcases hY.measure_fsupport_ne_zero_or_ae_top with μ_fsupport | hYₜ

@@ -55,7 +55,7 @@ lemma one_sub_apply_one (R : Measure ({0, 1} : Set ℝ)) [IsProbabilityMeasure R
 
 @[simp]
 lemma one_sub_apply_zero (R : Measure ({0, 1} : Set ℝ)) [IsProbabilityMeasure R] :
-    1 - R {⟨0, by simp⟩} = R {⟨1, by simp⟩}  := by
+    1 - R {⟨0, by simp⟩} = R {⟨1, by simp⟩} := by
   have h_add := apply_zero_add_apply_one_eq_one R
   rw [add_comm] at h_add
   symm
@@ -63,8 +63,7 @@ lemma one_sub_apply_zero (R : Measure ({0, 1} : Set ℝ)) [IsProbabilityMeasure 
 
 @[simp]
 lemma one_sub_one_sub_measure_apply (R : Measure ({0, 1} : Set ℝ)) [IsProbabilityMeasure R]
-    (s : Set ({0, 1} : Set ℝ)) :
-    1 - (1 - R s) = R s := by
+    (s : Set ({0, 1} : Set ℝ)) : 1 - (1 - R s) = R s := by
   rw [ENNReal.sub_sub_cancel (by simp) prob_le_one]
 
 lemma eq_ber_lintegral (R : Measure ({0, 1} : Set ℝ)) [IsProbabilityMeasure R] :
