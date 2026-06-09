@@ -14,7 +14,7 @@ public import Mathlib.MeasureTheory.Constructions.BorelSpace.Real
 
 @[expose] public section
 
-open ENNReal
+open ENNReal NNReal
 
 lemma EReal.le_of_toReal_le {a b : EReal} (h1 : a ≠ ⊤) (h2 : b ≠ ⊤) (h3 : a ≠ ⊥) (h4 : b ≠ ⊥)
     (h5 : b.toReal ≤ a.toReal) : b ≤ a := by
@@ -292,6 +292,12 @@ lemma EReal.ne_top_exists_finite_iff {a : EReal} : a ≠ ⊤ ↔ ∃ b, b ≠ �
 noncomputable
 instance : ENorm EReal where
   enorm x := (max x 0).toENNReal + (- min x 0).toENNReal
+
+noncomputable instance : SMul ℝ≥0 EReal where smul c x := c * x
+noncomputable instance : SMul ℝ≥0∞ EReal where smul c x := c * x
+
+@[simp] lemma EReal.smul_nnreal_eq_mul (c : ℝ≥0) (x : EReal) : c • x = (c : ℝ) * x := rfl
+@[simp] lemma EReal.smul_ennreal_eq_mul (c : ℝ≥0∞) (x : EReal) : c • x = c * x := rfl
 
 section limsup_liminf
 
