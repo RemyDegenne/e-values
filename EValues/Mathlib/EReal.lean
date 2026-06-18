@@ -333,9 +333,8 @@ lemma EReal.liminf_coe_ennreal {α : Type} (F : Filter α) [F.NeBot] (g : α →
 
 end limsup_liminf
 
-section TODO
-
-lemma todo' {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (u : EReal) : (a + b) * u = a * u + b * u := by
+lemma EReal.distrib_real {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (u : EReal) :
+    (a + b) * u = a * u + b * u := by
   cases u with
   | bot =>
     by_cases ha_zero : a = 0
@@ -352,7 +351,7 @@ lemma todo' {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (u : EReal) : (a + b) * u 
     rw [EReal.mul_top_of_pos (by positivity)]
     simp
 
-lemma todo (a b : ℝ≥0∞) (u : EReal) : (a + b) * u = a * u + b * u := by
+lemma EReal.distrib_ennreal (a b : ℝ≥0∞) (u : EReal) : (a + b) * u = a * u + b * u := by
   by_cases ha : a = 0
   · simp [ha]
   by_cases hb : b = 0
@@ -387,6 +386,4 @@ lemma todo (a b : ℝ≥0∞) (u : EReal) : (a + b) * u = a * u + b * u := by
       exact absurd ha_pos.le (not_le.mpr h)
   have ha_real : (a : EReal) = a.toReal := by rw [EReal.coe_ennreal_toReal ha_top]
   have hb_real : (b : EReal) = b.toReal := by rw [EReal.coe_ennreal_toReal hb_top]
-  rw [ha_real, hb_real, todo' (by simp) (by simp)]
-
-end TODO
+  rw [ha_real, hb_real, EReal.distrib_real (by simp) (by simp)]

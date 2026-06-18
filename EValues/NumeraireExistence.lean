@@ -82,7 +82,7 @@ lemma convex_eintegral_utility_ge [IsFiniteMeasure P] (u : EReal)
     have : (1 : EReal) = (1 : ℝ≥0∞) := rfl
     rw [this, ← hab]
     simp only [EReal.coe_ennreal_add]
-    exact todo _ _ _
+    exact EReal.distrib_ennreal _ _ _
   _ ≤ a * ∫ᵉ ω, U (Y ω) ∂P + b * ∫ᵉ ω, U (Z ω) ∂P := by gcongr
   _ = ∫ᵉ ω, a • U (Y ω) + b • U (Z ω) ∂P := by
     rw [← eintegral_mul_const (by simp) (by simpa),
