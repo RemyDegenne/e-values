@@ -16,16 +16,16 @@ probability measures with bounded expectations.
 
 ## Results
 
-* `ProbabilityTheory.erenyiDiv_bounded_eq_erenyiDiv_bernoulli`: The e-Rényi divergence between sets
+* `erenyiDiv_bounded_eq_erenyiDiv_bernoulli`: The e-Rényi divergence between sets
   of probability measures on the unit interval with bounded expectations is equal to the
   e-Rényi divergence between corresponding sets of Bernoulli distributions.
-* `ProbabilityTheory.erenyiDiv_bounded`: A closed-form expression for the e-Rényi divergence
+* `erenyiDiv_bounded`: A closed-form expression for the e-Rényi divergence
   between sets of probability measures on the unit interval with bounded expectations.
-* `ProbabilityTheory.echernoffDiv_bounded`: A closed-form expression for the e-Chernoff divergence
+* `echernoffDiv_bounded`: A closed-form expression for the e-Chernoff divergence
   between sets of probability measures on the unit interval with bounded expectations.
-* `ProbabilityTheory.erenyiDiv_ge_of_separated`: A lower bound on the e-Rényi divergence between
+* `erenyiDiv_ge_of_separated`: A lower bound on the e-Rényi divergence between
   sets of probability measures with bounded expectations w.r.t. a measurable function.
-* `ProbabilityTheory.echernoffDiv_ge_of_separated`: A lower bound on the e-Chernoff divergence
+* `echernoffDiv_ge_of_separated`: A lower bound on the e-Chernoff divergence
   between sets of probability measures with bounded expectations w.r.t. a measurable function.
 -/
 
