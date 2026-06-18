@@ -75,7 +75,7 @@ lemma lintegral_div_self_eq_measure_fsupport {Y : 𝓧 → ℝ≥0∞} (hY : Mea
     · simp_all
 
 /-- A random variable `X` is the numeraire for a set of measures `S` and a measure `μ`
-if it is an E-variable for `S` and the expectation of the ratio of any E-variable `Y` over `X`
+if it is an e-variable for `S` and the expectation of the ratio of any e-variable `Y` over `X`
 is at most one under `μ`. -/
 structure IsNumeraire (X : 𝓧 → ℝ≥0∞) (S : Set (Measure 𝓧)) (μ : Measure 𝓧) : Prop
     extends IsEVar X S where
