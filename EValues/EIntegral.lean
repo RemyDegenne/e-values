@@ -19,9 +19,9 @@ This file defines integration for functions taking values in `EReal` (the extend
 
 ## Main definitions
 
-* `MeasureTheory.eintegral`: The integral of an `EReal`-valued function, defined as the difference
+* `eintegral`: The integral of an `EReal`-valued function, defined as the difference
   between the lower Lebesgue integrals of the positive and negative parts.
-* `MeasureTheory.eintegrable`: A condition ensuring the integral is well-defined (avoiding `⊤ - ⊤`).
+* `eintegrable`: A condition ensuring the integral is well-defined (avoiding `⊤ - ⊤`).
 * `posPartFun` and `negPartFun`: The positive and negative parts of an `EReal`-valued function.
 
 ## Main statements

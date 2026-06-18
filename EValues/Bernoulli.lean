@@ -15,19 +15,19 @@ distributions.
 
 ## Main definitions
 
-* `ProbabilityTheory.Ber`: Bernoulli distribution on `{0, 1}`.
+* `Ber`: Bernoulli distribution on `{0, 1}`.
 
 ## Main statements
 
-* `ProbabilityTheory.isEVar_bernoulli_le_iff`: Characterization of e-variables for Bernoulli
+* `isEVar_bernoulli_le_iff`: Characterization of e-variables for Bernoulli
   distributions with mean at most `δ`.
-* `ProbabilityTheory.maxUtility_bernoulli_half_le`: Maximum utility for Bernoulli distribution with
+* `maxUtility_bernoulli_half_le`: Maximum utility for Bernoulli distribution with
  mean at most $\frac{1}{2}$.
-* `ProbabilityTheory.maxUtility_bernoulli_half_le`: Maximum utility for Bernoulli distribution with
+* `maxUtility_bernoulli_half_le`: Maximum utility for Bernoulli distribution with
   mean at most $\frac{1}{2}$.
-* `ProbabilityTheory.erenyiDiv_bernoulli`: e-Rényi divergence between two Bernoulli distributions
+* `erenyiDiv_bernoulli`: e-Rényi divergence between two Bernoulli distributions
   with mean at most $\frac{1}{2}$.
-* `ProbabilityTheory.echernoffDiv_bernoulli`: e-Chernoff divergence between two Bernoulli
+* `echernoffDiv_bernoulli`: e-Chernoff divergence between two Bernoulli
   distributions with mean at most $\frac{1}{2}$.
 
 -/

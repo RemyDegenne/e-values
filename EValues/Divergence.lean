@@ -19,19 +19,19 @@ properties as the classical divergences. In particular, they satisfy a data proc
 
 ## Main definitions
 
-* `ProbabilityTheory.erenyiDiv α S T`: the e-Rényi divergence of order `α` between two sets of
+* `erenyiDiv α S T`: the e-Rényi divergence of order `α` between two sets of
   measures `S` and `T`.
-* `ProbabilityTheory.echernoffDiv S T`: the e-Chernoff divergence between two sets of measures `S`
+* `echernoffDiv S T`: the e-Chernoff divergence between two sets of measures `S`
   and `T`.
 
 ## Main statements
 
-* `ProbabilityTheory.erenyiDiv_comp_le`: data processing inequality for the e-Rényi divergence.
-* `ProbabilityTheory.echernoffDiv_comp_le`: data processing inequality for the e-Chernoff
+* `erenyiDiv_comp_le`: data processing inequality for the e-Rényi divergence.
+* `echernoffDiv_comp_le`: data processing inequality for the e-Chernoff
   divergence.
-* `ProbabilityTheory.erenyiDiv_prod`: e-Rényi divergence of product sets of measures is the sum of
+* `erenyiDiv_prod`: e-Rényi divergence of product sets of measures is the sum of
   the e-Rényi divergences.
-* `ProbabilityTheory.echernoffDiv_prod_le`: e-Chernoff divergence of product sets of measures is
+* `echernoffDiv_prod_le`: e-Chernoff divergence of product sets of measures is
   less than the sum of the e-Chernoff divergences.
 
 -/

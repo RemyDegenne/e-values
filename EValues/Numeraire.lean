@@ -24,12 +24,12 @@ logarithmic utility among all e-variables in a given set.
 
 ## Main statements
 
-* `IsNumeraire.ae_unique`: The numeraire is almost-everywhere unique under finite measures.
-* `IsNumeraire.eintegral_log_div_nonpos`: A numeraire is log-optimal: the expected log of the
+* `ae_unique`: The numeraire is almost-everywhere unique under finite measures.
+* `eintegral_log_div_nonpos`: A numeraire is log-optimal: the expected log of the
   ratio of any e-variable to the numeraire is non-positive.
-* `IsNumeraire.eintegral_log_le`: A numeraire maximizes the expected logarithm among all
+* `eintegral_log_le`: A numeraire maximizes the expected logarithm among all
   e-variables.
-* `IsNumeraire.eintegrable_log`: The logarithm of the numeraire is e-integrable.
+* `eintegrable_log`: The logarithm of the numeraire is e-integrable.
 
 ## Implementation notes
 
