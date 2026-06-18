@@ -5,11 +5,30 @@ Authors: Rémy Degenne, Gaëtan Serré
 -/
 module
 
-public import EValues.ERenyi
+public import EValues.Divergence
 
 /-!
 # Maximum utility and Bernoulli distributions
 
+Contains closed-form expressions for e-values, maximum utility, and divergences for Bernoulli
+distributions.
+
+## Main definitions
+
+* `ProbabilityTheory.Ber`: Bernoulli distribution on `{0, 1}`.
+
+## Main results
+
+* `ProbabilityTheory.isEVar_bernoulli_le_iff`: Characterization of e-variables for Bernoulli
+distributions with mean at most `δ`.
+* `ProbabilityTheory.maxUtility_bernoulli_half_le`: Maximum utility for Bernoulli distribution with
+mean at most $\frac{1}{2}$.
+* `ProbabilityTheory.maxUtility_bernoulli_half_le`: Maximum utility for Bernoulli distribution with
+mean at most $\frac{1}{2}$.
+* `ProbabilityTheory.erenyiDiv_bernoulli`: e-Rényi divergence between two Bernoulli distributions
+with mean at most $\frac{1}{2}$.
+* `ProbabilityTheory.echernoffDiv_bernoulli`: e-Chernoff divergence between two Bernoulli
+distributions with mean at most $\frac{1}{2}$.
 -/
 
 @[expose] public section
@@ -225,6 +244,8 @@ lemma maxUtility_bernoulli_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹
       = 2⁻¹ * klBer p (ENNReal.ofReal δ) := by
   sorry
 
+/-- The maximum utility for Bernoulli distribution with mean at most `1/2` is
+`2⁻¹ * log (1 / (4 * δ * (1 - δ)))`. -/
 lemma maxUtility_bernoulli_half_le {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
     maxUtility (Ber 2⁻¹)
         {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ} logUtility
@@ -380,6 +401,8 @@ lemma map_bernoulli_le_eq_bernoulli_ge (δ : ℝ) :
       linarith
     · rw [Measure.map_map (by fun_prop) (by fun_prop), hφ_inv, Measure.map_id]
 
+/-- The e-Rényi divergence between two Bernoulli distributions with mean at most `1/2` is
+`log (1 / (4 * δ * (1 - δ)))`. -/
 lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
     erenyiDiv 2⁻¹ {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ}
         {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ 1 - δ ≤ ∫ x, (x : ℝ) ∂μ}
@@ -430,6 +453,8 @@ lemma erenyiDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
       simp
     rw [this, ENNReal.mul_inv_cancel (by simp) (by simp)]
 
+/-- The e-Chernoff divergence between two Bernoulli distributions with mean at most `1/2` is
+`2⁻¹ * log (1 / (4 * δ * (1 - δ)))`. -/
 lemma echernoffDiv_bernoulli {δ : ℝ} (hδ_pos : 0 < δ) (hδ : δ ≤ 2⁻¹) :
     echernoffDiv {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ ∫ x, (x : ℝ) ∂μ ≤ δ}
         {μ : Measure ({0, 1} : Set ℝ) | IsProbabilityMeasure μ ∧ 1 - δ ≤ ∫ x, (x : ℝ) ∂μ}
