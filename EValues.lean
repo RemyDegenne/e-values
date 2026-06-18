@@ -2,8 +2,8 @@ module  -- shake: keep-all
 
 public import EValues.Bernoulli
 public import EValues.DPI
-public import EValues.EIntegral
 public import EValues.Divergence
+public import EValues.EIntegral
 public import EValues.EValue
 public import EValues.LebesgueDecomposition
 public import EValues.LowerBound
