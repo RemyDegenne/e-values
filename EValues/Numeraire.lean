@@ -36,7 +36,6 @@ logarithmic utility among all e-variables in a given set.
 The numeraire optimality is characterized through two equivalent perspectives:
 - Direct definition: `∫⁻ ω, Y ω / X ω ∂μ ≤ μ X.fsupport` for all e-variables `Y`
 - Log-optimality: `∫ᵉ ω, log(Y ω / X ω) ∂μ ≤ 0` for all e-variables `Y`
-
 -/
 
 @[expose] public section

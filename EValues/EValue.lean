@@ -24,7 +24,7 @@ e-value theory.
 * `NeBotUtilityEVar X P S U`: An e-variable `X` for which the composed utility integral is
   not `⊥`.
 
-## Main results
+## Main statements
 
 * `isRandEVar_iff_isEVar`: A kernel is a randomized e-variable iff its mean function is an
   e-variable.

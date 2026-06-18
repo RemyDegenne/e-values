@@ -33,7 +33,6 @@ public import Mathlib.InformationTheory.KullbackLeibler.KLFun
 * `maxUtility_eq_iInf_KL_memEffectiveSet`: if the numeraire is almost everywhere finite, then
   `maxUtility P S logUtility = ⨅ (μ) (_hμ : MemEffectiveSet S μ), KL P μ`. This is the
   duality between maximal logarithmic utility and minimal Kullback-Leibler divergence.
-
 -/
 
 @[expose] public section

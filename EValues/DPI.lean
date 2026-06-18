@@ -23,7 +23,7 @@ kernel or measurable function cannot increase the maximum expected utility.
 * `maxUtility P S U`: The maximum expected utility over all e-variables for `S` under measure `P`.
 * `maxRandUtility P S U`: The maximum expected utility over randomized e-variables.
 
-## Main results
+## Main statements
 
 * `maxRandUtility_eq_maxUtility`: Randomization does not increase maximum utility.
 * `maxUtility_comp_le`, `maxUtility_map_le`: Data processing inequalities for kernels and functions.

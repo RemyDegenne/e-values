@@ -26,7 +26,7 @@ This file defines utility functions for use in probability theory and e-value th
 * `Utility.deriv`: The derivative of a utility function.
 * `logUtility`: The logarithmic utility function.
 
-## Main results
+## Main statements
 
 * `Utility.eintegral_le_map`: Jensen's inequality for utility functions.
 * `Utility.le_add_deriv_mul`: The utility function is upper-bounded by its first-order

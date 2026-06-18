@@ -24,7 +24,7 @@ This file defines integration for functions taking values in `EReal` (the extend
 * `MeasureTheory.eintegrable`: A condition ensuring the integral is well-defined (avoiding `⊤ - ⊤`).
 * `posPartFun` and `negPartFun`: The positive and negative parts of an `EReal`-valued function.
 
-## Main results
+## Main statements
 
 * `eintegral_add`: The integral of a sum is the sum of integrals (under suitable integrability
   conditions to avoid indeterminate forms).
@@ -33,9 +33,9 @@ This file defines integration for functions taking values in `EReal` (the extend
 * `eintegral_prod`: Fubini's theorem for extended real-valued functions on product measures,
   allowing interchange of integration order.
 * `limsup_eintegral_le`: A Fatou-type lemma for the extended integral, relating the limsup of
-integrals to the integral of the limsup.
+  integrals to the integral of the limsup.
 * `eintegral_liminf_le`: A Fatou-type lemma for the extended integral, relating the liminf of
-integrals to the integral of the liminf.
+  integrals to the integral of the liminf.
 
 ## Notation
 
