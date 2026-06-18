@@ -66,4 +66,23 @@ lemma inv_div_fsupport {α : Type*} (f g : α → ℝ≥0∞) :
 lemma log_div (a b : ℝ≥0∞) : ENNReal.log (a / b) = ENNReal.log a - ENNReal.log b := by
   simp_rw [div_eq_mul_inv, ENNReal.log_mul_add, ENNReal.log_inv, sub_eq_add_neg]
 
+section Topology
+
+open Filter Topology
+
+instance : (𝓝[<] ∞).NeBot := by
+  have : NeZero ∞ := by constructor; simp
+  exact ENNReal.nhdsLT_neBot
+
+lemma tendsto_toReal_atTop : Tendsto (fun x : ℝ≥0∞ ↦ x.toReal) (𝓝[<] ∞) atTop := by
+  rw [tendsto_atTop]
+  intro y
+  rw [eventually_nhdsWithin_iff]
+  simp only [Set.mem_Iio]
+  have h_ge : ∀ᶠ (x : ℝ≥0∞) in 𝓝 ⊤, ENNReal.ofReal y ≤ x := eventually_ge_nhds (by simp)
+  filter_upwards [h_ge] with x hx hx_lt_top
+  rwa [← ENNReal.ofReal_le_iff_le_toReal hx_lt_top.ne]
+
+end Topology
+
 end ENNReal
