@@ -6,7 +6,7 @@ Authors: Rémy Degenne, Gaëtan Serré
 
 module
 
-public import EValues.EValue
+public import EValues.EVariable
 public import EValues.Utility
 public import EValues.Mathlib.iSup
 public import EValues.Mathlib.unitInterval

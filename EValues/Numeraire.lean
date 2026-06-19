@@ -6,7 +6,7 @@ Authors: Gaëtan Serré, Rémy Degenne
 
 module
 
-public import EValues.EValue
+public import EValues.EVariable
 public import EValues.Mathlib.Jensen
 public import EValues.Utility
 
