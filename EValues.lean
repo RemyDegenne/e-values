@@ -4,7 +4,7 @@ public import EValues.Bernoulli
 public import EValues.DPI
 public import EValues.Divergence
 public import EValues.EIntegral
-public import EValues.EValue
+public import EValues.EVariable
 public import EValues.LebesgueDecomposition
 public import EValues.LowerBound
 public import EValues.Mathlib.Convex
