@@ -162,9 +162,7 @@ lemma exists_eq_iSup_eintegral_of_le' (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
           rw [Filter.limsup_le_iff']
           intro y hy
           refine .of_forall fun n ↦ LT.lt.le <| lt_of_le_of_lt (Eq.le ?_) hy
-          suffices ∀ x, (U (Y n x)).toENNReal = 0 by
-            simp_rw [this]
-            simp
+          suffices ∀ x, (U (Y n x)).toENNReal = 0 by simp [this]
           intro x
           replace hB : B.toEReal < 0 := by simp [hB]
           replace hU_le := (lt_of_le_of_lt (hU_le (Y n x)) hB).le
