@@ -364,6 +364,9 @@ lemma lt_top_of_numeraireOfBounded_lt_top {U : Utility} {b : ℝ} (hU_le : ∀ x
 noncomputable instance inst_smul_I_ENNReal : SMul I ℝ≥0∞ where
   smul a x := ENNReal.ofReal a * x
 
+@[simp]
+lemma smul_I_ENNReal (a : I) (x : ℝ≥0∞) : a • x = ENNReal.ofReal a * x := rfl
+
 instance : MeasurableConstSMul I ℝ≥0∞ where
   measurable_const_smul c := by
     change Measurable (fun x ↦ ENNReal.ofReal c * x)
@@ -380,7 +383,7 @@ lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞
   let Z := fun (t : I) ↦ t • Y + (⟨1 - t, by grind⟩ : I) • X
   have hZ_zero : Z 0 = X := by
     simp only [Set.Icc.coe_zero, sub_zero, Set.Icc.mk_one, Z]
-    change ENNReal.ofReal (0 : I) • Y + ENNReal.ofReal (1 : I) • X = X
+    ext
     simp
   have hZ (t : I) : IsEVar (Z t) S := by
     refine convex_isEVar S hY (isEVar_numeraireOfBounded hU_le P hS) (by positivity) (by positivity)
