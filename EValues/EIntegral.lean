@@ -19,12 +19,12 @@ This file defines integration for functions taking values in `EReal` (the extend
 
 ## Main definitions
 
-* `MeasureTheory.eintegral`: The integral of an `EReal`-valued function, defined as the difference
+* `eintegral`: The integral of an `EReal`-valued function, defined as the difference
   between the lower Lebesgue integrals of the positive and negative parts.
-* `MeasureTheory.eintegrable`: A condition ensuring the integral is well-defined (avoiding `⊤ - ⊤`).
+* `eintegrable`: A condition ensuring the integral is well-defined (avoiding `⊤ - ⊤`).
 * `posPartFun` and `negPartFun`: The positive and negative parts of an `EReal`-valued function.
 
-## Main results
+## Main statements
 
 * `eintegral_add`: The integral of a sum is the sum of integrals (under suitable integrability
   conditions to avoid indeterminate forms).
@@ -33,9 +33,9 @@ This file defines integration for functions taking values in `EReal` (the extend
 * `eintegral_prod`: Fubini's theorem for extended real-valued functions on product measures,
   allowing interchange of integration order.
 * `limsup_eintegral_le`: A Fatou-type lemma for the extended integral, relating the limsup of
-integrals to the integral of the limsup.
+  integrals to the integral of the limsup.
 * `eintegral_liminf_le`: A Fatou-type lemma for the extended integral, relating the liminf of
-integrals to the integral of the liminf.
+  integrals to the integral of the liminf.
 
 ## Notation
 
@@ -77,6 +77,7 @@ avoiding the `⊤ - ⊤` bad case in the definition. -/
 def eintegrable (f : α → EReal) (μ : Measure α := by volume_tac) : Prop :=
   ∫⁻ x, (f x).toENNReal ∂μ ≠ ⊤ ∨ ∫⁻ x, (-f x).toENNReal ∂μ ≠ ⊤
 
+-- todo: Remove or move this two lines?
 -- if the integral of `f` gives `⊤ - ⊤ = ⊥`, then `-f` also gives `⊤ - ⊤ = ⊥`, so the integral
 -- of `-f` is not the negation of the integral of `f`
 
@@ -640,10 +641,6 @@ lemma eintegral_eq_integral {f : α → ℝ} (hf : Integrable f μ) :
   · exact h_int_min
   congr with x
   rcases le_total 0 (f x) with h | h <;> simp [h]
-
-noncomputable
-instance : ENorm EReal where
-  enorm x := (max x 0).toENNReal + (- min x 0).toENNReal
 
 lemma lintegral_enorm_eq_posPartFun_add_negPartFun (hf : AEMeasurable f μ) :
     ∫⁻ x, ‖f x‖ₑ ∂μ = ∫ᵉ x, f⁺ x ∂μ + ∫ᵉ x, f⁻ x ∂μ := by
@@ -1337,8 +1334,7 @@ section FatouLemmas
 
 open Filter
 
-
-/-- *Fatou's lemma* on limsup for the extended integral. -/
+/-- **Fatou's lemma** on limsup for the extended integral. -/
 lemma limsup_eintegral_le {f : ℕ → α → EReal} (hf : ∀ n, Measurable (f n))
     {g : α → ℝ≥0∞} (h_bound : ∀ n, EReal.toENNReal ∘ f n ≤ᵐ[μ] g) (h_fin : ∫⁻ x, g x ∂μ ≠ ⊤)
     (fin_limsup : limsup (fun n ↦ (∫⁻ (x : α), (f n x).toENNReal ∂μ).toEReal) atTop ≠ ⊤ ∨
@@ -1374,7 +1370,7 @@ lemma limsup_eintegral_le {f : ℕ → α → EReal} (hf : ∀ n, Measurable (f 
       norm_cast
       exact lintegral_liminf_le (by fun_prop)
 
-/-- *Fatou's lemma* on liminf for the extended integral. -/
+/-- **Fatou's lemma** on liminf for the extended integral. -/
 lemma eintegral_liminf_le {f : ℕ → α → EReal} (hf : ∀ n, Measurable (f n))
     {g : α → ℝ≥0∞} (h_bound : ∀ n, EReal.toENNReal ∘ (-f n) ≤ᵐ[μ] g) (h_fin : ∫⁻ x, g x ∂μ ≠ ⊤) :
     ∫ᵉ x, liminf (fun n ↦ f n x) atTop ∂μ ≤ liminf (fun n ↦ ∫ᵉ x, f n x ∂μ) atTop := by

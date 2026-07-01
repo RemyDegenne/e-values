@@ -65,60 +65,6 @@ lemma eintegral_lt_top_of_le {f : 𝓧 → EReal} {b : EReal} (hf : ∀ x, f x �
     rw [lt_top_iff_ne_top, ne_eq, EReal.coe_ennreal_eq_top_iff]
     simp [hb, ENNReal.mul_eq_top]
 
-lemma todo' {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (u : EReal) : (a + b) * u = a * u + b * u := by
-  cases u with
-  | bot =>
-    by_cases ha_zero : a = 0
-    · simp [ha_zero]
-    rw [EReal.mul_bot_of_pos (by positivity), EReal.mul_bot_of_pos (by positivity)]
-    simp
-  | coe u => norm_cast; ring
-  | top =>
-    by_cases ha_zero : a = 0
-    · simp [ha_zero]
-    rw [EReal.mul_top_of_pos (by positivity), EReal.mul_top_of_pos (by positivity)]
-    by_cases hb_zero : b = 0
-    · simp [hb_zero]
-    rw [EReal.mul_top_of_pos (by positivity)]
-    simp
-
-lemma todo (a b : ℝ≥0∞) (u : EReal) : (a + b) * u = a * u + b * u := by
-  by_cases ha : a = 0
-  · simp [ha]
-  by_cases hb : b = 0
-  · simp [hb]
-  have ha_pos : 0 < a := by positivity
-  have hb_pos : 0 < b := by positivity
-  by_cases ha_top : a = ∞
-  · simp only [ha_top, EReal.coe_ennreal_top, ne_eq, EReal.coe_ennreal_ne_bot, not_false_eq_true,
-      EReal.top_add_of_ne_bot]
-    rcases lt_trichotomy u 0 with (hu_neg | rfl | hu_pos)
-    · rw [EReal.top_mul_of_neg (by simpa)]; simp
-    · simp
-    · rw [EReal.top_mul_of_pos (by simpa), EReal.top_add_of_ne_bot]
-      simp only [ne_eq, EReal.mul_eq_bot, EReal.coe_ennreal_ne_bot, false_and,
-        EReal.coe_ennreal_pos, hb_pos, true_and, EReal.coe_ennreal_eq_top_iff, false_or, not_or,
-        not_and, not_lt, hu_pos.le, implies_true]
-      refine ⟨fun h ↦ by simp [h] at hu_pos, fun h ↦ ?_⟩
-      norm_cast at h
-      exact absurd hb_pos.le (not_le.mpr h)
-  by_cases hb_top : b = ∞
-  · simp only [hb_top, EReal.coe_ennreal_top, ne_eq, EReal.coe_ennreal_ne_bot, not_false_eq_true,
-      EReal.add_top_of_ne_bot]
-    rcases lt_trichotomy u 0 with (hu_neg | rfl | hu_pos)
-    · rw [EReal.top_mul_of_neg (by simpa)]; simp
-    · simp
-    · rw [EReal.top_mul_of_pos (by simpa), EReal.add_top_of_ne_bot]
-      simp only [ne_eq, EReal.mul_eq_bot, EReal.coe_ennreal_ne_bot, false_and,
-        EReal.coe_ennreal_pos, ha_pos, true_and, EReal.coe_ennreal_eq_top_iff, false_or, not_or,
-        not_and, not_lt, hu_pos.le, implies_true]
-      refine ⟨fun h ↦ by simp [h] at hu_pos, fun h ↦ ?_⟩
-      norm_cast at h
-      exact absurd ha_pos.le (not_le.mpr h)
-  have ha_real : (a : EReal) = a.toReal := by rw [EReal.coe_ennreal_toReal ha_top]
-  have hb_real : (b : EReal) = b.toReal := by rw [EReal.coe_ennreal_toReal hb_top]
-  rw [ha_real, hb_real, todo' (by simp) (by simp)]
-
 lemma convex_eintegral_utility_ge [IsFiniteMeasure P] (u : EReal)
     (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
     (hU_meas : Measurable U) {B : EReal} (hU_le : ∀ x : ℝ≥0∞, U x ≤ B) (hB : B ≠ ⊤) :
@@ -136,7 +82,7 @@ lemma convex_eintegral_utility_ge [IsFiniteMeasure P] (u : EReal)
     have : (1 : EReal) = (1 : ℝ≥0∞) := rfl
     rw [this, ← hab]
     simp only [EReal.coe_ennreal_add]
-    exact todo _ _ _
+    exact EReal.distrib_ennreal _ _ _
   _ ≤ a * ∫ᵉ ω, U (Y ω) ∂P + b * ∫ᵉ ω, U (Z ω) ∂P := by gcongr
   _ = ∫ᵉ ω, a • U (Y ω) + b • U (Z ω) ∂P := by
     rw [← eintegral_mul_const (by simp) (by simpa),
@@ -538,7 +484,7 @@ lemma lintegral_div_numeraire_le_one (P : Measure 𝓧) [IsProbabilityMeasure P]
     ∫⁻ x, X x / (numeraire P S x) ∂P ≤ 1 := by
   simpa using lintegral_div_numeraire_le_measure_univ P hS hX_evar
 
-/-- `numeraire` is a numeraire. -/
+/-- The canonical numeraire `numeraire P S` is indeed a numeraire for `S` and `P`. -/
 lemma isNumeraire_numeraire (P : Measure 𝓧) (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
     IsNumeraire (numeraire P S) S P :=
   ⟨isEVar_numeraire P S, fun _ ↦ lintegral_div_numeraire_le_measure_fsupport P hS⟩

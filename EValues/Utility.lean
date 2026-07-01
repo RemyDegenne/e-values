@@ -8,13 +8,30 @@ module
 
 public import EValues.EIntegral
 public import EValues.Mathlib.Convex
+public import EValues.Mathlib.ENNReal
 public import Mathlib.Analysis.SpecialFunctions.Complex.Analytic
 public import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
 public import Mathlib.Data.Real.StarOrdered
 public import Mathlib.Order.CompletePartialOrder
 
 /-!
-# Utility functions
+# Utility Functions
+
+This file defines utility functions for use in probability theory and e-value theory.
+
+## Main definitions
+
+* `Utility`: A structure representing a concave, monotone, and differentiable function from
+  `ℝ≥0∞` to `EReal`, which is finite on `(0, ∞)`.
+* `Utility.deriv`: The derivative of a utility function.
+* `logUtility`: The logarithmic utility function.
+
+## Main statements
+
+* `Utility.eintegral_le_map`: Jensen's inequality for utility functions.
+* `Utility.le_add_deriv_mul`: The utility function is upper-bounded by its first-order
+  Taylor approximation (a consequence of concavity).
+* `deriv_logUtility`: The derivative of the logarithmic utility function.
 
 -/
 
@@ -112,6 +129,7 @@ lemma Utility.monotoneOn_Ici_real (U : Utility) (hU0 : U 0 ≠ ⊥) :
     · exact U.ne_bot (by simp [lt_of_le_of_ne (Set.mem_Ici.mp hx) (Ne.symm hx0)])
   · exact U.ne_top (by simp)
 
+/-- The utility function is concave on `(0, ∞)` when viewed as a real-valued function. -/
 lemma Utility.concaveOn_Ioi_real (U : Utility) : ConcaveOn ℝ (Set.Ioi 0) U.real := by
   refine ⟨convex_Ioi 0, ?_⟩
   intro x hx y hy a b ha hb hab
@@ -119,7 +137,7 @@ lemma Utility.concaveOn_Ioi_real (U : Utility) : ConcaveOn ℝ (Set.Ioi 0) U.rea
   have hy_pos : 0 < y := Set.mem_Ioi.mp hy
   simp only [smul_eq_mul]
   have h_ccv := U.concave.2 (Set.mem_univ (ENNReal.ofReal x)) (Set.mem_univ (ENNReal.ofReal y))
-    (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by sorry) --ext; simp [hab])
+    (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by ext; exact hab)
   simp only [EReal.smul_nnreal_eq_mul, ENNReal.smul_def, smul_eq_mul] at h_ccv
   have h_mul (x a : ℝ) (ha : 0 ≤ a) :
       (ENNReal.ofNNReal (⟨a, ha⟩ : ℝ≥0)) * ENNReal.ofReal x = ENNReal.ofReal (a * x) := by
@@ -142,6 +160,7 @@ lemma Utility.concaveOn_Ioi_real (U : Utility) : ConcaveOn ℝ (Set.Ioi 0) U.rea
   rwa [ENNReal.toReal_ofReal (by positivity), ENNReal.toReal_ofReal (by positivity),
     ENNReal.toReal_ofReal (by positivity)] at h_ccv
 
+/-- The utility function is concave on `[0, ∞)` when viewed as a real-valued function. -/
 lemma Utility.concaveOn_Ici_real (U : Utility) (h0 : U 0 ≠ ⊥) : ConcaveOn ℝ (Set.Ici 0) U.real := by
   refine ⟨convex_Ici 0, ?_⟩
   intro x hx y hy a b ha hb hab
@@ -150,7 +169,7 @@ lemma Utility.concaveOn_Ici_real (U : Utility) (h0 : U 0 ≠ ⊥) : ConcaveOn �
   have hU_ne_bot x : U x ≠ ⊥ := ne_bot_of_le_ne_bot (b := U 0) h0 (U.monotone zero_le)
   simp only [smul_eq_mul]
   have h_ccv := U.concave.2 (Set.mem_univ (ENNReal.ofReal x)) (Set.mem_univ (ENNReal.ofReal y))
-    (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by sorry) --ext; simp [hab]
+    (by simp : 0 ≤ (⟨a, ha⟩ : ℝ≥0)) (by simp : 0 ≤ (⟨b, hb⟩ : ℝ≥0)) (by ext; exact hab)
   simp only [EReal.smul_nnreal_eq_mul, ENNReal.smul_def, smul_eq_mul] at h_ccv
   have h_mul (x a : ℝ) (ha : 0 ≤ a) :
       (ENNReal.ofNNReal (⟨a, ha⟩ : ℝ≥0)) * ENNReal.ofReal x = ENNReal.ofReal (a * x) := by
@@ -317,19 +336,6 @@ lemma deriv_real_logUtility {x : ℝ} (hx : 0 < x) :
   refine EventuallyEq.deriv_eq ?_
   have h_ev_pos : ∀ᶠ y in 𝓝 x, 0 < y := eventually_gt_nhds hx
   filter_upwards [h_ev_pos] with y hy using real_logUtility hy
-
-instance : (𝓝[<] ∞).NeBot := by
-  have : NeZero ∞ := by constructor; simp
-  exact ENNReal.nhdsLT_neBot
-
-lemma ENNReal.tendsto_toReal_atTop : Tendsto (fun x : ℝ≥0∞ ↦ x.toReal) (𝓝[<] ∞) atTop := by
-  rw [tendsto_atTop]
-  intro y
-  rw [eventually_nhdsWithin_iff]
-  simp only [Set.mem_Iio]
-  have h_ge : ∀ᶠ (x : ℝ≥0∞) in 𝓝 ⊤, ENNReal.ofReal y ≤ x := eventually_ge_nhds (by simp)
-  filter_upwards [h_ge] with x hx hx_lt_top
-  rwa [← ENNReal.ofReal_le_iff_le_toReal hx_lt_top.ne]
 
 lemma deriv_logUtility (x : ℝ≥0∞) :
     logUtility.deriv x = if x = 0 then ⊤ else 1 / x := by

@@ -6,14 +6,33 @@ Authors: Rémy Degenne, Gaëtan Serré
 
 module
 
-public import EValues.EValue
+public import EValues.EVariable
 public import EValues.Utility
 public import EValues.Mathlib.iSup
 public import EValues.Mathlib.unitInterval
 public import EValues.NumeraireExistence
 
-/-! # Data processing inequality for the maximum utility and maximum randomized utility
+/-!
+# Data Processing Inequality
+
+This file establishes the data processing inequality (DPI) for e-variables: applying a Markov
+kernel or measurable function cannot increase the maximum expected utility.
+
+## Main definitions
+
+* `maxUtility P S U`: The maximum expected utility over all e-variables for `S` under measure `P`.
+* `maxRandUtility P S U`: The maximum expected utility over randomized e-variables.
+
+## Main statements
+
+* `maxRandUtility_eq_maxUtility`: Randomization does not increase maximum utility.
+* `maxUtility_comp_le`, `maxUtility_map_le`: Data processing inequalities for kernels and functions.
+* `MeasurableEmbedding.maxUtility_map_eq`: Equality holds for measurable embeddings.
+* `IsNumeraire.maxUtility_eq_integral`: The numeraire attains the maximum log utility.
+* `convexOn_maxUtility`: Maximum utility is convex in the measure.
+
 -/
+
 
 @[expose] public section
 
@@ -67,7 +86,7 @@ lemma maxRandUtility_anti (hS : S ⊆ T) : maxRandUtility P T U ≤ maxRandUtili
   rintro y ⟨η, hη₁, hη₂, hy⟩
   exact ⟨η, hη₁, hη₂.anti_set hS, hy⟩
 
-/-- The maximum randomized utility equals the maximum utility. -/
+/-- The maximum randomized utility is the maximum utility. -/
 lemma maxRandUtility_eq_maxUtility (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     maxRandUtility P S U = maxUtility P S U := by
   refine le_antisymm ?_ ?_
@@ -116,7 +135,7 @@ lemma maxUtility_eq_iSup_neBotUtilityEVar : maxUtility P S U =
   · have hX_int : ¬ NeBotUtilityEVar X P S U := fun h ↦ hX h.toIsEVar
     simp [hX, hX_int]
 
-/-- Data processing inequality for the maximum randomized utility and a Markov kernel. -/
+/-- **Data Processing Inequality** for randomized utility a Markov kernel. -/
 lemma maxRandUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)
     [IsMarkovKernel κ] :
     maxRandUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxRandUtility P S U := by
@@ -126,20 +145,19 @@ lemma maxRandUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : K
   rw [P.comp_assoc] at hξ_int
   exact ⟨η ∘ₖ κ, inferInstance, hη₂.comp, hξ_int⟩
 
-/-- Data processing inequality for the maximum utility and a Markov kernel. -/
+/-- **Data processing inequality** for the maximum utility and a Markov kernel. -/
 lemma maxUtility_comp_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (κ : Kernel 𝓧 𝓨)
     [IsMarkovKernel κ] : maxUtility (κ ∘ₘ P) {κ ∘ₘ μ | μ ∈ S} U ≤ maxUtility P S U := by
   rw [← maxRandUtility_eq_maxUtility _ _, ← maxRandUtility_eq_maxUtility _ _]
   exact maxRandUtility_comp_le P κ
 
-/-- Data processing inequality for the maximum utility and a measurable function. -/
+/-- **Data processing inequality** for the maximum utility and a measurable function. -/
 lemma maxUtility_map_le (P : Measure 𝓧) {S : Set (Measure 𝓧)} (hφ : Measurable φ) :
     maxUtility (P.map φ) {μ.map φ | μ ∈ S} U ≤ maxUtility P S U := by
   simp_rw [← Measure.deterministic_comp_eq_map hφ]
   exact maxUtility_comp_le P <| Kernel.deterministic φ hφ
 
-/-- Equality case for the data processing inequality: mapping by a measurable embedding preserves
-the maximum utility. -/
+/-- **DPI Equality**: mapping by a measurable embeddings preserve maximum utility. -/
 lemma _root_.MeasurableEmbedding.maxUtility_map_eq [Nonempty 𝓧] (φ : 𝓧 → 𝓨)
     (hφ : MeasurableEmbedding φ) (P : Measure 𝓧) (S : Set (Measure 𝓧)) :
     maxUtility (P.map φ) {μ.map φ | μ ∈ S} U = maxUtility P S U := by
@@ -161,7 +179,7 @@ lemma _root_.MeasurableEmbedding.maxUtility_map_eq [Nonempty 𝓧] (φ : 𝓧 �
   conv_lhs => rw [hP_eq, hS_eq]
   exact maxUtility_map_le (P.map φ) hφ.measurable_invFun
 
-/-- If `X` is a numeraire e-variable, then the maximum utility is attained at `X`. -/
+/-- The numeraire attains the maximum logarithmic utility. -/
 lemma IsNumeraire.maxUtility_eq_integral [IsFiniteMeasure P]
     {X : 𝓧 → ℝ≥0∞} (hX : IsNumeraire X S P) :
     maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (X x) ∂P := by
@@ -177,7 +195,7 @@ lemma maxUtility_eq_integral_numeraire (P : Measure 𝓧) [IsFiniteMeasure P]
     maxUtility P S logUtility = ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P :=
   (isNumeraire_numeraire P hS).maxUtility_eq_integral
 
-/-- The maximum utility is nonnegative. -/
+/-- The maximum log utility is nonnegative. -/
 lemma maxUtility_nonneg (P : Measure 𝓧) :
     0 ≤ maxUtility P S logUtility := by
   calc 0
@@ -218,8 +236,8 @@ lemma convexOn_maxUtility (S : Set (Measure 𝓧)) :
     simp only [maxUtility, EReal.smul_ennreal_eq_mul]
     rw [EReal.iSup_ennreal_mul hb, EReal.iSup_ennreal_mul ha]
 
-lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : 𝓧 → 𝓧} (hφ : Measurable φ)
-    (hφ_inv : φ ∘ φ = id) :
+lemma maxUtility_involutive (P : Measure 𝓧) (S : Set (Measure 𝓧)) {φ : 𝓧 → 𝓧}
+    (hφ : Measurable φ) (hφ_inv : φ ∘ φ = id) :
     maxUtility P {μ.map φ | μ ∈ S} U = maxUtility (P.map φ) S U := by
   apply le_antisymm
   · calc maxUtility P {μ.map φ | μ ∈ S} U

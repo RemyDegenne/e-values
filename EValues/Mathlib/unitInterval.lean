@@ -27,8 +27,7 @@ lemma doubleton_univ : ({⟨0, by simp⟩, ⟨1, by simp⟩} : Set ({0, 1} : Set
   grind
 
 lemma doubleton_union_univ : ({⟨0, by simp⟩} : Set ({0, 1} : Set ℝ)) ∪ {⟨1, by simp⟩}
-    = Set.univ := by
-  grind
+    = Set.univ := by grind
 
 lemma measure_doubleton_eq_add (μ : Measure ({0, 1} : Set ℝ)) :
     μ = μ {⟨0, by simp⟩} • Measure.dirac (⟨0, by simp⟩ : ({0, 1} : Set ℝ)) +

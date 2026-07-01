@@ -14,7 +14,7 @@ public import Mathlib.MeasureTheory.Constructions.BorelSpace.Real
 
 @[expose] public section
 
-open ENNReal
+open ENNReal NNReal
 
 lemma EReal.le_of_toReal_le {a b : EReal} (h1 : a ≠ ⊤) (h2 : b ≠ ⊤) (h3 : a ≠ ⊥) (h4 : b ≠ ⊥)
     (h5 : b.toReal ≤ a.toReal) : b ≤ a := by
@@ -289,6 +289,18 @@ lemma EReal.ne_top_exists_finite_iff {a : EReal} : a ≠ ⊤ ↔ ∃ b, b ≠ �
     rw [← lt_top_iff_ne_top]
     exact lt_of_le_of_lt hab hb_top.lt_top
 
+noncomputable
+instance : ENorm EReal where
+  enorm x := (max x 0).toENNReal + (- min x 0).toENNReal
+
+noncomputable instance : SMul ℝ≥0 EReal where smul c x := c * x
+noncomputable instance : SMul ℝ≥0∞ EReal where smul c x := c * x
+
+@[simp] lemma EReal.smul_nnreal_eq_mul (c : ℝ≥0) (x : EReal) : c • x = (c : ℝ) * x := rfl
+@[simp] lemma EReal.smul_ennreal_eq_mul (c : ℝ≥0∞) (x : EReal) : c • x = c * x := rfl
+
+section limsup_liminf
+
 open Filter
 
 lemma EReal.coe_ennreal_limsup {α : Type} (F : Filter α) [F.NeBot] (g : α → ℝ≥0∞) :
@@ -318,3 +330,60 @@ lemma EReal.liminf_coe_ennreal {α : Type} (F : Filter α) [F.NeBot] (g : α →
   · intro x y hxy
     exact EReal.toENNReal_le_toENNReal hxy
   · exact EReal.continuous_toENNReal.continuousAt
+
+end limsup_liminf
+
+lemma EReal.distrib_real {a b : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (u : EReal) :
+    (a + b) * u = a * u + b * u := by
+  cases u with
+  | bot =>
+    by_cases ha_zero : a = 0
+    · simp [ha_zero]
+    rw [EReal.mul_bot_of_pos (by positivity), EReal.mul_bot_of_pos (by positivity)]
+    simp
+  | coe u => norm_cast; ring
+  | top =>
+    by_cases ha_zero : a = 0
+    · simp [ha_zero]
+    rw [EReal.mul_top_of_pos (by positivity), EReal.mul_top_of_pos (by positivity)]
+    by_cases hb_zero : b = 0
+    · simp [hb_zero]
+    rw [EReal.mul_top_of_pos (by positivity)]
+    simp
+
+lemma EReal.distrib_ennreal (a b : ℝ≥0∞) (u : EReal) : (a + b) * u = a * u + b * u := by
+  by_cases ha : a = 0
+  · simp [ha]
+  by_cases hb : b = 0
+  · simp [hb]
+  have ha_pos : 0 < a := by positivity
+  have hb_pos : 0 < b := by positivity
+  by_cases ha_top : a = ∞
+  · simp only [ha_top, EReal.coe_ennreal_top, ne_eq, EReal.coe_ennreal_ne_bot, not_false_eq_true,
+      EReal.top_add_of_ne_bot]
+    rcases lt_trichotomy u 0 with (hu_neg | rfl | hu_pos)
+    · rw [EReal.top_mul_of_neg (by simpa)]; simp
+    · simp
+    · rw [EReal.top_mul_of_pos (by simpa), EReal.top_add_of_ne_bot]
+      simp only [ne_eq, EReal.mul_eq_bot, EReal.coe_ennreal_ne_bot, false_and,
+        EReal.coe_ennreal_pos, hb_pos, true_and, EReal.coe_ennreal_eq_top_iff, false_or, not_or,
+        not_and, not_lt, hu_pos.le, implies_true]
+      refine ⟨fun h ↦ by simp [h] at hu_pos, fun h ↦ ?_⟩
+      norm_cast at h
+      exact absurd hb_pos.le (not_le.mpr h)
+  by_cases hb_top : b = ∞
+  · simp only [hb_top, EReal.coe_ennreal_top, ne_eq, EReal.coe_ennreal_ne_bot, not_false_eq_true,
+      EReal.add_top_of_ne_bot]
+    rcases lt_trichotomy u 0 with (hu_neg | rfl | hu_pos)
+    · rw [EReal.top_mul_of_neg (by simpa)]; simp
+    · simp
+    · rw [EReal.top_mul_of_pos (by simpa), EReal.add_top_of_ne_bot]
+      simp only [ne_eq, EReal.mul_eq_bot, EReal.coe_ennreal_ne_bot, false_and,
+        EReal.coe_ennreal_pos, ha_pos, true_and, EReal.coe_ennreal_eq_top_iff, false_or, not_or,
+        not_and, not_lt, hu_pos.le, implies_true]
+      refine ⟨fun h ↦ by simp [h] at hu_pos, fun h ↦ ?_⟩
+      norm_cast at h
+      exact absurd ha_pos.le (not_le.mpr h)
+  have ha_real : (a : EReal) = a.toReal := by rw [EReal.coe_ennreal_toReal ha_top]
+  have hb_real : (b : EReal) = b.toReal := by rw [EReal.coe_ennreal_toReal hb_top]
+  rw [ha_real, hb_real, EReal.distrib_real (by simp) (by simp)]
