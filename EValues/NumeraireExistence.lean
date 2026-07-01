@@ -38,33 +38,6 @@ section
 
 variable {U : ℝ≥0∞ → EReal}
 
-lemma eintegrable_of_le {f : 𝓧 → EReal} {b : EReal} (hf : ∀ x, f x ≤ b) (hb : b ≠ ⊤)
-    (P : Measure 𝓧) [IsFiniteMeasure P] : eintegrable f P := by
-  refine .inl (ne_of_lt ?_)
-  calc ∫⁻ x, (f x).toENNReal ∂P
-  _ ≤ ∫⁻ x, b.toENNReal ∂P := by
-    gcongr
-    exact EReal.toENNReal_le_toENNReal (hf _) -- missing gcongr
-  _ = b.toENNReal * P .univ := by simp [lintegral_const]
-  _ < ⊤ := by simp [hb, lt_top_iff_ne_top, ENNReal.mul_eq_top]
-
-lemma eintegral_lt_top_of_le {f : 𝓧 → EReal} {b : EReal} (hf : ∀ x, f x ≤ b) (hb : b ≠ ⊤)
-    (P : Measure 𝓧) [IsFiniteMeasure P] :
-    ∫ᵉ x, f x ∂P < ⊤ := by
-  rw [eintegral]
-  calc (∫⁻ x, (f x).toENNReal ∂P : EReal) - ∫⁻ x, (-f x).toENNReal ∂P
-  _ ≤ ∫⁻ x, (f x).toENNReal ∂P - 0 := EReal.sub_le_sub le_rfl (by positivity)
-  _ ≤ ∫⁻ x, b.toENNReal ∂P := by
-    simp only [sub_zero]
-    refine EReal.coe_ennreal_le_coe_ennreal_iff.mpr ?_ -- missing gcongr
-    gcongr
-    exact EReal.toENNReal_le_toENNReal (hf _)
-  _ = b.toENNReal * P .univ := by simp [lintegral_const]
-  _ < ⊤ := by
-    norm_cast
-    rw [lt_top_iff_ne_top, ne_eq, EReal.coe_ennreal_eq_top_iff]
-    simp [hb, ENNReal.mul_eq_top]
-
 lemma convex_eintegral_utility_ge [IsFiniteMeasure P] (u : EReal)
     (hU_ccv : ConcaveOn ℝ≥0 Set.univ U)
     (hU_meas : Measurable U) {B : EReal} (hU_le : ∀ x : ℝ≥0∞, U x ≤ B) (hB : B ≠ ⊤) :
@@ -74,7 +47,7 @@ lemma convex_eintegral_utility_ge [IsFiniteMeasure P] (u : EReal)
   simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul] at hY hZ ⊢
   have ha_ne_top : a ≠ ∞ := fun ha_top ↦ by simp [ha_top] at hab
   have hb_ne_top : b ≠ ∞ := fun hb_top ↦ by simp [hb_top] at hab
-  have h_int (Y : 𝓧 → ℝ≥0∞) : eintegrable (fun ω ↦ U (Y ω)) P :=
+  have h_int (Y : 𝓧 → ℝ≥0∞) : EIntegrable (fun ω ↦ U (Y ω)) P :=
     eintegrable_of_le (fun _ ↦ hU_le _) (by simpa) P
   calc u
   _ = a * u + b * u := by
@@ -95,9 +68,9 @@ lemma convex_eintegral_utility_ge [IsFiniteMeasure P] (u : EReal)
     · simp only [EReal.smul_ennreal_eq_mul]; fun_prop
     · simp only [EReal.smul_ennreal_eq_mul]; fun_prop
     · simp only [EReal.smul_ennreal_eq_mul]
-      exact eintegrable.const_mul (h_int _) (by simp) (by simpa)
+      exact EIntegrable.const_mul (h_int _) (by simp) (by simpa)
     · simp only [EReal.smul_ennreal_eq_mul]
-      exact eintegrable.const_mul (h_int _) (by simp) (by simpa)
+      exact EIntegrable.const_mul (h_int _) (by simp) (by simpa)
     · right
       refine (eintegral_lt_top_of_le (b := b • B) (fun ω ↦ ?_) ?_ P).ne
       · simp only [EReal.smul_ennreal_eq_mul]
@@ -486,7 +459,7 @@ lemma neBotUtilityEVar_numeraire [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFinit
   (isNumeraire_numeraire P hS).neBotUtilityEVar
 
 lemma eintegrable_log_numeraire [IsFiniteMeasure P] (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
-    eintegrable (fun x ↦ ENNReal.log (numeraire P S x)) P :=
+    EIntegrable (fun x ↦ ENNReal.log (numeraire P S x)) P :=
   (isNumeraire_numeraire P hS).eintegrable_log
 
 end ProbabilityTheory

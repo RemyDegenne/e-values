@@ -574,7 +574,7 @@ lemma neBotUtilityEVar [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) :
 
 /-- The logarithm of the numeraire is integrable. -/
 protected lemma eintegrable_log [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) :
-    eintegrable (fun ω ↦ ENNReal.log (X ω)) μ := by
+    EIntegrable (fun ω ↦ ENNReal.log (X ω)) μ := by
   by_contra h_false
   refine hX.eintegral_log_ne_bot ?_
   exact eintegral_of_not_eintegrable h_false
@@ -586,7 +586,7 @@ theorem eintegral_log_le [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) (hY : Is
   · simp [hY_bot]
   by_cases hX_top : ∫ᵉ ω, ENNReal.log (X ω) ∂μ = ⊤
   · simp [hX_top]
-  have hY_int : eintegrable (fun ω ↦ ENNReal.log (Y ω)) μ := by
+  have hY_int : EIntegrable (fun ω ↦ ENNReal.log (Y ω)) μ := by
     by_contra h_false
     simp [eintegral_of_not_eintegrable h_false] at hY_bot
   have h_nonpos := eintegral_log_div_nonpos' hX hY

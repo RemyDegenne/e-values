@@ -76,8 +76,8 @@ theorem Inv.map_lintegral_le [IsProbabilityMeasure μ] (hf : AEMeasurable f μ)
   by_cases htop_inv : ∫⁻ x, (f x)⁻¹ ∂μ = ∞
   · simp [htop_inv]
   let y := ∫⁻ x, f x ∂μ
-  have h_eint : eintegrable (fun x ↦ (f x : EReal) - y) μ := by
-    refine eintegrable.sub_const ?_ (by simp [y]) (by simp [y, h_int_top])
+  have h_eint : EIntegrable (fun x ↦ (f x : EReal) - y) μ := by
+    refine EIntegrable.sub_const ?_ (by simp [y]) (by simp [y, h_int_top])
     exact eintegrable_of_nonneg (fun _ ↦ by positivity)
   calc
   _ = (∫ᵉ x, f x ∂μ).toENNReal⁻¹ := by
@@ -218,9 +218,9 @@ theorem Inv.ae_eq_const_or_map_lintegral_lt' [IsProbabilityMeasure μ] (hf : Mea
         (f x)⁻¹ - Inv.deriv (∫⁻ z, f z ∂μ) * (f x - (∫⁻ z, f z ∂μ)) ∂μ =
         ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, ((f x)⁻¹ : ℝ≥0∞) ∂μ
         - Inv.deriv (∫⁻ z, f z ∂μ) * ∫ᵉ x in {y | f y ≠ ∫⁻ z, f z ∂μ}, (f x - ∫⁻ z, f z ∂μ) ∂μ := by
-      have h_eint : eintegrable (fun x ↦ (f x : EReal) - ∫⁻ z, f z ∂μ)
+      have h_eint : EIntegrable (fun x ↦ (f x : EReal) - ∫⁻ z, f z ∂μ)
           (μ.restrict {y | f y ≠ ∫⁻ z, f z ∂μ}) := by
-        refine eintegrable.sub_const ?_ (by simp) (by simp [h_int_top])
+        refine EIntegrable.sub_const ?_ (by simp) (by simp [h_int_top])
         exact eintegrable_of_nonneg fun _ ↦ by positivity
       rw [eintegral_sub]
       rotate_left
