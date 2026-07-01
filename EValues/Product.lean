@@ -169,17 +169,17 @@ theorem logUtility_numeraire_prod' [IsFiniteMeasure P] [IsFiniteMeasure Q]
     ∫ᵉ x, ENNReal.log (numeraire (P.prod Q) (Measure.prod.uncurry '' (S ×ˢ T)) x) ∂(P.prod Q)
       = Q .univ * ∫ᵉ x, ENNReal.log (numeraire P S x) ∂P +
         P .univ * ∫ᵉ x, ENNReal.log (numeraire Q T x) ∂Q := by
-  have h_int1 : eintegrable (fun p ↦ (numeraire P S p.1).log) (P.prod Q) := by
-    have hP : eintegrable (fun x ↦ ENNReal.log (numeraire P S x)) P :=
+  have h_int1 : EIntegrable (fun p ↦ (numeraire P S p.1).log) (P.prod Q) := by
+    have hP : EIntegrable (fun x ↦ ENNReal.log (numeraire P S x)) P :=
       (isNumeraire_numeraire P hS).eintegrable_log
-    change eintegrable ((fun p ↦ (numeraire P S p).log) ∘ Prod.fst) (P.prod Q)
+    change EIntegrable ((fun p ↦ (numeraire P S p).log) ∘ Prod.fst) (P.prod Q)
     rw [← eintegrable_map (by fun_prop) (by fun_prop)]
     simp only [Measure.map_fst_prod]
     exact hP.smul_measure (by simp)
-  have h_int2 : eintegrable (fun p ↦ (numeraire Q T p.2).log) (P.prod Q) := by
-    have hQ : eintegrable (fun y ↦ ENNReal.log (numeraire Q T y)) Q :=
+  have h_int2 : EIntegrable (fun p ↦ (numeraire Q T p.2).log) (P.prod Q) := by
+    have hQ : EIntegrable (fun y ↦ ENNReal.log (numeraire Q T y)) Q :=
       (isNumeraire_numeraire Q hT).eintegrable_log
-    change eintegrable ((fun p ↦ (numeraire Q T p).log) ∘ Prod.snd) (P.prod Q)
+    change EIntegrable ((fun p ↦ (numeraire Q T p).log) ∘ Prod.snd) (P.prod Q)
     rw [← eintegrable_map (by fun_prop) (by fun_prop)]
     simp only [Measure.map_snd_prod]
     exact hQ.smul_measure (by simp)

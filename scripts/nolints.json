@@ -1,4 +1,6 @@
-[["defsWithUnderscore", "instSMulENNRealEReal_eValues"],
+[["defsWithUnderscore", "instENormEReal_eValues"],
+ ["defsWithUnderscore", "instSMulENNRealEReal_eValues"],
  ["defsWithUnderscore", "instSMulNNRealEReal_eValues"],
- ["defsWithUnderscore", "instENormEReal_eValues"],
+ ["defsWithUnderscore", "MeasureTheory.instNegPartForallEReal_eValues"],
+ ["defsWithUnderscore", "MeasureTheory.instPosPartForallEReal_eValues"],
  ["defsWithUnderscore", "ProbabilityTheory.inst_smul_I_ENNReal"]]

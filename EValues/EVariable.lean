@@ -68,7 +68,7 @@ lemma eintegral_sub_one_ne_bot_of_isFiniteMeasure {X : 𝓧 → ℝ≥0∞} {S :
     positivity
 
 lemma IsEVar.eintegrable_sub_one {X : 𝓧 → ℝ≥0∞} (hX : IsEVar X S) (μ : Measure 𝓧) (hμ : μ ∈ S) :
-    eintegrable (fun ω ↦ (X ω : EReal) - 1) μ :=
+    EIntegrable (fun ω ↦ (X ω : EReal) - 1) μ :=
   eintegrable_of_eintegral_ne_bot (hX.eintegral_ne_bot μ hμ)
 
 /-- An e-variable has expected value at most the total measure. -/
@@ -411,7 +411,7 @@ structure NeBotUtilityEVar (X : 𝓧 → ℝ≥0∞) (P : Measure 𝓧)
   utility_ne_bot : ∫ᵉ x, (U ∘ X) x ∂P ≠ ⊥
 
 lemma NeBotUtilityEVar.eintegrable (X : 𝓧 → ℝ≥0∞) (P : Measure 𝓧) (S : Set (Measure 𝓧))
-    (U : Utility) (hX : NeBotUtilityEVar X P S U) : eintegrable (U ∘ X) P :=
+    (U : Utility) (hX : NeBotUtilityEVar X P S U) : EIntegrable (U ∘ X) P :=
   eintegrable_of_eintegral_ne_bot hX.utility_ne_bot
 
 lemma IsEVar.neBotUtilityEVar_iff (hX : IsEVar X S) {P : Measure 𝓧} {U : Utility} :
