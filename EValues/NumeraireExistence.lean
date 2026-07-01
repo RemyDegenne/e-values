@@ -270,7 +270,7 @@ lemma eintegral_numeraireOfBounded_ne_bot {U : Utility} {b : ℝ} (hU_le : ∀ x
 
 lemma eintegrable_utility_numeraireOfBounded {U : Utility} {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
     (P : Measure 𝓧) [IsFiniteMeasure P] {S : Set (Measure 𝓧)} (hS : ∀ μ ∈ S, IsFiniteMeasure μ) :
-    eintegrable (fun x ↦ U (numeraireOfBounded hU_le P hS x)) P :=
+    EIntegrable (fun x ↦ U (numeraireOfBounded hU_le P hS x)) P :=
   eintegrable_of_eintegral_ne_bot (eintegral_numeraireOfBounded_ne_bot hU_le P hS)
 
 lemma lt_top_of_numeraireOfBounded_lt_top {U : Utility} {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b)
