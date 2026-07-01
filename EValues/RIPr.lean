@@ -59,8 +59,8 @@ lemma MeasureTheory.lintegral_rnDeriv_mul_le {μ : Measure 𝓧} {X : 𝓧 → �
 
 lemma eintegrable_rnDeriv_mul_iff {μ ν : Measure 𝓧} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     {f : 𝓧 → EReal} (hμν : μ ≪ ν) (hf : Measurable f) :
-    eintegrable (fun a ↦ (μ.rnDeriv ν a).toReal * f a) ν ↔ eintegrable f μ := by
-  rw [eintegrable, eintegrable]
+    EIntegrable (fun a ↦ (μ.rnDeriv ν a).toReal * f a) ν ↔ EIntegrable f μ := by
+  rw [EIntegrable, EIntegrable]
   congr! 1
   · nth_rw 2 [← Measure.withDensity_rnDeriv_eq μ ν hμν]
     rw [lintegral_withDensity_eq_lintegral_mul _ (by fun_prop) (by fun_prop)]
@@ -246,19 +246,19 @@ lemma llr_ae_eq_log_inv_rnDeriv [IsFiniteMeasure P] {μ : Measure 𝓧} [IsFinit
   filter_upwards [Measure.inv_rnDeriv' h_ac] with a ha using by rw [llr, ha]
 
 lemma eintegrable_klFun_rnDeriv (P μ : Measure 𝓧) :
-    eintegrable (fun ω ↦ klFun (μ.rnDeriv P ω).toReal) P := by
+    EIntegrable (fun ω ↦ klFun (μ.rnDeriv P ω).toReal) P := by
   refine eintegrable_of_nonneg ?_
   simp only [EReal.coe_nonneg]
   exact fun _ ↦ klFun_nonneg ENNReal.toReal_nonneg
 
 lemma eintegrable_rnDeriv_mul_log_iff {μ ν : Measure 𝓧} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hμν : μ ≪ ν) :
-    eintegrable (fun a ↦ (μ.rnDeriv ν a).toReal * Real.log (μ.rnDeriv ν a).toReal) ν
-      ↔ eintegrable (fun a ↦ llr μ ν a) μ := eintegrable_rnDeriv_mul_iff hμν (by fun_prop)
+    EIntegrable (fun a ↦ (μ.rnDeriv ν a).toReal * Real.log (μ.rnDeriv ν a).toReal) ν
+      ↔ EIntegrable (fun a ↦ llr μ ν a) μ := eintegrable_rnDeriv_mul_iff hμν (by fun_prop)
 
 lemma eintegrable_llr [IsFiniteMeasure P] {μ : Measure 𝓧} [IsFiniteMeasure μ]
     (h_ac : P ≪ μ) :
-    eintegrable (fun ω ↦ llr P μ ω) P := by
+    EIntegrable (fun ω ↦ llr P μ ω) P := by
   rw [← eintegrable_rnDeriv_mul_log_iff h_ac]
   have h_eq a : (((∂P/∂μ) a).toReal * Real.log ((∂P/∂μ) a).toReal : EReal) =
       ((klFun (P.rnDeriv μ a).toReal + (P.rnDeriv μ a).toReal - 1 : ℝ) : EReal) := by
@@ -279,7 +279,7 @@ lemma eintegrable_llr [IsFiniteMeasure P] {μ : Measure 𝓧} [IsFiniteMeasure �
 
 lemma eintegrable_ennreal_log_rnDeriv [IsFiniteMeasure P] {μ : Measure 𝓧} [IsFiniteMeasure μ]
     (h_ac : P ≪ μ) :
-    eintegrable (fun ω ↦ ENNReal.log ((μ.rnDeriv P)⁻¹ ω)) P := by
+    EIntegrable (fun ω ↦ ENNReal.log ((μ.rnDeriv P)⁻¹ ω)) P := by
   have h_ae : (fun ω ↦ ENNReal.log ((μ.rnDeriv P)⁻¹ ω)) =ᵐ[P]
       (fun ω ↦ (Real.log ((μ.rnDeriv P)⁻¹ ω).toReal)) := by
     filter_upwards [Measure.rnDeriv_ne_top μ P, Measure.rnDeriv_pos' h_ac] with x hx1 hx2
@@ -301,10 +301,10 @@ lemma eintegral_log_isEVar_le_eintegral_rnDeriv [IsProbabilityMeasure P]
   by_cases h_top : ∫ᵉ ω, ENNReal.log ((μ.rnDeriv P)⁻¹ ω) ∂P = ⊤
   · simp only [Pi.inv_apply] at h_top
     simp [h_top]
-  have hX_int : eintegrable (fun ω ↦ ENNReal.log (X ω)) P := by
+  have hX_int : EIntegrable (fun ω ↦ ENNReal.log (X ω)) P := by
     by_contra h_false
     simp [eintegral_of_not_eintegrable h_false] at hX_bot
-  have h_int' : eintegrable (fun ω ↦ ENNReal.log ((μ.rnDeriv P)⁻¹ ω)) P :=
+  have h_int' : EIntegrable (fun ω ↦ ENNReal.log ((μ.rnDeriv P)⁻¹ ω)) P :=
     eintegrable_ennreal_log_rnDeriv h_ac
   have h_nonpos := eintegral_log_mul_nonpos_of_memEffectiveSet hμ hX (P := P)
   simp_rw [ENNReal.log_mul_add] at h_nonpos
