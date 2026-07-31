@@ -204,9 +204,43 @@ def Utility.deriv (U : Utility) (x : ℝ≥0∞) : EReal :=
   else
     ((deriv U.real x.toReal : ℝ) : EReal)
 
-/-- See `Utility.deriv_nonneg'` for the version without hypotheses on `x`. -/
-lemma Utility.deriv_nonneg (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx_top : x ≠ ∞) :
-    0 ≤ U.deriv x := by
+lemma Utility.differentiableAt_real (U : Utility) {x : ℝ} (hx : 0 < x) :
+    DifferentiableAt ℝ U.real x :=
+  U.differentiableOn.differentiableAt (isOpen_Ioi.mem_nhds hx)
+
+lemma Utility.deriv_real_nonneg (U : Utility) {x : ℝ} (hx : 0 < x) : 0 ≤ deriv U.real x := by
+  refine (U.monotoneOn_Ioi_real.derivWithin_nonneg (x := x)).trans_eq ?_
+  exact derivWithin_of_mem_nhds (isOpen_Ioi.mem_nhds hx)
+
+lemma Utility.antitoneOn_deriv_real (U : Utility) : AntitoneOn (deriv U.real) (Set.Ioi 0) :=
+  U.concaveOn_Ioi_real.antitoneOn_deriv fun _ hx ↦ U.differentiableAt_real hx
+
+lemma Utility.continuousOn_deriv_real (U : Utility) : ContinuousOn (deriv U.real) (Set.Ioi 0) :=
+  U.contDiffOn.continuousOn_deriv_of_isOpen isOpen_Ioi le_rfl
+
+lemma Utility.deriv_eq_coe (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx_top : x ≠ ∞) :
+    U.deriv x = ((deriv U.real x.toReal : ℝ) : EReal) := by
+  simp [Utility.deriv, hx0, hx_top]
+
+lemma Utility.deriv_zero_eq (U : Utility) :
+    U.deriv 0 = limsup (fun y : ℝ≥0∞ ↦ ((deriv U.real y.toReal : ℝ) : EReal)) (𝓝[>] 0) := by
+  simp [Utility.deriv]
+
+lemma Utility.deriv_top_eq (U : Utility) :
+    U.deriv ∞ = limsup (fun y : ℝ≥0∞ ↦ ((deriv U.real y.toReal : ℝ) : EReal)) (𝓝[<] ∞) := by
+  simp [Utility.deriv]
+
+lemma Utility.deriv_nonneg (U : Utility) (x : ℝ≥0∞) : 0 ≤ U.deriv x := by
+  by_cases! hx0 : x = 0
+  · simp only [hx0, Utility.deriv, ↓reduceIte]
+    refine le_limsup_of_frequently_le (Filter.Eventually.frequently ?_)
+    filter_upwards [ENNReal.eventually_toReal_pos_nhdsGT_zero] with y hy
+    exact_mod_cast U.deriv_real_nonneg hy
+  by_cases! hx_top : x = ∞
+  · simp only [hx_top, Utility.deriv, ENNReal.top_ne_zero, ↓reduceIte]
+    refine le_limsup_of_frequently_le (Filter.Eventually.frequently ?_)
+    filter_upwards [ENNReal.eventually_toReal_pos_nhdsLT_top] with y hy
+    exact_mod_cast U.deriv_real_nonneg hy
   simp only [Utility.deriv, hx0, ↓reduceIte, hx_top, EReal.coe_nonneg]
   have h_nonneg := U.monotoneOn_Ioi_real.derivWithin_nonneg (x := x.toReal)
   refine h_nonneg.trans_eq ?_
@@ -248,50 +282,6 @@ lemma Utility.le_add_deriv_mul (U : Utility) {x y : ℝ≥0∞} (hx_top : x ≠ 
     nth_rw 3 [← ENNReal.ofReal_toReal hy_top]
     simp only [EReal.coe_ennreal_ofReal, ENNReal.toReal_nonneg, sup_of_le_left]
     norm_cast
-
-/-! ### Further properties of the derivative
-
-These lemmas are used in the proof of the first order optimality conditions in
-`EValues.NumeraireExistence`. -/
-
-lemma Utility.differentiableAt_real (U : Utility) {x : ℝ} (hx : 0 < x) :
-    DifferentiableAt ℝ U.real x :=
-  U.differentiableOn.differentiableAt (isOpen_Ioi.mem_nhds hx)
-
-lemma Utility.deriv_real_nonneg (U : Utility) {x : ℝ} (hx : 0 < x) : 0 ≤ deriv U.real x := by
-  refine (U.monotoneOn_Ioi_real.derivWithin_nonneg (x := x)).trans_eq ?_
-  exact derivWithin_of_mem_nhds (isOpen_Ioi.mem_nhds hx)
-
-lemma Utility.antitoneOn_deriv_real (U : Utility) : AntitoneOn (deriv U.real) (Set.Ioi 0) :=
-  U.concaveOn_Ioi_real.antitoneOn_deriv fun _ hx ↦ U.differentiableAt_real hx
-
-lemma Utility.continuousOn_deriv_real (U : Utility) : ContinuousOn (deriv U.real) (Set.Ioi 0) :=
-  U.contDiffOn.continuousOn_deriv_of_isOpen isOpen_Ioi le_rfl
-
-lemma Utility.deriv_eq_coe (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx_top : x ≠ ∞) :
-    U.deriv x = ((deriv U.real x.toReal : ℝ) : EReal) := by
-  simp [Utility.deriv, hx0, hx_top]
-
-lemma Utility.deriv_zero_eq (U : Utility) :
-    U.deriv 0 = limsup (fun y : ℝ≥0∞ ↦ ((deriv U.real y.toReal : ℝ) : EReal)) (𝓝[>] 0) := by
-  simp [Utility.deriv]
-
-lemma Utility.deriv_top_eq (U : Utility) :
-    U.deriv ∞ = limsup (fun y : ℝ≥0∞ ↦ ((deriv U.real y.toReal : ℝ) : EReal)) (𝓝[<] ∞) := by
-  simp [Utility.deriv]
-
-lemma Utility.deriv_nonneg' (U : Utility) (x : ℝ≥0∞) : 0 ≤ U.deriv x := by
-  by_cases hx0 : x = 0
-  · simp only [hx0, Utility.deriv, ↓reduceIte]
-    refine le_limsup_of_frequently_le (Filter.Eventually.frequently ?_)
-    filter_upwards [ENNReal.eventually_toReal_pos_nhdsGT_zero] with y hy
-    exact_mod_cast U.deriv_real_nonneg hy
-  by_cases hx_top : x = ∞
-  · simp only [hx_top, Utility.deriv, ENNReal.top_ne_zero, ↓reduceIte]
-    refine le_limsup_of_frequently_le (Filter.Eventually.frequently ?_)
-    filter_upwards [ENNReal.eventually_toReal_pos_nhdsLT_top] with y hy
-    exact_mod_cast U.deriv_real_nonneg hy
-  exact U.deriv_nonneg hx0 hx_top
 
 lemma Utility.deriv_top_le (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) :
     U.deriv ∞ ≤ U.deriv x := by
@@ -348,7 +338,7 @@ lemma Utility.tendsto_deriv_real_atTop (U : Utility) {b : ℝ} (hU_le : ∀ x : 
   · filter_upwards [eventually_gt_atTop (0 : ℝ)] with y hy using U.deriv_real_nonneg hy
   · filter_upwards [eventually_gt_atTop (1 : ℝ)] with y hy
     have h := U.concaveOn_Ioi_real.le_add_deriv_mul (x := 1) (y := y) (by simp)
-      (by simp; positivity) (U.differentiableAt_real (by positivity))
+      (by simp only [Set.mem_Ioi]; positivity) (U.differentiableAt_real (by positivity))
     rw [le_div_iff₀ (by positivity)]
     nlinarith [hb y (by positivity)]
   · exact Filter.Tendsto.const_div_atTop
@@ -559,7 +549,7 @@ lemma Utility.deriv_mul_sub_convex (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ�
         (mul_nonneg (by positivity) (mul_nonneg le_top (EReal.coe_ennreal_nonneg β))))]
   · obtain ⟨r, hr⟩ : ∃ r : ℝ, U.deriv α = (r : EReal) :=
       ⟨(U.deriv α).toReal,
-        (EReal.coe_toReal hd_top (EReal.ne_bot_of_nonneg (U.deriv_nonneg' α))).symm⟩
+        (EReal.coe_toReal hd_top (EReal.ne_bot_of_nonneg (U.deriv_nonneg α))).symm⟩
     have hcoe : ((ENNReal.ofReal (δ + (1 - δ) * β.toReal) : ℝ≥0∞) : EReal)
         = ((δ + (1 - δ) * β.toReal : ℝ) : EReal) := by
       simp only [EReal.coe_ennreal_ofReal]
@@ -654,7 +644,7 @@ lemma Utility.deriv_mul_sub_le_liminf (U : Utility) {b : ℝ} (hU_le : ∀ x : �
   have h_mul_tendsto : Tendsto (fun n ↦ U.deriv (Z n) * ((β : EReal) - α)) atTop
       (𝓝 (U.deriv α * ((β : EReal) - α))) :=
     EReal.Tendsto.mul h_deriv_tendsto tendsto_const_nhds (Or.inr hb_ne_bot) (Or.inr hb_ne_top)
-      (Or.inl (EReal.ne_bot_of_nonneg (U.deriv_nonneg' α))) h4
+      (Or.inl (EReal.ne_bot_of_nonneg (U.deriv_nonneg α))) h4
   exact h_mul_tendsto.liminf_eq.ge
 
 /-- Jensen's inequality. -/

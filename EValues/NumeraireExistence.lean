@@ -392,7 +392,7 @@ lemma eintegral_deriv_mul_le_of_ge (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ�
         exact hU_le c
       refine hk_nonpos.trans ?_
       change (0 : EReal) ≤ U.deriv (X x) * ((Y x : EReal) - X x)
-      refine mul_nonneg (U.deriv_nonneg' _) ?_
+      refine mul_nonneg (U.deriv_nonneg _) ?_
       rw [hX0]
       simpa using EReal.coe_ennreal_nonneg (Y x)
     · refine le_trans ?_ (U.sub_le_deriv_mul_sub hU_le hX0
