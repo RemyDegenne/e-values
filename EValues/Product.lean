@@ -267,27 +267,129 @@ lemma iSup_prod_le_maxUtility (P : Measure (𝓧 × 𝓨)) {T : Set (Measure �
   rintro ⟨X, Y, hX, hY, rfl⟩
   exact ⟨fun x ↦ X x.1 * Y x.2, hX.prod hS hT hY.toIsEVar, rfl⟩
 
+/-- The product of the numeraires is a numeraire for the product measure, for a family indexed
+by `Fin n`. This is the induction that underlies `isNumeraire_prod_numeraire_fintype`. -/
+lemma isNumeraire_prod_numeraire_fin : ∀ (n : ℕ) {𝓧 : Fin n → Type*}
+    [∀ i, MeasurableSpace (𝓧 i)] (P : (i : Fin n) → Measure (𝓧 i))
+    [∀ i, IsProbabilityMeasure (P i)] (S : (i : Fin n) → Set (Measure (𝓧 i))),
+    (∀ i, ∀ μ ∈ S i, IsProbabilityMeasure μ) →
+    IsNumeraire (fun x ↦ ∏ i, numeraire (P i) (S i) (x i))
+      (Measure.pi '' (Set.pi Set.univ S)) (Measure.pi P) := by
+  intro n
+  induction n with
+  | zero =>
+    intro 𝓧 _ P _ S _
+    have h1 : (fun x : ∀ i : Fin 0, 𝓧 i ↦ ∏ i, numeraire (P i) (S i) (x i))
+        = fun _ ↦ (1 : ℝ≥0∞) := by
+      ext x
+      simp
+    rw [h1]
+    exact isNumeraire_one ⟨P, fun i _ ↦ i.elim0, rfl⟩
+  | succ n ih =>
+    intro 𝓧 _ P _ S hS
+    -- split off the first coordinate
+    set e := MeasurableEquiv.piFinSuccAbove 𝓧 0 with he
+    set S' : (j : Fin n) → Set (Measure (𝓧 ((0 : Fin (n + 1)).succAbove j))) :=
+      fun j ↦ S ((0 : Fin (n + 1)).succAbove j) with hS'
+    set P' : (j : Fin n) → Measure (𝓧 ((0 : Fin (n + 1)).succAbove j)) :=
+      fun j ↦ P ((0 : Fin (n + 1)).succAbove j) with hP'
+    have hS0 : ∀ μ ∈ S 0, IsFiniteMeasure μ := fun μ hμ ↦ by
+      have := hS 0 μ hμ
+      infer_instance
+    have hT : ∀ ρ ∈ Measure.pi '' (Set.pi Set.univ S'), IsFiniteMeasure ρ := by
+      rintro _ ⟨ν, hν, rfl⟩
+      have : ∀ j, IsProbabilityMeasure (ν j) := fun j ↦ hS _ _ (hν j (Set.mem_univ _))
+      infer_instance
+    have h_prod := isNumeraire_mul (P 0) (Measure.pi P') hS0 hT
+      (isNumeraire_numeraire (P 0) hS0) (ih P' S' fun j ↦ hS _)
+    -- the images of the two sets of measures agree
+    have h_map (ν : (i : Fin (n + 1)) → Measure (𝓧 i)) [∀ i, SigmaFinite (ν i)] :
+        (Measure.pi ν).map e = (ν 0).prod (Measure.pi fun j ↦ ν ((0 : Fin (n + 1)).succAbove j)) :=
+      (measurePreserving_piFinSuccAbove ν 0).map_eq
+    have h_eq_set : Measure.map e '' (Measure.pi '' (Set.pi Set.univ S))
+        = {ρ | ∃ μ ∈ S 0, ∃ ν ∈ Measure.pi '' (Set.pi Set.univ S'), μ.prod ν = ρ} := by
+      ext ρ
+      simp only [Set.mem_image, Set.mem_setOf_eq]
+      constructor
+      · rintro ⟨_, ⟨ν, hν, rfl⟩, rfl⟩
+        have : ∀ i, IsProbabilityMeasure (ν i) := fun i ↦ hS _ _ (hν i (Set.mem_univ _))
+        exact ⟨ν 0, hν 0 (Set.mem_univ _), _,
+          ⟨fun j ↦ ν ((0 : Fin (n + 1)).succAbove j), fun j _ ↦ hν _ (Set.mem_univ _), rfl⟩,
+          (h_map ν).symm⟩
+      · rintro ⟨μ, hμ, _, ⟨ν', hν', rfl⟩, rfl⟩
+        set ν : (i : Fin (n + 1)) → Measure (𝓧 i) :=
+          Fin.insertNth (α := fun i ↦ Measure (𝓧 i)) 0 μ ν' with hν_def
+        have hν0 : ν 0 = μ := Fin.insertNth_apply_same _ _ _
+        have hνs (j : Fin n) : ν ((0 : Fin (n + 1)).succAbove j) = ν' j :=
+          Fin.insertNth_apply_succAbove _ _ _ _
+        have hν_mem : ∀ i, ν i ∈ S i := by
+          refine Fin.succAboveCases 0 ?_ ?_
+          · rw [hν0]; exact hμ
+          · intro j
+            rw [hνs]
+            exact hν' j (Set.mem_univ _)
+        have : ∀ i, IsProbabilityMeasure (ν i) := fun i ↦ hS i _ (hν_mem i)
+        refine ⟨Measure.pi ν, ⟨ν, fun i _ ↦ hν_mem i, rfl⟩, ?_⟩
+        rw [h_map ν, hν0]
+        congr 1
+    rw [← h_eq_set, ← h_map P] at h_prod
+    have h := h_prod.comp_measurableEquiv e
+    convert h using 1
+    ext x
+    rw [Fin.prod_univ_succAbove _ 0]
+    rfl
+
 lemma isNumeraire_prod_numeraire_fintype {ι : Type*} {𝓧 : ι → Type*} [hι : Fintype ι]
     {m𝓧 : ∀ i, MeasurableSpace (𝓧 i)} {P : (i : ι) → Measure (𝓧 i)}
     {S : (i : ι) → Set (Measure (𝓧 i))} [∀ i, IsProbabilityMeasure (P i)]
     (hS : ∀ i, ∀ μ ∈ S i, IsProbabilityMeasure μ) :
     IsNumeraire (fun x ↦ ∏ i, numeraire (P i) (S i) (x i))
       (Measure.pi '' (Set.pi Set.univ S)) (Measure.pi P) := by
-  sorry
+  -- reindex the family by `Fin (card ι)`
+  let f : Fin (Fintype.card ι) ≃ ι := (Fintype.equivFin ι).symm
+  let e : ((i : ι) → 𝓧 i) ≃ᵐ ((j : Fin (Fintype.card ι)) → 𝓧 (f j)) :=
+    (MeasurableEquiv.piCongrLeft 𝓧 f).symm
+  have h_map (ν : (i : ι) → Measure (𝓧 i)) [∀ i, SigmaFinite (ν i)] :
+      (Measure.pi ν).map e = Measure.pi fun j ↦ ν (f j) :=
+    (MeasurePreserving.symm _ (measurePreserving_piCongrLeft ν f)).map_eq
+  have h_fin := isNumeraire_prod_numeraire_fin _ (fun j ↦ P (f j)) (fun j ↦ S (f j))
+    fun j ↦ hS (f j)
+  have h_set : Measure.map e '' (Measure.pi '' (Set.pi Set.univ S))
+      = Measure.pi '' (Set.pi Set.univ fun j ↦ S (f j)) := by
+    ext ρ
+    simp only [Set.mem_image]
+    constructor
+    · rintro ⟨_, ⟨ν, hν, rfl⟩, rfl⟩
+      have : ∀ i, IsProbabilityMeasure (ν i) := fun i ↦ hS _ _ (hν i (Set.mem_univ _))
+      exact ⟨fun j ↦ ν (f j), fun j _ ↦ hν _ (Set.mem_univ _), (h_map ν).symm⟩
+    · rintro ⟨ν', hν', rfl⟩
+      set ν : (i : ι) → Measure (𝓧 i) :=
+        Equiv.piCongrLeft (fun i ↦ Measure (𝓧 i)) f ν' with hν_def
+      have hν_apply (j : Fin (Fintype.card ι)) : ν (f j) = ν' j :=
+        Equiv.piCongrLeft_apply_apply (fun i ↦ Measure (𝓧 i)) f ν' j
+      have hν_mem (i : ι) : ν i ∈ S i := by
+        obtain ⟨j, rfl⟩ := f.surjective i
+        rw [hν_apply]
+        exact hν' j (Set.mem_univ _)
+      have : ∀ i, IsProbabilityMeasure (ν i) := fun i ↦ hS i _ (hν_mem i)
+      refine ⟨Measure.pi ν, ⟨ν, fun i _ ↦ hν_mem i, rfl⟩, ?_⟩
+      rw [h_map ν]
+      congr 1
+      funext j
+      exact hν_apply j
+  rw [← h_set, ← h_map P] at h_fin
+  have h := h_fin.comp_measurableEquiv e
+  convert h using 1
+  ext x
+  rw [← f.prod_comp fun i ↦ numeraire (P i) (S i) (x i)]
+  rfl
 
 lemma isNumeraire_prod_numeraire_finset {ι : Type*} {𝓧 : ι → Type*} {s : Finset ι}
     {m𝓧 : ∀ i, MeasurableSpace (𝓧 i)} {P : (i : ι) → Measure (𝓧 i)}
     {S : (i : ι) → Set (Measure (𝓧 i))} [∀ i, IsProbabilityMeasure (P i)]
     (hS : ∀ i ∈ s, ∀ μ ∈ S i, IsProbabilityMeasure μ) :
     IsNumeraire (fun x ↦ ∏ i : s, numeraire (P i) (S i) (x i))
-      {μ | ∃ ν : (i : ι) → Measure (𝓧 i), (∀ i ∈ s, ν i ∈ S i) ∧ Measure.pi (fun i : s ↦ ν i) = μ}
-      (Measure.pi (fun i : s ↦ P i)) := by
-  classical
-  induction s using Finset.induction with
-  | empty =>
-    simp only [Finset.univ_eq_empty, Finset.prod_empty]
-    sorry
-  | insert a s has hs =>
-    sorry
+      (Measure.pi '' (Set.pi Set.univ fun i : s ↦ S i)) (Measure.pi fun i : s ↦ P i) :=
+  isNumeraire_prod_numeraire_fintype fun i ↦ hS i i.2
 
 end ProbabilityTheory
