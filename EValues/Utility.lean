@@ -34,6 +34,8 @@ This file defines utility functions for use in probability theory and e-value th
 * `Utility.eintegral_le_map`: Jensen's inequality for utility functions.
 * `Utility.le_add_deriv_mul`: The utility function is upper-bounded by its first-order
   Taylor approximation (a consequence of concavity).
+* `Utility.antitone_deriv`, `Utility.continuous_deriv`: the derivative of a utility function is
+  antitone and continuous on all of `ℝ≥0∞`, including at `0` and at `∞`.
 * `Utility.deriv_mul_sub_le_liminf`: the difference quotients of a utility function along a
   segment are eventually at least the directional derivative.
 * `deriv_logUtility`: The derivative of the logarithmic utility function.
@@ -202,7 +204,7 @@ def Utility.deriv (U : Utility) (x : ℝ≥0∞) : EReal :=
   else
     ((deriv U.real x.toReal : ℝ) : EReal)
 
--- should also be true at 0 and ∞, but we don't need it now
+/-- See `Utility.deriv_nonneg'` for the version without hypotheses on `x`. -/
 lemma Utility.deriv_nonneg (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx_top : x ≠ ∞) :
     0 ≤ U.deriv x := by
   simp only [Utility.deriv, hx0, ↓reduceIte, hx_top, EReal.coe_nonneg]
@@ -274,13 +276,9 @@ lemma Utility.deriv_zero_eq (U : Utility) :
     U.deriv 0 = limsup (fun y : ℝ≥0∞ ↦ ((deriv U.real y.toReal : ℝ) : EReal)) (𝓝[>] 0) := by
   simp [Utility.deriv]
 
-@[fun_prop]
-lemma Utility.measurable_deriv (U : Utility) : Measurable U.deriv := by
-  unfold Utility.deriv
-  refine Measurable.ite (by simp) measurable_const ?_
-  refine Measurable.ite (by simp) measurable_const ?_
-  exact (continuous_coe_real_ereal.measurable.comp
-    (_root_.measurable_deriv U.real)).comp ENNReal.measurable_toReal
+lemma Utility.deriv_top_eq (U : Utility) :
+    U.deriv ∞ = limsup (fun y : ℝ≥0∞ ↦ ((deriv U.real y.toReal : ℝ) : EReal)) (𝓝[<] ∞) := by
+  simp [Utility.deriv]
 
 lemma Utility.deriv_nonneg' (U : Utility) (x : ℝ≥0∞) : 0 ≤ U.deriv x := by
   by_cases hx0 : x = 0
@@ -295,19 +293,50 @@ lemma Utility.deriv_nonneg' (U : Utility) (x : ℝ≥0∞) : 0 ≤ U.deriv x := 
     exact_mod_cast U.deriv_real_nonneg hy
   exact U.deriv_nonneg hx0 hx_top
 
-lemma Utility.deriv_le_deriv_zero (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) (hx_top : x ≠ ∞) :
-    U.deriv x ≤ U.deriv 0 := by
+lemma Utility.deriv_top_le (U : Utility) {x : ℝ≥0∞} (hx0 : x ≠ 0) :
+    U.deriv ∞ ≤ U.deriv x := by
+  by_cases! hx_top : x = ∞
+  · simp [hx_top]
   rw [U.deriv_eq_coe hx0 hx_top]
-  simp only [Utility.deriv, ↓reduceIte]
-  refine le_limsup_of_frequently_le (Filter.Eventually.frequently ?_)
-  have h_lt : ∀ᶠ y in 𝓝[>] (0 : ℝ≥0∞), y < x :=
-    eventually_nhdsWithin_of_eventually_nhds (eventually_lt_nhds hx0.bot_lt)
-  filter_upwards [ENNReal.eventually_toReal_pos_nhdsGT_zero, h_lt] with y hy hyx
-  have h_le : y.toReal ≤ x.toReal := ENNReal.toReal_mono hx_top hyx.le
-  have hx_pos : 0 < x.toReal := by
-    simp only [ENNReal.toReal_pos_iff]
-    exact ⟨hx0.bot_lt, hx_top.lt_top⟩
-  exact_mod_cast U.antitoneOn_deriv_real hy hx_pos h_le
+  simp only [Utility.deriv, ENNReal.top_ne_zero, ↓reduceIte]
+  refine limsup_le_of_le (h := ?_)
+  have hx_pos : 0 < x.toReal := ENNReal.toReal_pos hx0 hx_top
+  have h_gt : ∀ᶠ y in 𝓝[<] (∞ : ℝ≥0∞), x < y :=
+    eventually_nhdsWithin_of_eventually_nhds (eventually_gt_nhds hx_top.lt_top)
+  filter_upwards [ENNReal.eventually_toReal_pos_nhdsLT_top, h_gt] with y hy hxy
+  have hy_top : y ≠ ∞ := by rintro rfl; simp at hy
+  exact_mod_cast U.antitoneOn_deriv_real hx_pos hy (ENNReal.toReal_mono hy_top hxy.le)
+
+lemma Utility.deriv_le_deriv_zero (U : Utility) (x : ℝ≥0∞) : U.deriv x ≤ U.deriv 0 := by
+  have key {y : ℝ≥0∞} (hy0 : y ≠ 0) (hy_top : y ≠ ∞) : U.deriv y ≤ U.deriv 0 := by
+    rw [U.deriv_eq_coe hy0 hy_top]
+    simp only [Utility.deriv, ↓reduceIte]
+    refine le_limsup_of_frequently_le (Filter.Eventually.frequently ?_)
+    have h_lt : ∀ᶠ z in 𝓝[>] (0 : ℝ≥0∞), z < y :=
+      eventually_nhdsWithin_of_eventually_nhds (eventually_lt_nhds hy0.bot_lt)
+    filter_upwards [ENNReal.eventually_toReal_pos_nhdsGT_zero, h_lt] with z hz hzy
+    exact_mod_cast U.antitoneOn_deriv_real hz (ENNReal.toReal_pos hy0 hy_top)
+      (ENNReal.toReal_mono hy_top hzy.le)
+  rcases eq_or_ne x 0 with rfl | hx0
+  · exact le_rfl
+  rcases eq_or_ne x ∞ with rfl | hx_top
+  · exact (U.deriv_top_le one_ne_zero).trans (key one_ne_zero (by simp))
+  · exact key hx0 hx_top
+
+/-- The derivative of a utility function is antitone on all of `ℝ≥0∞`, including at `0` and
+at `∞`. -/
+lemma Utility.antitone_deriv (U : Utility) : Antitone U.deriv := by
+  intro x y hxy
+  rcases eq_or_ne x 0 with rfl | hx0
+  · exact U.deriv_le_deriv_zero y
+  rcases eq_or_ne x ∞ with rfl | hx_top
+  · rw [top_le_iff.mp hxy]
+  rcases eq_or_ne y ∞ with rfl | hy_top
+  · exact U.deriv_top_le hx0
+  have hy0 : y ≠ 0 := fun h ↦ hx0 (nonpos_iff_eq_zero.mp (h ▸ hxy))
+  rw [U.deriv_eq_coe hx0 hx_top, U.deriv_eq_coe hy0 hy_top]
+  exact_mod_cast U.antitoneOn_deriv_real (ENNReal.toReal_pos hx0 hx_top)
+    (ENNReal.toReal_pos hy0 hy_top) (ENNReal.toReal_mono hy_top hxy)
 
 lemma Utility.tendsto_deriv_real_atTop (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b) :
     Tendsto (deriv U.real) atTop (𝓝 0) := by
@@ -319,24 +348,18 @@ lemma Utility.tendsto_deriv_real_atTop (U : Utility) {b : ℝ} (hU_le : ∀ x : 
   · filter_upwards [eventually_gt_atTop (0 : ℝ)] with y hy using U.deriv_real_nonneg hy
   · filter_upwards [eventually_gt_atTop (1 : ℝ)] with y hy
     have h := U.concaveOn_Ioi_real.le_add_deriv_mul (x := 1) (y := y) (by simp)
-      (by simp; linarith) (U.differentiableAt_real (by linarith))
-    rw [le_div_iff₀ (by linarith)]
-    nlinarith [hb y (by linarith)]
+      (by simp; positivity) (U.differentiableAt_real (by positivity))
+    rw [le_div_iff₀ (by positivity)]
+    nlinarith [hb y (by positivity)]
   · exact Filter.Tendsto.const_div_atTop
       (by simpa [sub_eq_add_neg] using tendsto_atTop_add_const_right atTop (-1 : ℝ) tendsto_id) _
 
-/-- The derivative of a utility function is continuous from the right, in the sense that it is
-the limit of `U.deriv (z n)` for any sequence `z n → α` of finite nonzero values.
-This is a continuity statement on `(0, ∞)` and a monotone limit statement at `0`. -/
-lemma Utility.tendsto_deriv (U : Utility) {α : ℝ≥0∞} (hα_top : α ≠ ∞)
-    {z : ℕ → ℝ≥0∞} (hz0 : ∀ n, z n ≠ 0) (hz_top : ∀ n, z n ≠ ∞)
-    (hz : Tendsto z atTop (𝓝 α)) :
-    Tendsto (fun n ↦ U.deriv (z n)) atTop (𝓝 (U.deriv α)) := by
-  have hz_toReal : Tendsto (fun n ↦ (z n).toReal) atTop (𝓝 α.toReal) :=
-    (ENNReal.tendsto_toReal hα_top).comp hz
-  have hz_pos (n : ℕ) : 0 < (z n).toReal := by
-    simp only [ENNReal.toReal_pos_iff]
-    exact ⟨(hz0 n).bot_lt, (hz_top n).lt_top⟩
+/-- The derivative of a utility function is continuous at every `α ≠ ∞`: this is a continuity
+statement on `(0, ∞)` and a monotone limit statement at `0`. See `Utility.tendsto_deriv_top` for
+the case `α = ∞` and `Utility.continuous_deriv` for the combination of the two. -/
+lemma Utility.tendsto_deriv (U : Utility) {α : ℝ≥0∞} (hα_top : α ≠ ∞) {ι : Type*} {l : Filter ι}
+    {z : ι → ℝ≥0∞} (hz : Tendsto z l (𝓝 α)) :
+    Tendsto (fun n ↦ U.deriv (z n)) l (𝓝 (U.deriv α)) := by
   by_cases hα0 : α = 0
   · subst hα0
     refine tendsto_of_le_liminf_of_limsup_le ?_ ?_
@@ -348,20 +371,61 @@ lemma Utility.tendsto_deriv (U : Utility) {α : ℝ≥0∞} (hα_top : α ≠ �
         rw [pos_iff_ne_zero]
         rintro rfl
         simp at hy
-      filter_upwards [hz.eventually (eventually_lt_nhds hy0)] with n hn
       have hy_top : y ≠ ∞ := by rintro rfl; simp at hy
-      rw [U.deriv_eq_coe (hz0 n) (hz_top n)]
-      exact_mod_cast U.antitoneOn_deriv_real (hz_pos n) hy (ENNReal.toReal_mono hy_top hn.le)
-    · exact limsup_le_of_le (h := .of_forall fun n ↦ U.deriv_le_deriv_zero (hz0 n) (hz_top n))
-  · have hα_pos : 0 < α.toReal := by
-      simp only [ENNReal.toReal_pos_iff]
-      exact ⟨Ne.bot_lt hα0, hα_top.lt_top⟩
-    have h_eq : (fun n ↦ U.deriv (z n)) = fun n ↦ ((deriv U.real (z n).toReal : ℝ) : EReal) := by
-      ext n
-      exact U.deriv_eq_coe (hz0 n) (hz_top n)
-    rw [h_eq, U.deriv_eq_coe hα0 hα_top, EReal.tendsto_coe]
+      filter_upwards [hz.eventually (eventually_lt_nhds hy0)] with n hn
+      rw [← U.deriv_eq_coe hy0.ne' hy_top]
+      exact U.antitone_deriv hn.le
+    · exact limsup_le_of_le (h := .of_forall fun n ↦ U.deriv_le_deriv_zero (z n))
+  · -- for `α ≠ 0`, the terms `z n` are eventually finite and nonzero
+    have hα_pos : 0 < α.toReal := ENNReal.toReal_pos hα0 hα_top
+    have h_ev : ∀ᶠ n in l, z n ≠ 0 ∧ z n ≠ ∞ := by
+      filter_upwards [hz.eventually (eventually_gt_nhds (Ne.bot_lt hα0)),
+        hz.eventually (eventually_lt_nhds hα_top.lt_top)] with n h1 h2
+      exact ⟨h1.ne', h2.ne⟩
+    rw [U.deriv_eq_coe hα0 hα_top]
+    refine Tendsto.congr' (f₁ := fun n ↦ ((deriv U.real (z n).toReal : ℝ) : EReal)) ?_ ?_
+    · filter_upwards [h_ev] with n hn
+      exact (U.deriv_eq_coe hn.1 hn.2).symm
+    rw [EReal.tendsto_coe]
     refine (U.continuousOn_deriv_real α.toReal hα_pos).tendsto.comp ?_
-    exact tendsto_nhdsWithin_iff.mpr ⟨hz_toReal, .of_forall hz_pos⟩
+    rw [tendsto_nhdsWithin_iff]
+    refine ⟨(ENNReal.tendsto_toReal hα_top).comp hz, ?_⟩
+    filter_upwards [h_ev] with n hn
+    exact ENNReal.toReal_pos hn.1 hn.2
+
+/-- The derivative of a utility function is continuous at `∞`. -/
+lemma Utility.tendsto_deriv_top (U : Utility) {ι : Type*} {l : Filter ι} {z : ι → ℝ≥0∞}
+    (hz : Tendsto z l (𝓝 ∞)) :
+    Tendsto (fun n ↦ U.deriv (z n)) l (𝓝 (U.deriv ∞)) := by
+  refine tendsto_of_le_liminf_of_limsup_le
+    (le_liminf_of_le (h := .of_forall fun n ↦ U.antitone_deriv le_top)) ?_
+  calc limsup (fun n ↦ U.deriv (z n)) l
+  _ ≤ liminf (fun y : ℝ≥0∞ ↦ ((deriv U.real y.toReal : ℝ) : EReal)) (𝓝[<] ∞) := by
+    refine le_liminf_of_le (h := ?_)
+    filter_upwards [ENNReal.eventually_toReal_pos_nhdsLT_top] with y hy
+    have hy0 : (0 : ℝ≥0∞) < y := by
+      rw [pos_iff_ne_zero]
+      rintro rfl
+      simp at hy
+    have hy_top : y ≠ ∞ := by rintro rfl; simp at hy
+    rw [← U.deriv_eq_coe hy0.ne' hy_top]
+    refine limsup_le_of_le (h := ?_)
+    filter_upwards [hz.eventually (eventually_gt_nhds hy_top.lt_top)] with n hn
+    exact U.antitone_deriv hn.le
+  _ ≤ limsup (fun y : ℝ≥0∞ ↦ ((deriv U.real y.toReal : ℝ) : EReal)) (𝓝[<] ∞) := liminf_le_limsup
+  _ = U.deriv ∞ := U.deriv_top_eq.symm
+
+/-- The derivative of a utility function is continuous on `ℝ≥0∞`, including at `0` and at `∞`. -/
+@[fun_prop]
+lemma Utility.continuous_deriv (U : Utility) : Continuous U.deriv := by
+  rw [continuous_iff_continuousAt]
+  intro α
+  rcases eq_or_ne α ∞ with rfl | hα_top
+  · exact U.tendsto_deriv_top tendsto_id
+  · exact U.tendsto_deriv hα_top tendsto_id
+
+@[fun_prop]
+lemma Utility.measurable_deriv (U : Utility) : Measurable U.deriv := U.continuous_deriv.measurable
 
 lemma Utility.deriv_top_eq_zero (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞, U x ≤ b) :
     U.deriv ∞ = 0 := by
@@ -423,10 +487,10 @@ lemma Utility.sub_le_inv_mul_sub (U : Utility) {α β : ℝ≥0∞} (hβ0 : β �
   have h_ccv := U.concave.2 (Set.mem_univ β) (Set.mem_univ α)
     (zero_le (a := t.toNNReal)) (zero_le (a := (1 - t).toNNReal)) ?_
   swap
-  · rw [← Real.toNNReal_add ht0.le (by linarith)]
+  · rw [← Real.toNNReal_add ht0.le (by positivity)]
     simp
   simp only [EReal.smul_nnreal_eq_mul, ENNReal.smul_def, smul_eq_mul] at h_ccv
-  rw [Real.coe_toNNReal _ ht0.le, Real.coe_toNNReal _ (by linarith : (0:ℝ) ≤ 1 - t)] at h_ccv
+  rw [Real.coe_toNNReal _ ht0.le, Real.coe_toNNReal _ (by positivity : (0:ℝ) ≤ 1 - t)] at h_ccv
   have hW_eq : ((t.toNNReal : ℝ≥0) : ℝ≥0∞) * β + (((1 - t).toNNReal : ℝ≥0) : ℝ≥0∞) * α = W := rfl
   rw [hW_eq] at h_ccv
   obtain ⟨p, hp⟩ : ∃ p : ℝ, U α = p := ⟨(U α).toReal, (EReal.coe_toReal hUα_top hUα).symm⟩
@@ -470,7 +534,7 @@ lemma Utility.deriv_mul_sub_convex (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ�
     rw [U.deriv_top_eq_zero hU_le]
     simp
   have hβ_top : β ≠ ∞ := hαβ hα_top
-  have hδ0' : (0 : ℝ) < 1 - δ := by linarith
+  have hδ0' : (0 : ℝ) < 1 - δ := by positivity
   have hw : (ENNReal.ofReal δ * 1 + ENNReal.ofReal (1 - δ) * β : ℝ≥0∞)
       = ENNReal.ofReal (δ + (1 - δ) * β.toReal) := by
     rw [mul_one]
@@ -530,7 +594,7 @@ lemma Utility.deriv_mul_sub_le_liminf (U : Utility) {b : ℝ} (hU_le : ∀ x : �
   have hz_pos (n : ℕ) : 0 < t n * β.toReal + (1 - t n) * α.toReal := by
     have h1 : 0 < t n * β.toReal := mul_pos (ht0 n) hbb_pos
     have h2 : 0 ≤ (1 - t n) * α.toReal := mul_nonneg (by linarith [ht1 n]) ha0
-    linarith
+    positivity
   have hZ_eq (n : ℕ) : ENNReal.ofReal (t n) * β + ENNReal.ofReal (1 - t n) * α
       = ENNReal.ofReal (t n * β.toReal + (1 - t n) * α.toReal) := by
     conv_lhs => rw [← ENNReal.ofReal_toReal hβ_top, ← ENNReal.ofReal_toReal hα_top]
@@ -577,7 +641,7 @@ lemma Utility.deriv_mul_sub_le_liminf (U : Utility) {b : ℝ} (hU_le : ∀ x : �
     have := ENNReal.tendsto_ofReal h
     rwa [ENNReal.ofReal_toReal hα_top] at this
   have h_deriv_tendsto : Tendsto (fun n ↦ U.deriv (Z n)) atTop (𝓝 (U.deriv α)) :=
-    U.tendsto_deriv hα_top hZ0 hZ_top hZ_tendsto
+    U.tendsto_deriv hα_top hZ_tendsto
   have hb_eq : ((β : EReal) - α) = ((β.toReal - α.toReal : ℝ) : EReal) := by
     rw [EReal.coe_sub, EReal.coe_ennreal_toReal hα_top, EReal.coe_ennreal_toReal hβ_top]
   have hb_ne_bot : ((β : EReal) - α) ≠ ⊥ := by rw [hb_eq]; exact EReal.coe_ne_bot _
@@ -755,7 +819,6 @@ section BoundedLog
 
 /-! ### Bounded approximations of the logarithmic utility
 
-The logarithm is not bounded above, so `eintegral_deriv_mul_le` does not apply to it directly.
 We introduce the bounded approximations `x ↦ log (n x / (n + x))` of the logarithm, obtained by
 composing the logarithm with the *harmonic truncation* `harmonicTrunc n x = (x⁻¹ + n⁻¹)⁻¹`. -/
 
@@ -799,7 +862,7 @@ lemma continuous_harmonicTrunc (n : ℝ≥0∞) : Continuous (harmonicTrunc n) :
 
 /-- The harmonic truncation of a real number, computed in `ℝ`. -/
 lemma harmonicTrunc_ofReal {N x : ℝ} (hN : 0 < N) (hx : 0 < x) :
-    harmonicTrunc (ENNReal.ofReal N) (ENNReal.ofReal x) = ENNReal.ofReal ((x⁻¹ + N⁻¹)⁻¹) := by
+    harmonicTrunc (.ofReal N) (.ofReal x) = .ofReal ((x⁻¹ + N⁻¹)⁻¹) := by
   rw [harmonicTrunc, ← ENNReal.ofReal_inv_of_pos hx, ← ENNReal.ofReal_inv_of_pos hN,
     ← ENNReal.ofReal_add (by positivity) (by positivity),
     ← ENNReal.ofReal_inv_of_pos (by positivity)]

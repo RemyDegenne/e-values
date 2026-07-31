@@ -510,7 +510,7 @@ lemma eintegral_deriv_mul_le (U : Utility) {b : ℝ} (hU_le : ∀ x : ℝ≥0∞
   have hg_top : ∫ᵉ x, g x ∂P ≠ ⊤ := by
     intro hG
     have h0 := key 0
-    rw [hG, hm, EReal.coe_mul_top_of_pos (x := 1 - δ 0) (by linarith [hδ1 0]),
+    rw [hG, hm, EReal.coe_mul_top_of_pos (x := 1 - δ 0) (by positivity),
       EReal.top_add_of_ne_bot (by rw [← EReal.coe_mul]; exact EReal.coe_ne_bot _)] at h0
     simp at h0
   obtain ⟨G, hG⟩ : ∃ G : ℝ, ∫ᵉ x, g x ∂P = (G : EReal) :=
