@@ -83,6 +83,27 @@ lemma tendsto_toReal_atTop : Tendsto (fun x : ℝ≥0∞ ↦ x.toReal) (𝓝[<] 
   filter_upwards [h_ge] with x hx hx_lt_top
   rwa [← ENNReal.ofReal_le_iff_le_toReal hx_lt_top.ne]
 
+lemma eventually_toReal_pos_nhdsGT_zero : ∀ᶠ (x : ℝ≥0∞) in 𝓝[>] 0, 0 < x.toReal := by
+  have h_ne_top : ∀ᶠ x in 𝓝[>] (0 : ℝ≥0∞), x ≠ ∞ := eventually_ne_nhdsWithin (by simp)
+  have h_pos : ∀ᶠ x in 𝓝[>] (0 : ℝ≥0∞), 0 < x := eventually_nhdsWithin_of_forall fun x hx ↦ hx
+  filter_upwards [h_ne_top, h_pos] with x hx_ne_top hx_pos
+  simp [ENNReal.toReal_pos_iff, hx_pos, hx_ne_top.lt_top]
+
+lemma eventually_toReal_pos_nhdsLT_top : ∀ᶠ (x : ℝ≥0∞) in 𝓝[<] ∞, 0 < x.toReal := by
+  have h_ne_top : ∀ᶠ x in 𝓝[<] (∞ : ℝ≥0∞), x ≠ ∞ :=
+    eventually_nhdsWithin_of_forall fun x hx ↦ (Set.mem_Iio.mp hx).ne
+  have h_pos : ∀ᶠ x in 𝓝[<] (∞ : ℝ≥0∞), 0 < x := by
+    simp only [pos_iff_ne_zero, ne_eq]
+    exact eventually_ne_nhdsWithin (by simp)
+  filter_upwards [h_ne_top, h_pos] with x hx_ne_top hx_pos
+  simp [ENNReal.toReal_pos_iff, hx_pos, hx_ne_top.lt_top]
+
+lemma const_mul_le_liminf {c a : ℝ≥0∞} {u : ℕ → ℝ≥0∞}
+    (h : Tendsto u atTop (𝓝 a)) : c * a ≤ liminf (fun n ↦ c * u n) atTop := by
+  rcases eq_or_ne a 0 with rfl | ha0
+  · simp
+  exact (ENNReal.Tendsto.const_mul h (Or.inl ha0)).liminf_eq.ge
+
 end Topology
 
 end ENNReal

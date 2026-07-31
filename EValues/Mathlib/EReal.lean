@@ -387,3 +387,19 @@ lemma EReal.distrib_ennreal (a b : ℝ≥0∞) (u : EReal) : (a + b) * u = a * u
   have ha_real : (a : EReal) = a.toReal := by rw [EReal.coe_ennreal_toReal ha_top]
   have hb_real : (b : EReal) = b.toReal := by rw [EReal.coe_ennreal_toReal hb_top]
   rw [ha_real, hb_real, EReal.distrib_real (by simp) (by simp)]
+
+/-- Distributing an `ℝ≥0∞` factor over a difference of `ℝ≥0∞` values. The hypothesis rules out
+the bad case `∞ * (β - α) = ∞` versus `∞ * β - ∞ * α = ⊥` with `0 < α < β`. -/
+lemma EReal.coe_ennreal_mul_sub {c α β : ℝ≥0∞} (h : c = ∞ → α = 0) :
+    (c : EReal) * ((β : EReal) - (α : EReal))
+      = ((c * β : ℝ≥0∞) : EReal) - ((c * α : ℝ≥0∞) : EReal) := by
+  rcases eq_or_ne c ∞ with rfl | hc_top
+  · rw [h rfl, mul_zero]
+    simp only [EReal.coe_ennreal_zero, sub_zero, EReal.coe_ennreal_top]
+    rcases eq_or_ne β 0 with rfl | hβ0
+    · simp
+    · rw [ENNReal.top_mul hβ0, EReal.top_mul_of_pos]
+      · simp
+      · simpa [EReal.coe_ennreal_pos] using pos_iff_ne_zero.mpr hβ0
+  · rw [EReal.mul_sub_of_nonneg_of_ne_top (by positivity) (by simp [hc_top]),
+      ← EReal.coe_ennreal_mul, ← EReal.coe_ennreal_mul]

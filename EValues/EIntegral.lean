@@ -753,6 +753,15 @@ lemma lintegral_eq_eintegral (f : α → ENNReal) :
   · intro
     positivity
 
+lemma eintegral_nonpos_iff_lintegral_le {f : α → EReal} :
+    ∫ᵉ x, f x ∂μ ≤ 0 ↔ ∫⁻ x, (f x).toENNReal ∂μ ≤ ∫⁻ x, (-f x).toENNReal ∂μ := by
+  rw [eintegral, EReal.sub_nonpos, EReal.coe_ennreal_le_coe_ennreal_iff]
+
+lemma eintegral_ne_bot_iff_lintegral_ne_top {f : α → EReal} :
+    ∫ᵉ x, f x ∂μ ≠ ⊥ ↔ ∫⁻ x, (-f x).toENNReal ∂μ ≠ ⊤ := by
+  rw [eintegral, ne_eq, EReal.sub_eq_bot]
+  simp
+
 lemma eintegral_mul_const_of_nonneg {c : EReal} (hc_bot : c ≠ ⊥) (hc_top : c ≠ ⊤)
     (hf : ∀ x, 0 ≤ f x) :
     ∫ᵉ x, c * f x ∂μ = c * ∫ᵉ x, f x ∂μ := by
