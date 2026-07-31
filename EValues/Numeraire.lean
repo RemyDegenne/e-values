@@ -131,6 +131,42 @@ lemma ae_pos [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, 0
 lemma ae_ne_zero [IsFiniteMeasure μ] (hX : IsNumeraire X S μ) : ∀ᵐ ω ∂μ, X ω ≠ 0 := by
   filter_upwards [hX.ae_pos] with ω hω using hω.ne'
 
+/-- The constant function `1` is a numeraire for `S` at any `μ ∈ S`. -/
+lemma _root_.ProbabilityTheory.isNumeraire_one {μ : Measure 𝓧} {S : Set (Measure 𝓧)} (hμS : μ ∈ S) :
+    IsNumeraire (fun _ ↦ (1 : ℝ≥0∞)) S μ where
+  toIsEVar := isEVar_fun_one S
+  lintegral_div_le_measure_fsupport Y hY := by
+    have h : (fun _ : 𝓧 ↦ (1 : ℝ≥0∞)).fsupport = Set.univ := by
+      ext x
+      simp [Function.fsupport]
+    simp only [div_one, h]
+    exact hY.lintegral_le_measure_univ μ hμS
+
+/-- The numeraire property transports along a measurable equivalence. -/
+lemma comp_measurableEquiv (e : 𝓧 ≃ᵐ 𝓨) {Y : 𝓨 → ℝ≥0∞} {S : Set (Measure 𝓧)}
+    {μ : Measure 𝓧} (hY : IsNumeraire Y (Measure.map e '' S) (μ.map e)) :
+    IsNumeraire (Y ∘ e) S μ := by
+  have hY_meas := hY.measurable
+  have h_image : Measure.map e.symm '' (Measure.map e '' S) = S := by
+    rw [← Set.image_comp]
+    have h : (Measure.map e.symm ∘ Measure.map e) = id := by
+      funext σ
+      simp only [Function.comp_apply, id]
+      rw [Measure.map_map e.symm.measurable e.measurable]
+      simp
+    rw [h, Set.image_id]
+  refine ⟨hY.toIsEVar.comp e.measurable, fun Z hZ ↦ ?_⟩
+  have hZ_meas := hZ.measurable
+  have hZ' : IsEVar (Z ∘ e.symm) (Measure.map e '' S) :=
+    IsEVar.comp e.symm.measurable (by rwa [show {ρ.map e.symm | ρ ∈ Measure.map e '' S}
+      = Measure.map e.symm '' (Measure.map e '' S) from rfl, h_image])
+  have h := hY.lintegral_div_le_measure_fsupport hZ'
+  rw [lintegral_map (by fun_prop) e.measurable, e.map_apply] at h
+  refine le_trans (le_of_eq ?_) (h.trans_eq ?_)
+  · refine lintegral_congr fun x ↦ ?_
+    simp
+  · rfl
+
 lemma _root_.ProbabilityTheory.isNumeraire_of_isEmpty {f : 𝓧 → ℝ≥0∞}
     (hf : Measurable f) (hf_top : ∀ᵐ x ∂μ, f x = ∞)
     (hS : IsEmpty S) : IsNumeraire f S μ where
